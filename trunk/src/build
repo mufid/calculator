@@ -1,0 +1,105 @@
+#!/bin/bash
+
+WTK=/home/preda/WTK2.2
+PREV=$WTK/bin/preverify
+#PROGUARD="java -jar /home/preda/proguard3.6/lib/proguard.jar @src/proguard.txt"
+PROGUARD="java -jar /home/preda/proguard.jar @src/proguard.txt"
+
+NAME=Menstral
+VERSION="1.8.9"
+SRCS="L M DateCanvas Region"
+
+CLASS[1]=$WTK/lib/cldcapi10.jar:$WTK/lib/midpapi10.jar
+CLDC[1]=1.0
+MIDP[1]=1.0
+DEF[1]="-D MIDP1 -D _PROFILE_"
+SUFFIX[1]=
+
+#CLASS[2]=$WTK/lib/cldcapi11.jar:$WTK/lib/midpapi20.jar
+#CLDC[2]=1.1
+#MIDP[2]=2.0
+#DEF[2]="-D MIDP2"
+#SUFFIX[2]="-midp2"
+
+function genManifest {
+echo "MIDlet-1: $NAME, /M.gif, M"
+echo MIDlet-Name: $NAME
+echo MIDlet-Vendor: Mihai Preda
+echo MIDlet-Version: $VERSION
+echo MicroEdition-Configuration: CLDC-${CLDC[$1]}
+echo MicroEdition-Profile: MIDP-${MIDP[$1]}
+}
+
+function genJad {
+    cp $1 $2 &&
+    echo MIDlet-Jar-URL: $3 >> $2 &&
+    echo MIDlet-Jar-Size: `find bin -name $3 -printf %s` >> $2
+}
+
+function gen {
+FULLNAME=$NAME${SUFFIX[$1]}
+echo $FULLNAME
+DIRS="src$1 class$1 tmp$1"
+rm -rf $DIRS
+mkdir -p $DIRS
+
+MANF=tmp$1/MANIFEST$1.MF
+#cp src/M.MF $MANF
+genManifest $1 > $MANF
+
+set -e
+mkdir -p lang
+LANGID=1
+for FL in srclang/*.txt ; do
+    L=`basename $FL .txt`
+
+    if [ $L = "EN" ] ; then
+        echo -n "0 $L; "
+        cp $FL lang/0
+    else
+        echo -n "$LANGID $L; "
+        grep -v "^\(.\)\?#\|^$" $FL > lang/$LANGID
+        let LANGID++
+    fi
+done
+str2java <srclang/EN.txt >src/defaultLang.inc
+echo
+
+echo Preprocess
+for name in $SRCS ; do
+cpp -P ${DEF[$1]} -D _VERSION_=$VERSION src/$name.java src$1/$name.java
+done
+
+echo Compilation
+CMD="javac -bootclasspath ${CLASS[$1]} -d class$1 src$1/*.java -source 1.4 -target 1.4 -g:none"
+echo $CMD
+$CMD
+#cp lang/$LANG.txt class$1/lang.txt
+jar cfm tmp$1/class$1.jar $MANF -C src M.gif -C class$1 . lang
+jar cfm tmp$1/class$1-EN.jar $MANF -C src M.gif -C class$1 .
+if [ a$2 != "a-ng" ] ; then
+    $PROGUARD -libraryjars ${CLASS[$1]} -injars tmp$1/class$1.jar -outjar tmp$1/$FULLNAME.jar
+    $PROGUARD -libraryjars ${CLASS[$1]} -injars tmp$1/class$1-EN.jar -outjar tmp$1/$FULLNAME-EN.jar
+else
+    cp tmp$1/class$1.jar tmp$1/$FULLNAME.jar
+    cp tmp$1/class$1-EN.jar tmp$1/$FULLNAME-EN.jar
+fi
+
+echo Preverify
+mkdir -p bin
+$PREV -classpath ${CLASS[$1]} -target CLDC${CLDC[$1]} -d bin tmp$1/$FULLNAME.jar
+$PREV -classpath ${CLASS[$1]} -target CLDC${CLDC[$1]} -d bin tmp$1/$FULLNAME-EN.jar
+
+#EMUBASE=/c/Java/SMTK_3.X/emulators/C65/Filesystem/0/Java/jam/Applications
+#EMUDIR=$EMUBASE/$FULLNAME
+#mkdir -p $EMUDIR
+#cp bin/$FULLNAME.jar $EMUDIR
+#mkdir -p $EMUDIR-EN
+#cp bin/$FULLNAME-EN.jar $EMUDIR-EN
+
+genJad $MANF bin/$FULLNAME.jad $FULLNAME.jar
+genJad $MANF bin/$FULLNAME-EN.jad $FULLNAME-EN.jar
+echo
+}
+
+gen 1 $*
