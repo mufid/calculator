@@ -1,0 +1,5 @@
+-keep public class M 
+-overloadaggressively
+-mergeallclasses
+-printusage
+-printmapping map.txt
