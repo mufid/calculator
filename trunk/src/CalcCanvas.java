@@ -1,20 +1,24 @@
 import javax.microedition.lcdui.*;
-import javax.microedition.lcdui.game.*;
 
-class CalcCanvas extends GameCanvas {
-
+class CalcCanvas extends Canvas {
+    Image img;
     Graphics g;
     int screenHeight, screenWidth;
     int answerY, inputY, historyY;
     int helpHeight;
     Font smallFont, normalFont, largeFont;
     int smallFontHeight, normalFontHeight, largeFontHeight;
+
+    protected void paint(Graphics g) {
+        g.drawImage(img, 0, 0, 0);
+    }
+
     CalcCanvas() {
-        super(false);
         setFullScreenMode(true);
-        g = getGraphics();
         screenHeight = getHeight();
         screenWidth  = getWidth();
+        img = Image.createImage(screenWidth, screenHeight);
+        g = img.getGraphics();
 
         smallFont  = Font.getFont(0, 0, Font.SIZE_SMALL);
         normalFont = Font.getFont(0, 0, Font.SIZE_NORMAL);
@@ -35,48 +39,6 @@ class CalcCanvas extends GameCanvas {
         
     }
 
-    void drawMenuOption(String s, int x, int y) {
-        g.setColor(0x0000ff);
-        g.setFont(smallBoldFont);
-        g.drawString(s, x, y, HCENTER|TOP);
-    }
-
-    void drawFinalOption(String s, int x, int y) {
-        g.setColor(0);
-        g.setFont(smallFont);
-        g.drawString(s, x, y, HCENTER|TOP);
-    }
-    
-    void drawOptions(Object entries[]) {
-        g.setColor(0xffffff);
-        g.fillRect(0, 0, screenWidth, helpHeight);
-        g.setColor(0);
-
-        int hStep  = (screenWidth + 1) / 3;
-        int hStart = hStep / 2;
-        int vStep  = smallFontHeight + 1;
-        int pos = 0;
-        for (int y = 0; y < helpHeight; y += vStep) {
-            for (int x = hStart; x < screenWidth; x+= hStep) {
-                Object o = entries[pos];
-                if (o != null) {
-                    if (o instanceof String) {
-                        String str = (String)o;
-                        if (str.equal("pi") || str.equal("f(x)") || str.eqal("Def")) {
-                            drawMenuOption(str, x, y);
-                        } else {
-                            drawFinalOption(str, x, y);
-                        }
-                    } else {
-                        Object subArray[] = (Object[])o;
-                        drawMenuOption((String)subArray[pos], x, y);
-                    }
-                }
-                ++pos;
-            }
-        }
-    }
-
     Object[] state;
     char input[256];
     int  last = -1;
@@ -95,100 +57,127 @@ class CalcCanvas extends GameCanvas {
         return false;
     }
     
-    void prepareState() {
-        boolean acceptDigit = true, acceptOp = false, 
-            acceptDot = true, acceptE = false,
-            acceptMinus = true;
-
-        if (pos >= 0) {
-            char c = line[pos];
-            if (c == 'E') {
-                if (startsWithLetter(pos - 1)) {
-                    acceptOp = true; acceptDigit = acceptDot = acceptE = false;
-                } else {
-                    acceptOp = acceptDot = acceptE = false;
-                    acceptDigit = true;
+    void resetState() {
+        int p = pos;
+        boolean number = false;
+        while (p >= 0 && isDigit(line[p])) {
+            number = true;
+            --p;
+        }
+        boolean pastE = false;
+        if (p >= 0 && line[p] == 'E') {
+            pastE = true;
+            --p;
+        } else if (p >= 1 && line[p] == '-' && line[p-1] == 'E') {
+            pastE = true;
+            p -= 2;
+        }
+        while (p >= 0 && isDigit(line[p])) {
+            number = true;
+            --p;
+        }
+        boolean id = false;
+        boolean acceptDot = !pastE;
+        if (p >= 0) {
+            char c = Character.toLower(line[p]);
+            if (('a' <= c && c <= 'z') || c == ')' || c == '!') {
+                id = true;
+                number = false;
+                pastE = false;
+                acceptDot = false;
+            } else if (c == '.') {
+                acceptDot = false;
+                if (p > 0 && isDigit(line[p - 1])) {
+                    number = true;
                 }
-            } else if (c == '-') {
-                if (pos > 0 && line[pos-1] == 'E' && !startsWithLetter(pos -2)) {
-                    acceptMinus = false;
-                    acceptOp = acceptDot = acceptE = false;
-                    acceptDigit = true;
-                } else {
-                    //defaults
-                }
-            } else if ('0' <= c && c <= '9') {
-                
             }
         }
-        
-        for (int i = pos; i >= 0; --i) {
-            char c = line[pos];
-            if (!seenE && c == 'E') {
-                seenE = true;
-            }
+        boolean acceptMinus = !pastE || line[pos] == 'E';
+        if (pastE && (line[pos] == 'E' || line[pos] == '-')) {
+            number = false;
         }
+        boolean atStart = acceptDot && (pos == -1 || !isDigit(line[pos]));
 
-        char prev = pos >= 0 ? line[pos] : 0;
-        
-
-        if (('0'<=prev && prev<='9') || prev == '.') {
+        rootOp[10] = (number && !pastE) ? "E" : null;
+        if (id || number) {
             digits[9] = rootOp;
-        } else if (prev == 'E') {
-            digits[9] = null;
-        } else {
+        } else if (atStart) {
             digits[9] = rootExp;
-        }
-
-        if (prev == '.') {
-            digits[11] = "E";
-        } else if (prev == 'E') {
-            digits[11] = '-';
-            digits[9]  = null;
-        } else if (prev == '-' && pos > 0 && line[pos-1] == 'E') {
-            
-        }
-        digits[11] = 
-            nbLen == 0 ? "-" :
-            nbLen == 1 ? "." :
-            prevDigit == '.' ? "E" :
-            prevDigit == 'E' ? "-" :
-            digits[11].equals("-") ? null : digits[11];
-    }
-
-    String handleKey(int key) {
-        int keyPos = getKeyPos(key);
-        if (keyPos == -1) {
-            return null; //key not recognized
-        }
-        if (keyPos >= state.length) {
-            return null;
-        }
-        Object o = state[keyPos];
-        if (o == null) {
-            return null;
-        }
-        if (o instanceof String) {
-            String ret = (String)o;
-            if (ret.equal("f:=")) {
-            } else if (ret.equal("f(x)")) {
-                state = funcs;
-            } else if (state == consts || ret.equal("ans")) {
-                state = rootOp;
-            } else { // state == rootOp || statec == logicOp || ret.equal("-")
-                state = digits;
-            }
-            return ret;
         } else {
-            state = (Object[])o;
-            return null;
+            digits[9] = null;
         }
+        
+        if (acceptDot) {
+            digits[11] = ".-";
+        } else if (acceptMinus) {
+            digits[11] = "-";
+        } else {
+            digits[11] = null;
+        }
+        
+        int openParens = 0;
+        for (int p = pos; p >= 0; --p) {
+            if (line[p] == '(') {
+                ++openParens;
+            } else if (line[p] == ')') {
+                --openParens;
+            }
+            if (openParens > 0) { break; }
+        }
+        rootOp[8] = (openParens > 0) ? ")" : null;
+        state = id ? rootOp : digits;
     }
     
-    void keyPressed(int key) {
-        
+    static final boolean isDigit(char c) {
+        return '0' <= c && c <= '9';
     }
 
+    void keyPressed(int key) {
+        int keyPos = getKeyPos(key);
+        if (keyPos >= 0) {
+            String s = handleKey(keyPos);
+            if (s != null) {
+                if (pos >= 0 && line[pos] == '.' && 
+                    s.length() == 1 && !isDigit(s.charAt(0))) {
+                    delFromLine();
+                }
+                insertIntoLine(s);
+            }
+        } else {
+            int action = 0;
+            try {
+                action = getGameAction(key);
+            } catch (IllegalArgumentException e) {
+            }
+            
+            if (action != 0) {
+                switch (action) {
+                case Canvas.LEFT: 
+                    if (pos >= 0) {
+                        --pos;
+                        resetState();
+                    }
+                case Canvas.RIGHT:
+                    if (pos < lineSize - 1) {
+                        ++pos;
+                        resetState();
+                    }
+                case Canvas.UP:
+                case Canvas.DOWN:
+                case Canvas.FIRE:
+                }
+            } else {
+                if (key == -8 || key == -11) {
+                    Object[] save = state;
+                    resetState();
+                    if (save == state) {
+                        delFromLine();
+                        resetState();
+                    }
+                }
+            }
+        }
+    }
 
     static int getKeyPos(int key) {
         if ('1' <= key && key <= '9') {
@@ -201,59 +190,4 @@ class CalcCanvas extends GameCanvas {
         }
         return -1;
     }
-
-    static final String trigs[] = {
-        "sin",   "cos",   "tan", 
-        "asin",  "acos",  "atan", 
-        "sinh",  "cosh",  "tanh",
-        "asinh", "acosh", "atanh"
-    };
-
-    static final String logs[] = {
-        "e",  "sqrt",  "cbrt",
-        "ln",   "log10", "log2",
-        "gamma","lgamma", null,
-    };
-
-    static final String ints[] = {
-        "floor", "ceil", "int",
-        "frac",  "abs",  "sign",
-        "comb",  "perm", "fib",
-        null, null, null,
-    };
-
-    static final String logicOp[] = {
-        "?:",  "=",  "!=", 
-        "<",   ">",  null,
-        "<=",  ">=", "NOT",
-        "AND", "OR", "XOR",
-    };
-
-    static final Object rootOp[] = {
-        logic, "!",  null,
-        "^",   "%",  "f:=", 
-        "*",   "/",  ")", 
-        "+",   null,  ",",
-    };
-    
-    static final Object rootExp[] = {
-        trigs,  logs,   ints,
-        consts, "f(x)", "f:=",
-        null,   null,   "(",
-        "ans",  "E",   null,
-    };
-
-    Object digits[] = {
-        "1",     "2", "3",
-        "4",     "5", "6",
-        "7",     "8", "9",
-        rootExp, "0", ".-",
-    };
-
-    String consts[] = {
-        "e", "phi", "g", "pi", 
-    };
-    String funcs[] = {
-        "hypot",
-    };
 }

@@ -106,9 +106,9 @@ class Expr {
                             c = text[++pos];
                         }
                     }
-                    if (c == 'e' || c == 'E') {
+                    if (c == 'E') {
                         c = text[++pos];
-                        if (c == '+' || c == '-') {
+                        if (c == '-') {
                             c = text[++pos];
                         }
                         while (c >= '0' && c <= '9') {
@@ -119,13 +119,14 @@ class Expr {
                 }
                 tokenValue = Double.parseDouble(new String(text, start, pos - start));
             } else try {
-                if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
+                c = Character.toLowerCase(c);
+                if ((c >= 'a' && c <= 'z') || c == '_') {
                     tokenType = 'a';
                     tokenID.setLength(0);
-                    while ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || (c >= '0' && c <= '9')) {
+                    while ((c >= 'a' && c <= 'z') || c == '_' || (c >= '0' && c <= '9')) {
                         tokenID.append(c);
                         ++pos;
-                        c = text[pos];
+                        c = Character.toLowerCase(text[pos]);
                     }
                 } else {
                     //+-*/%^()
