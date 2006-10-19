@@ -3,11 +3,15 @@ import javax.microedition.lcdui.*;
 class CalcCanvas extends Canvas {
     Image img;
     Graphics g;
-    int screenHeight, screenWidth;
-    int answerY, inputY, historyY;
-    int helpHeight;
-    Font smallFont, normalFont, largeFont;
-    int smallFontHeight, normalFontHeight, largeFontHeight;
+    int w, h, screenH;
+    int topH, editY, editH;
+    int blank1Y, blank1H, blank2Y, blank2H;
+    int blank3Y, blank3H, blank4X;
+    int keypadX, keypadW, keypadH, keypadXEnd;
+    
+
+    Font smallFont, normalFont, largeFont, largeBold;
+    int smallHeight, normalHeight, largeHeight;
 
     protected void paint(Graphics g) {
         g.drawImage(img, 0, 0, 0);
@@ -15,28 +19,89 @@ class CalcCanvas extends Canvas {
 
     CalcCanvas() {
         setFullScreenMode(true);
-        screenHeight = getHeight();
-        screenWidth  = getWidth();
-        img = Image.createImage(screenWidth, screenHeight);
+        w = getWidth();
+        screenH = getHeight();
+
+        KeyState.init(w, screenH);
+        keypadX = KeyState.xPos;
+        keypadW = KeyState.w;
+        keypadH = KeyState.h;
+        keypadXEnd = keypadX + keypadW;
+        h = screenH - keypadH;
+
+        img = Image.createImage(w, h);
         g = img.getGraphics();
 
         smallFont  = Font.getFont(0, 0, Font.SIZE_SMALL);
         normalFont = Font.getFont(0, 0, Font.SIZE_NORMAL);
         largeFont  = Font.getFont(0, 0, Font.SIZE_LARGE);
+        largeBold  = Font.getFont(0, Font.STYLE_BOLD, Fost.SIZE_LARGE);
 
-        largeFontHeight = largeFont.getHeight();
+        smallHeight  = smallFont.getHeight();
+        normalHeight = normalFont.getHeight();
+        largeHeight  = largeFont.getHeight();
+
+        topH = largeHeight;
+        blank1Y = topH;
+        blank1H = 3;
+        editY = blank1Y + blank1H;
+        editH = largeHeight;
+        blank2Y = editY + editH;
+        blank2H = h - blank2Y;
         
-        answerY  = screenHeight - 1;
-        inputY   = answerY - largeFontHeight - 3;
-        historyY = inputY  - largeFontHeight - 3;
-        line1Y = inputY + 2;
-        line2Y = historyY + 2;
-        g.drawLine(0, line1Y, screenWidth, line1Y);
-        g.drawLine(0, line2Y, screenWidth, line2Y);
         caretPos = 0;
+    }
+    
+    int clipX, clipY, clipW, clipH;
+    boolean intersects(int clipX, int clipY, int clipW, int clipH,
+                       int x2, int y2, int w2, int h2) {
+        return !((clipX + clipW <= x2 || x2 + w2 <= clipX) &&
+                 (clipY + clipH <= y2 || y2 + h2 <= clipY));
+    }
+    /*
+    void clear(Graphics g, int x, int y, int w, int h) {
+        if (intersects(x, y, w, h)) {
+            g.fillRect(x, y, w, h);
+        }
+    }
+    */
 
-        helpHeight = smallFontHeight * 4 + 4;
+    void paintTop(Graphics g) {
+        g.setColor(0);
+        g.fillRect(0, 0, w, topH);
+        g.setFont(largeBold);
+        g.setColor(0xffffff);
+        g.drawString("0.31415E1", w, 0, Graphics.TOP|Graphics.RIGHT);
+    }
+
+    void paintEdit(Graphics g) {
+        g.setColor(0xffffff);
+        g.fillRect(0, editY, w, editH);
+        g.setColor(0);
+        g.setFont(largeFont);
+        g.drawString("asin(-1)", 0, editY, 0);
+    }
+
+    void paint(Graphics g) {
+        clipX = g.getClipX();
+        clipY = g.getClipY();
+        clipW = g.getClipWidth();
+        clipH = g.getClipHeight();
         
+        if (clipX < topH) {
+            paintTop(g);
+        }
+        if (intersects(0, editY, w, editH)) {
+            paintEdit(g);
+        }
+        if (intersects(keypadX, h, keypadW, keypadH)) {
+            keypad.paint(g);
+        }
+        g.setColor(0x101010);
+        g.fillRect(0, blank1Y, w, blank1H);
+        g.fillRect(0, blank2Y, w, blank2H);
+        g.fillRect(0, h, keypadX, keypadH);
+        g.fillRect(keypadXEnd, h, w - keypadXEnd, keypadH);
     }
 
     Object[] state;
