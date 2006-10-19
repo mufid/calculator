@@ -3,7 +3,7 @@ import javax.microedition.lcdui;
 final class KeyState {
     static Font font, bold;
     static int fontHeight;
-    static int w, h;
+    static int w, h, cellWidth, cellHeight, xPos, yPos;
     static KeyState digits, rootOp, trigs, logs, ints, vars, funcs, rootExp;
 
     /*
@@ -15,12 +15,22 @@ final class KeyState {
     };
     */
 
-    static initStatic(int w, int h) {
-        this->w = w;
-        this->h = h;
+    static init(int sw, int sh) {
+        this->sw = sw;
         font = Font.getFont(0, 0, Font.SIZE_SMALL);
         bold = Font.getFont(0, Font.STYLE_BOLD, Font.SIZE_SMALL);
         fontHeight = font.getHeight();
+
+        int w1 = (w + 1) / 3;
+        int w2 = font.stringWidth("mmmmm");
+        cellWidth = Math.min(w1, w2);
+        cellHeight = fontHeight + 1;
+
+        w = cellWidth  * 3;
+        h = cellHeight * 4;
+
+        xPos = (sw - w) / 2;
+        yPos = sh - h;
 
         digits = new KeyState(new Object[] {
             "1",     "2", "3",
@@ -39,14 +49,22 @@ final class KeyState {
         trigs = new KeyState(new Object[] {
             "sin",   "cos",   "tan", 
             "asin",  "acos",  "atan", 
+            "hyp",    null,    null,
+            "pi",   null,    null,
+        });
+        
+        hyps = new KeyState(new Object[] {
             "sinh",  "cosh",  "tanh",
-            "asinh", "acosh", "atanh"
+            "asinh", "acosh", "atanh",
+            null, null, null,
+            null, null, null,
         });
         
         logs = new KeyState(new Object[] {
-            "e",    "sqrt",  "cbrt",
-            "ln",   "log10", "log2",
-            "gamma","lgamma", null
+            "cbrt",   "sqrt",  null,
+            "ln",     "log10", "log2",
+            "lgamma", null,    null,
+            "e",     null,    null
         });
         
         ints = new KeyState(new Object[] {
@@ -130,7 +148,7 @@ final class KeyState {
         wantRedraw = true;
     }
 
-    void copyTo(Graphics g, int x, int y) {
+    void paint(Graphics g) {
         if (wantRedraw) {
             if (img == null) {
                 img = new Image(w, h);
@@ -139,7 +157,7 @@ final class KeyState {
             draw(imgG);
             wantRedraw = false;
         }
-        g.drawImage(img, x, y, 0);
+        g.drawImage(img, xPos, yPos, 0);
     }
 
     static final int
@@ -164,13 +182,9 @@ final class KeyState {
     private void draw(Graphics g) {
         g.setColor(BACKGR);
         g.fillRect(0, 0, w, h);
-
-        int hStep  = (w + 1) / 3;
-        int hStart = hStep / 2;
-        int vStep  = fontHeight + 1;
         int pos = 0;
-        for (int y = 0; y < h; y += vStep) {
-            for (int x = hStart; x < w; x+= hStep) {
+        for (int y = 0; y < h; y += cellHeight) {
+            for (int x = cellWidth / 2; x < w; x+= cellWidth) {
                 Object o = keys[pos];
                 if (o != null) {
                     if (o instanceof String) {
