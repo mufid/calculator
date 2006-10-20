@@ -13,10 +13,6 @@ class CalcCanvas extends Canvas {
     Font smallFont, normalFont, largeFont, largeBold;
     int smallHeight, normalHeight, largeHeight;
 
-    protected void paint(Graphics g) {
-        g.drawImage(img, 0, 0, 0);
-    }
-
     CalcCanvas() {
         setFullScreenMode(true);
         w = getWidth();
@@ -33,9 +29,9 @@ class CalcCanvas extends Canvas {
         g = img.getGraphics();
 
         smallFont  = Font.getFont(0, 0, Font.SIZE_SMALL);
-        normalFont = Font.getFont(0, 0, Font.SIZE_NORMAL);
+        normalFont = Font.getFont(0, 0, Font.SIZE_MEDIUM);
         largeFont  = Font.getFont(0, 0, Font.SIZE_LARGE);
-        largeBold  = Font.getFont(0, Font.STYLE_BOLD, Fost.SIZE_LARGE);
+        largeBold  = Font.getFont(0, Font.STYLE_BOLD, Font.SIZE_LARGE);
 
         smallHeight  = smallFont.getHeight();
         normalHeight = normalFont.getHeight();
@@ -49,12 +45,11 @@ class CalcCanvas extends Canvas {
         blank2Y = editY + editH;
         blank2H = h - blank2Y;
         
-        caretPos = 0;
+        //caretPos = 0;
     }
     
     int clipX, clipY, clipW, clipH;
-    boolean intersects(int clipX, int clipY, int clipW, int clipH,
-                       int x2, int y2, int w2, int h2) {
+    boolean intersects(int x2, int y2, int w2, int h2) {
         return !((clipX + clipW <= x2 || x2 + w2 <= clipX) &&
                  (clipY + clipH <= y2 || y2 + h2 <= clipY));
     }
@@ -82,7 +77,7 @@ class CalcCanvas extends Canvas {
         g.drawString("asin(-1)", 0, editY, 0);
     }
 
-    void paint(Graphics g) {
+    protected void paint(Graphics g) {
         clipX = g.getClipX();
         clipY = g.getClipY();
         clipW = g.getClipWidth();
@@ -104,10 +99,11 @@ class CalcCanvas extends Canvas {
         g.fillRect(keypadXEnd, h, w - keypadXEnd, keypadH);
     }
 
-    Object[] state;
-    char input[256];
+    KeyState keypad;
+    char line[] = new char[256];
+    int lineSize = 256;
     int  last = -1;
-    int  cursor = 0;
+    int  pos = 0;
     
     boolean startsWithLetter(int p) {
         for (int i = p; i >= 0; --i) {
@@ -144,7 +140,7 @@ class CalcCanvas extends Canvas {
         boolean id = false;
         boolean acceptDot = !pastE;
         if (p >= 0) {
-            char c = Character.toLower(line[p]);
+            char c = Character.toLowerCase(line[p]);
             if (('a' <= c && c <= 'z') || c == ')' || c == '!') {
                 id = true;
                 number = false;
@@ -163,44 +159,50 @@ class CalcCanvas extends Canvas {
         }
         boolean atStart = acceptDot && (pos == -1 || !isDigit(line[pos]));
 
-        rootOp[10] = (number && !pastE) ? "E" : null;
+        KeyState.rootOp.set(10, (number && !pastE) ? "E" : null);
         if (id || number) {
-            digits[9] = rootOp;
+            KeyState.digits.set(9, KeyState.rootOp);
         } else if (atStart) {
-            digits[9] = rootExp;
+            KeyState.digits.set(9, KeyState.rootExp);
         } else {
-            digits[9] = null;
+            KeyState.digits.set(9, null);
         }
         
         if (acceptDot) {
-            digits[11] = ".-";
+            KeyState.digits.set(11, ".-");
         } else if (acceptMinus) {
-            digits[11] = "-";
+            KeyState.digits.set(11, "-");
         } else {
-            digits[11] = null;
+            KeyState.digits.set(11, null);
         }
         
         int openParens = 0;
-        for (int p = pos; p >= 0; --p) {
-            if (line[p] == '(') {
+        for (int i = pos; i >= 0; --i) {
+            if (line[i] == '(') {
                 ++openParens;
-            } else if (line[p] == ')') {
+            } else if (line[i] == ')') {
                 --openParens;
             }
             if (openParens > 0) { break; }
         }
-        rootOp[8] = (openParens > 0) ? ")" : null;
-        state = id ? rootOp : digits;
+        KeyState.rootOp.set(8, (openParens > 0) ? ")" : null);
+        keypad = id ? KeyState.rootOp : KeyState.digits;
     }
     
     static final boolean isDigit(char c) {
         return '0' <= c && c <= '9';
     }
 
-    void keyPressed(int key) {
+    void delFromLine() {
+    }
+
+    void insertIntoLine(String s) {
+    }
+
+    protected void keyPressed(int key) {
         int keyPos = getKeyPos(key);
         if (keyPos >= 0) {
-            String s = handleKey(keyPos);
+            String s = keypad.handleKey(keyPos);
             if (s != null) {
                 if (pos >= 0 && line[pos] == '.' && 
                     s.length() == 1 && !isDigit(s.charAt(0))) {
@@ -233,9 +235,9 @@ class CalcCanvas extends Canvas {
                 }
             } else {
                 if (key == -8 || key == -11) {
-                    Object[] save = state;
+                    KeyState save = keypad;
                     resetState();
-                    if (save == state) {
+                    if (save == keypad) {
                         delFromLine();
                         resetState();
                     }

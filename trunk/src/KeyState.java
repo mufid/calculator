@@ -1,10 +1,10 @@
-import javax.microedition.lcdui;
+import javax.microedition.lcdui.*;
 
 final class KeyState {
     static Font font, bold;
     static int fontHeight;
     static int w, h, cellWidth, cellHeight, xPos, yPos;
-    static KeyState digits, rootOp, trigs, logs, ints, vars, funcs, rootExp;
+    static KeyState digits, rootOp, trigs, hyps, logs, ints, vars, funcs, rootExp;
 
     /*
     static String logicOp[] = {
@@ -15,8 +15,7 @@ final class KeyState {
     };
     */
 
-    static init(int sw, int sh) {
-        this->sw = sw;
+    static void init(int sw, int sh) {
         font = Font.getFont(0, 0, Font.SIZE_SMALL);
         bold = Font.getFont(0, Font.STYLE_BOLD, Font.SIZE_SMALL);
         fontHeight = font.getHeight();
@@ -102,7 +101,7 @@ final class KeyState {
     boolean wantRedraw;
 
     KeyState(Object keys[]) {
-        this->keys = keys;
+        this.keys = keys;
         wantRedraw = true;
     }
 

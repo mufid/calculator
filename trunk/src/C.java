@@ -1,3 +1,11 @@
+import javax.microedition.midlet.*;
+import javax.microedition.lcdui.*;
+/*
+import javax.microedition.rms.*;
+import java.util.*;
+import java.io.*;
+*/
+
 public final class C extends MIDlet implements CommandListener {
     private Display display;
     CalcCanvas calcCanvas;
