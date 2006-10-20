@@ -73,9 +73,9 @@ class BuiltinFun extends Symbol {
         case COS:   return Math.cos(x);
         case TAN:   return Math.tan(x);
 
-        case ASIN:  return Math.asin(x);
-        case ACOS:  return Math.acos(x);
-        case ATAN:  return Math.atan(x);
+        case ASIN:  return MoreMath.asin(x);
+        case ACOS:  return MoreMath.acos(x);
+        case ATAN:  return MoreMath.atan(x);
 
         case SINH:  return MoreMath.sinh(x);
         case COSH:  return MoreMath.cosh(x);

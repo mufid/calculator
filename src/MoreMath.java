@@ -16,8 +16,16 @@ class MoreMath {
         return ((((long) newHiPart) << 32) | newLowPart);
     }
 
+    private static final double setHI(double x, int high) {
+        return Double.longBitsToDouble((Double.doubleToLongBits(x) & 0x00000000ffffffffL) | (((long)low)<<32));
+    }
+    
+    private static final double setLO(double x, int low) {
+        return Double.longBitsToDouble((Double.doubleToLongBits(x) & 0xffffffff00000000L) | low);
+    }
+
     /*
-    //following two methods from MicroDouble 1.0
+    //from MicroDouble 1.0
     private static long setLO(long d, int newLowPart) {
         return ((d & 0xFFFFFFFF00000000L) | newLowPart);
     }
@@ -30,7 +38,10 @@ class MoreMath {
     static final double
         E      = 2.7182818284590452354,
         PI     = 3.14159265358979323846,
-        LOG2E  = 1.4426950408889634074,
+        PI_2   = 1.57079632679489661923,
+        PI_4   = 0.78539816339744830962,
+        LOG2E  =   1.4426950408889634074,
+        //invln2 = 1.44269504088896338700,
         LOG10E = 0.43429448190325182765,
         LN2    = 0.69314718055994530942,
         LN10   = 2.30258509299404568402,
@@ -41,13 +52,56 @@ class MoreMath {
         one  = 1.0,
         two  = 2.0,
         half = .5,
+        huge     = 1.0e300,
+        
+        //atan
+        atanhi[] = {
+            4.63647609000806093515e-01,
+            7.85398163397448278999e-01,
+            9.82793723247329054082e-01,
+            1.57079632679489655800e+00,
+        },
+        atanlo[] = {
+            2.26987774529616870924e-17,
+            3.06161699786838301793e-17,
+            1.39033110312309984516e-17,
+            6.12323399573676603587e-17,
+        },
+        aT[] = {
+            3.33333333333329318027e-01,
+            -1.99999999998764832476e-01,
+            1.42857142725034663711e-01,
+            -1.11111104054623557880e-01,
+            9.09088713343650656196e-02,
+            -7.69187620504482999495e-02,
+            6.66107313738753120669e-02,
+            -5.83357013379057348645e-02,
+            4.97687799461593236017e-02,
+            -3.65315727442169155270e-02,
+            1.62858201153657823623e-02,
+        },
+
+        //asin
+        pio2_hi =  1.57079632679489655800e+00,
+        pio2_lo =  6.12323399573676603587e-17,
+        pio4_hi =  7.85398163397448278999e-01,
+        /* coefficient for R(x^2) */
+        pS0 =  1.66666666666666657415e-01,
+        pS1 = -3.25565818622400915405e-01,
+        pS2 =  2.01212532134862925881e-01,
+        pS3 = -4.00555345006794114027e-02,
+        pS4 =  7.91534994289814532176e-04,
+        pS5 =  3.47933107596021167570e-05,
+        qS1 = -2.40339491173441421878e+00,
+        qS2 =  2.02094576023350569471e+00,
+        qS3 = -6.88283971605453293030e-01,
+        qS4 =  7.70381505559019352791e-02,
 
         //exp()
-        huge     = 1.0e300,
         twom1000= 9.33263618503218878990e-302,     /* 2**-1000=0x01700000,0*/
         o_threshold =  7.09782712893383973096e+02,
         u_threshold = -7.45133219101941108420e+02,
-        //invln2 = 1.44269504088896338700,
+
         P1   =  1.66666666666666019037e-01,
         P2   = -2.77777777770155933842e-03,
         P3   =  6.61375632143793436117e-05,
@@ -69,8 +123,96 @@ class MoreMath {
         Lg5 = 1.818357216161805012e-01,
         Lg6 = 1.531383769920937332e-01,
         Lg7 = 1.479819860511658591e-01;
-
     
+    static final double atan(double x) {
+        double w,s1,s2,z;
+        int ix,hx,id;
+
+        hx = HI(x);
+        ix = hx & 0x7fffffff;
+        if(ix >= 0x44100000) {	/* if |x| >= 2^66 */
+            if(ix>0x7ff00000||
+               (ix==0x7ff00000&&(__LO(x)!=0)))
+                return x+x;		/* NaN */
+            if(hx>0) return  atanhi[3]+atanlo[3];
+            else     return -atanhi[3]-atanlo[3];
+        } if (ix < 0x3fdc0000) {	/* |x| < 0.4375 */
+            if (ix < 0x3e200000) {	/* |x| < 2^-29 */
+                if(huge+x>one) return x;	/* raise inexact */
+            }
+            id = -1;
+        } else {
+            x = fabs(x);
+            if (ix < 0x3ff30000) {		/* |x| < 1.1875 */
+                if (ix < 0x3fe60000) {	/* 7/16 <=|x|<11/16 */
+                    id = 0; x = (2.0*x-one)/(2.0+x); 
+                } else {			/* 11/16<=|x|< 19/16 */
+                    id = 1; x  = (x-one)/(x+one); 
+                }
+            } else {
+                if (ix < 0x40038000) {	/* |x| < 2.4375 */
+                    id = 2; x  = (x-1.5)/(one+1.5*x);
+                } else {			/* 2.4375 <= |x| < 2^66 */
+                    id = 3; x  = -1.0/x;
+                }
+            }}
+        /* end of argument reduction */
+        z = x*x;
+        w = z*z;
+        /* break sum from i=0 to 10 aT[i]z**(i+1) into odd and even poly */
+        s1 = z*(aT[0]+w*(aT[2]+w*(aT[4]+w*(aT[6]+w*(aT[8]+w*aT[10])))));
+        s2 = w*(aT[1]+w*(aT[3]+w*(aT[5]+w*(aT[7]+w*aT[9]))));
+        if (id<0) return x - x*(s1+s2);
+        else {
+            z = atanhi[id] - ((x*(s1+s2) - atanlo[id]) - x);
+            return (hx<0)? -z:z;
+        }
+    }
+
+    static final double asin(double x) {
+        //double t,w,p,q,c,r,s;
+        int hx = HI(x);
+        int ix = hx&0x7fffffff;
+        if (ix >= 0x3ff00000) {		/* |x|>= 1 */
+            if (((ix - 0x3ff00000) | LO(x)) == 0) {
+                /* asin(1)=+-pi/2 with inexact */
+                return x*pio2_hi+x*pio2_lo;	
+            }
+            return (x-x)/(x-x);		/* asin(|x|>1) is NaN */   
+        } else if (ix < 0x3fe00000) {	/* |x|<0.5 */
+            if (ix < 0x3e400000) {		/* if |x| < 2**-27 */
+                /*if (huge + x > one)*/ return x;/* return x with inexact if x!=0*/
+            }
+            double t = x*x;
+            double p = t*(pS0+t*(pS1+t*(pS2+t*(pS3+t*(pS4+t*pS5)))));
+            double q = one+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
+            double w = p/q;
+            return x + x*w;
+        }
+        /* 1> |x|>= 0.5 */
+        double w = one - Math.abs(x);
+        double t = w * 0.5;
+        double p = t*(pS0+t*(pS1+t*(pS2+t*(pS3+t*(pS4+t*pS5)))));
+        double q = one+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
+        double s = sqrt(t);
+        if (ix >= 0x3FEF3333) { 	/* if |x| > 0.975 */
+            w = p/q;
+            t = pio2_hi-(2.0*(s+s*w)-pio2_lo);
+        } else {
+            w = setLO(s, 0);
+            double c  = (t-w*w)/(s+w);
+            double r  = p/q;
+            double p  = 2.0*s*r-(pio2_lo-2.0*c);
+            double q  = pio4_hi-2.0*w;
+            t  = pio4_hi-(p-q);
+        }
+        return (hx>0) ? t : -t;
+    }
+
+    static final double acos(double x) {
+        return (x < 0) ? PI_2 + asin(-x) : PI_2 - asin(x);
+    }
+
     static final double exp(double x) {
         int hx = HI(x);
         int xsb = hx >>> 31;

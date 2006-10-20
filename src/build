@@ -16,7 +16,7 @@ MIDP=2.0
 function genManifest {
 echo "MIDlet-1: $NAME, /M.gif, M"
 echo MIDlet-Name: $NAME
-echo MIDlet-Vendor: Mihai Preda (javia.org)
+echo "MIDlet-Vendor: Mihai Preda (javia.org)"
 echo MIDlet-Version: $VERSION
 echo MicroEdition-Configuration: CLDC-$CLDC
 echo MicroEdition-Profile: MIDP-$MIDP
