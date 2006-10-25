@@ -188,7 +188,7 @@ class Expr {
         double left = parseUnary();
         if (tokenType == '^') {
             double right = parseExp();
-            left = Math.pow(left, right); //MoreMath
+            left = MoreMath.pow(left, right); //MoreMath
         }
         return left;
     }

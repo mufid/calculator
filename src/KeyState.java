@@ -20,7 +20,7 @@ final class KeyState {
         bold = Font.getFont(0, Font.STYLE_BOLD, Font.SIZE_SMALL);
         fontHeight = font.getHeight();
 
-        int w1 = (w + 1) / 3;
+        int w1 = (sw + 1) / 3;
         int w2 = font.stringWidth("mmmmm");
         cellWidth = Math.min(w1, w2);
         cellHeight = fontHeight + 1;
@@ -109,38 +109,40 @@ final class KeyState {
         if (keyPos == -1) {
             return null; //key not recognized
         }
-        if (keyPos >= state.length) {
+        if (keyPos >= keys.length) {
             return null;
         }
-        Object o = state[keyPos];
+        Object o = keys[keyPos];
         if (o == null) {
             return null;
         }
         if (o instanceof String) {
             String ret = (String)o;
+            /*
             if (state == funcs) {
                 ret = ret + "(";
             }
-            if (ret.equal("f:=")) {
-            } else if (ret.equal("f(x)")) {
-                state = funcs;
+            */
+            if (ret.equals("f:=")) {
+            } else if (ret.equals("f(x)")) {
+                //state = funcs;
                 return null;
-            } else if (state == consts || ret.equal("ans")) {
-                state = rootOp;
-            } else { // state == rootOp || statec == logicOp || ret.equal("-")
-                state = digits;
+            } else if (/*state == consts || */ ret.equals("ans")) {
+                //state = rootOp;
+            } else {
+                //state = digits;
             }
-            if (ret.equal(".-")) { ret = "."; }
+            if (ret.equals(".-")) { ret = "."; }
             return ret;
         } else {
-            state = (Object[])o;
+            //state = (Object[])o;
             return null;
         }
     }
 
     void set(int pos, Object obj) {
         if (keys[pos] == obj ||
-            (obj != null && obj.equal(keys[pos]))) {
+            (obj != null && obj.equals(keys[pos]))) {
             return;
         }
         keys[pos] = obj;
@@ -150,7 +152,8 @@ final class KeyState {
     void paint(Graphics g) {
         if (wantRedraw) {
             if (img == null) {
-                img = new Image(w, h);
+                System.out.println("screen " + w + "x" + h);
+                img = Image.createImage(w, h);
                 imgG = img.getGraphics();
             }
             draw(imgG);
@@ -166,16 +169,16 @@ final class KeyState {
         LIGHTER = 0x202020,
         DARKER  = 0x000000;    
 
-    private void drawMenuOption(String s, int x, int y) {
+    private void drawMenuOption(Graphics g, String s, int x, int y) {
         g.setColor(FOREGR2);
         g.setFont(bold);
-        g.drawString(s, x, y, HCENTER|TOP);
+        g.drawString(s, x, y, Graphics.HCENTER|Graphics.TOP);
     }
 
-    private void drawFinalOption(String s, int x, int y) {
+    private void drawFinalOption(Graphics g, String s, int x, int y) {
         g.setColor(FOREGR);
         g.setFont(font);
-        g.drawString(s, x, y, HCENTER|TOP);
+        g.drawString(s, x, y, Graphics.HCENTER|Graphics.TOP);
     }
 
     private void draw(Graphics g) {
@@ -188,10 +191,10 @@ final class KeyState {
                 if (o != null) {
                     if (o instanceof String) {
                         String str = (String)o;
-                        drawFinalOption(str, x, y);
+                        drawFinalOption(g, str, x, y);
                     } else {
                         KeyState child = (KeyState)o;
-                        drawMenuOption((String) child.keys[pos], x, y);
+                        drawMenuOption(g, (String) child.keys[pos], x, y);
                     }
                 }
                 ++pos;

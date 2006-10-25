@@ -17,7 +17,7 @@ class MoreMath {
     }
 
     private static final double setHI(double x, int high) {
-        return Double.longBitsToDouble((Double.doubleToLongBits(x) & 0x00000000ffffffffL) | (((long)low)<<32));
+        return Double.longBitsToDouble((Double.doubleToLongBits(x) & 0x00000000ffffffffL) | (((long)high)<<32));
     }
     
     private static final double setLO(double x, int low) {
@@ -40,8 +40,8 @@ class MoreMath {
         PI     = 3.14159265358979323846,
         PI_2   = 1.57079632679489661923,
         PI_4   = 0.78539816339744830962,
-        LOG2E  =   1.4426950408889634074,
-        //invln2 = 1.44269504088896338700,
+        LOG2E  = 1.4426950408889634074,
+        //iln2 = 1.44269504088896338700,
         LOG10E = 0.43429448190325182765,
         LN2    = 0.69314718055994530942,
         LN10   = 2.30258509299404568402,
@@ -52,8 +52,34 @@ class MoreMath {
         one  = 1.0,
         two  = 2.0,
         half = .5,
-        huge     = 1.0e300,
-        
+        huge = 1.0e300,
+        tiny = 1.0e-300,
+
+        two53  = 9007199254740992.0,
+        two54  = 1.80143985094819840000e+16,
+        twom54 = 5.55111512312578270212e-17,
+
+        //pow
+        bp[]   = {1.0, 1.5,},
+        dp_h[] = { 0.0, 5.84962487220764160156e-01,},
+        dp_l[] = { 0.0, 1.35003920212974897128e-08,},
+
+        L1 = 5.99999999999994648725e-01,
+        L2 = 4.28571428578550184252e-01,
+        L3 = 3.33333329818377432918e-01,
+        L4 = 2.72728123808534006489e-01,
+        L5 = 2.30660745775561754067e-01,
+        L6 = 2.06975017800338417784e-01,
+
+        lg2_h  =  6.93147182464599609375e-01,
+        lg2_l  = -1.90465429995776804525e-09,
+        ovt =  8.0085662595372944372e-0017,
+        cp    =  9.61796693925975554329e-01, // 2/(3ln2)
+        cp_h  =  9.61796700954437255859e-01,
+        cp_l  = -7.02846165095275826516e-09,
+        ivln2_h  =  1.44269502162933349609e+00,
+        ivln2_l  =  1.92596299112661746887e-08,
+
         //atan
         atanhi[] = {
             4.63647609000806093515e-01,
@@ -115,7 +141,6 @@ class MoreMath {
         ln2LO[] = {ln2_lo, -ln2_lo},
 
         //log()
-        two54 = 1.80143985094819840000e+16,
         Lg1 = 6.666666666666735130e-01,
         Lg2 = 3.999999999940941908e-01,
         Lg3 = 2.857142874366239149e-01,
@@ -132,7 +157,7 @@ class MoreMath {
         ix = hx & 0x7fffffff;
         if(ix >= 0x44100000) {	/* if |x| >= 2^66 */
             if(ix>0x7ff00000||
-               (ix==0x7ff00000&&(__LO(x)!=0)))
+               (ix==0x7ff00000&&(LO(x)!=0)))
                 return x+x;		/* NaN */
             if(hx>0) return  atanhi[3]+atanlo[3];
             else     return -atanhi[3]-atanlo[3];
@@ -142,7 +167,7 @@ class MoreMath {
             }
             id = -1;
         } else {
-            x = fabs(x);
+            x = Math.abs(x);
             if (ix < 0x3ff30000) {		/* |x| < 1.1875 */
                 if (ix < 0x3fe60000) {	/* 7/16 <=|x|<11/16 */
                     id = 0; x = (2.0*x-one)/(2.0+x); 
@@ -194,7 +219,7 @@ class MoreMath {
         double t = w * 0.5;
         double p = t*(pS0+t*(pS1+t*(pS2+t*(pS3+t*(pS4+t*pS5)))));
         double q = one+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
-        double s = sqrt(t);
+        double s = Math.sqrt(t);
         if (ix >= 0x3FEF3333) { 	/* if |x| > 0.975 */
             w = p/q;
             t = pio2_hi-(2.0*(s+s*w)-pio2_lo);
@@ -202,8 +227,8 @@ class MoreMath {
             w = setLO(s, 0);
             double c  = (t-w*w)/(s+w);
             double r  = p/q;
-            double p  = 2.0*s*r-(pio2_lo-2.0*c);
-            double q  = pio4_hi-2.0*w;
+            p  = 2.0*s*r-(pio2_lo-2.0*c);
+            q  = pio4_hi-2.0*w;
             t  = pio4_hi-(p-q);
         }
         return (hx>0) ? t : -t;
@@ -434,6 +459,223 @@ class MoreMath {
     }
 
     static final double pow(double x, double y) {
+        double z,ax,z_h,z_l,p_h,p_l;
+        double y1,t1,t2,r,s,t,u,v,w;
+        int i,j,k,yisint,n;
+        //unsigned lx,ly;
+
+        int hx = HI(x); 
+        int lx = LO(x);
+        int hy = HI(y); 
+        int ly = LO(y);
+        int ix = hx & 0x7fffffff;  
+        int iy = hy & 0x7fffffff;
+
+        /* y==zero: x**0 = 1 */
+        if ((iy|ly) == 0) { return one; }
+        
+        /* +-NaN return x+y */
+        if (ix > 0x7ff00000 || ((ix==0x7ff00000)&&(lx!=0)) ||
+            iy > 0x7ff00000 || ((iy==0x7ff00000)&&(ly!=0))) {
+            return x+y;	
+        }
+
+        /* determine if y is an odd int when x < 0
+         * yisint = 0	... y is not an integer
+         * yisint = 1	... y is an odd int
+         * yisint = 2	... y is an even int
+         */
+        yisint  = 0;
+        if (hx<0) {	
+            if (iy>=0x43400000) yisint = 2; /* even integer y */
+            else if (iy>=0x3ff00000) {
+                k = (iy>>20)-0x3ff;	   /* exponent */
+                if(k>20) {
+                    j = ly>>(52-k);
+                    if((j<<(52-k))==ly) yisint = 2-(j&1);
+                } else if(ly==0) {
+                    j = iy>>(20-k);
+                    if((j<<(20-k))==iy) yisint = 2-(j&1);
+                }
+            }		
+        } 
+        
+        /* special value of y */
+        if(ly==0) { 	
+            if (iy==0x7ff00000) {	/* y is +-inf */
+                if(((ix-0x3ff00000)|lx)==0)
+                    return  y - y;	/* inf**+-1 is NaN */
+                else if (ix >= 0x3ff00000)/* (|x|>1)**+-inf = inf,0 */
+                    return (hy>=0)? y: zero;
+                else			/* (|x|<1)**-,+inf = inf,0 */
+                    return (hy<0)?-y: zero;
+            } 
+            if(iy==0x3ff00000) {	/* y is  +-1 */
+                if(hy<0) return one/x; else return x;
+            }
+            if(hy==0x40000000) return x*x; /* y is  2 */
+            if(hy==0x3fe00000) {	/* y is  0.5 */
+                if(hx>=0)	/* x >= +0 */
+                    return Math.sqrt(x);	
+            }
+        }
+        
+        ax = Math.abs(x);
+        /* special value of x */
+        if(lx==0) {
+            if(ix==0x7ff00000||ix==0||ix==0x3ff00000){
+                z = ax;			/*x is +-0,+-inf,+-1*/
+                if(hy<0) z = one/z;	/* z = (1/|x|) */
+                if(hx<0) {
+                    if(((ix-0x3ff00000)|yisint)==0) {
+                        z = (z-z)/(z-z); /* (-1)**non-int is NaN */
+                    } else if(yisint==1) 
+                        z = -z;		/* (x<0)**odd = -(|x|**odd) */
+                }
+                return z;
+            }
+        }
+        
+        n = (hx>>31)+1;
+        
+        /* (x<0)**(non-int) is NaN */
+        if((n|yisint)==0) return (x-x)/(x-x);
+        
+        s = one; /* s (sign of result -ve**odd) = -1 else = 1 */
+        if((n|(yisint-1))==0) s = -one;/* (-ve)**(odd int) */
+        
+        /* |y| is huge */
+        if(iy>0x41e00000) { /* if |y| > 2**31 */
+            if(iy>0x43f00000){	/* if |y| > 2**64, must o/uflow */
+                if(ix<=0x3fefffff) return (hy<0)? huge*huge:tiny*tiny;
+                if(ix>=0x3ff00000) return (hy>0)? huge*huge:tiny*tiny;
+            }
+            /* over/underflow if x is not close to one */
+            if(ix<0x3fefffff) return (hy<0)? s*huge*huge:s*tiny*tiny;
+            if(ix>0x3ff00000) return (hy>0)? s*huge*huge:s*tiny*tiny;
+            /* now |1-x| is tiny <= 2**-20, suffice to compute 
+               log(x) by x-x^2/2+x^3/3-x^4/4 */
+            t = ax-one;		/* t has 20 trailing zeros */
+            w = (t*t)*(0.5-t*(0.3333333333333333333333-t*0.25));
+            u = ivln2_h*t;	/* ivln2_h has 21 sig. bits */
+            v = t*ivln2_l-w * LOG2E;
+            t1 = u+v;
+            setLO(t1, 0);
+            t2 = v-(t1-u);
+        } else {
+            double ss,s2,s_h,s_l,t_h,t_l;
+            n = 0;
+            /* take care subnormal number */
+            if (ix<0x00100000) {
+                ax *= two53; 
+                n -= 53; 
+                ix = HI(ax); 
+            }
+            n  += ((ix)>>20)-0x3ff;
+            j  = ix&0x000fffff;
+            /* determine interval */
+            ix = j|0x3ff00000;		/* normalize ix */
+            if(j<=0x3988E) k=0;		/* |x|<sqrt(3/2) */
+            else if (j<0xBB67A) k=1;	/* |x|<sqrt(3)   */
+            else {
+                k=0;n+=1;
+                ix -= 0x00100000;
+            }
+            setHI(ax, ix);
+            
+            /* compute ss = s_h+s_l = (x-1)/(x+1) or (x-1.5)/(x+1.5) */
+            u = ax-bp[k];		/* bp[0]=1.0, bp[1]=1.5 */
+            v = one/(ax+bp[k]);
+            ss = u*v;
+            s_h = ss;
+            setLO(s_h, 0);
+            /* t_h=ax+bp[k] High */
+            t_h = zero;
+            setHI(t_h, ((ix>>1)|0x20000000)+0x00080000+(k<<18)); 
+            t_l = ax - (t_h-bp[k]);
+            s_l = v*((u-s_h*t_h)-s_h*t_l);
+            /* compute log(ax) */
+            s2 = ss*ss;
+            r = s2*s2*(L1+s2*(L2+s2*(L3+s2*(L4+s2*(L5+s2*L6)))));
+            r += s_l*(s_h+ss);
+            s2  = s_h*s_h;
+            t_h = 3.0+s2+r;
+            setLO(t_h, 0);
+            t_l = r-((t_h-3.0)-s2);
+            /* u+v = ss*(1+...) */
+            u = s_h*t_h;
+            v = s_l*t_h+t_l*ss;
+            /* 2/(3log2)*(ss+...) */
+            p_h = u+v;
+            setLO(p_h, 0);
+            p_l = v-(p_h-u);
+            z_h = cp_h*p_h;		/* cp_h+cp_l = 2/(3*log2) */
+            z_l = cp_l*p_h+p_l*cp+dp_l[k];
+            /* log2(ax) = (ss+..)*2/(3*log2) = n + dp_h + z_h + z_l */
+            t = (double)n;
+            t1 = (((z_h+z_l)+dp_h[k])+t);
+            setLO(t1, 0);
+            t2 = z_l-(((t1-t)-dp_h[k])-z_h);
+        }
+        
+        /* split up y into y1+y2 and compute (y1+y2)*(t1+t2) */
+        y1  = y;
+        setLO(y1, 0);
+        p_l = (y-y1)*t1+y*t2;
+        p_h = y1*t1;
+        z = p_l+p_h;
+        j = HI(z);
+        i = LO(z);
+        if (j>=0x40900000) {				/* z >= 1024 */
+            if(((j-0x40900000)|i)!=0)			/* if z > 1024 */
+                return s*huge*huge;			/* overflow */
+            else {
+                if(p_l+ovt>z-p_h) return s*huge*huge;	/* overflow */
+            }
+        } else if((j&0x7fffffff)>=0x4090cc00 ) {	/* z <= -1075 */
+            if(((j-0xc090cc00)|i)!=0) 		/* z < -1075 */
+                return s*tiny*tiny;		/* underflow */
+            else {
+                if(p_l<=z-p_h) return s*tiny*tiny;	/* underflow */
+            }
+        }
+        /*
+         * compute 2**(p_h+p_l)
+         */
+        i = j&0x7fffffff;
+        k = (i>>20)-0x3ff;
+        n = 0;
+        if(i>0x3fe00000) {		/* if |z| > 0.5, set n = [z+0.5] */
+            n = j+(0x00100000>>(k+1));
+            k = ((n&0x7fffffff)>>20)-0x3ff;	/* new k for n */
+            t = zero;
+            setHI(t, (n&~(0x000fffff>>k)));
+            n = ((n&0x000fffff)|0x00100000)>>(20-k);
+            if(j<0) n = -n;
+            p_h -= t;
+        } 
+        t = p_l+p_h;
+        setLO(t, 0);
+        u = t*lg2_h;
+        v = (p_l-(t-p_h)) * LN2 +t*lg2_l;
+        z = u+v;
+        w = v-(z-u);
+        t  = z*z;
+        t1  = z - t*(P1+t*(P2+t*(P3+t*(P4+t*P5))));
+        r  = (z*t1)/(t1-two)-(w+z*w);
+        z  = one-(r-z);
+        j  = HI(z);
+        j += (n<<20);
+        if ((j>>20) <= 0) {
+            z = scalbn(z,n);	/* subnormal output */
+        } else {
+            setHI(z, HI(z) + (n<<20));
+        }
+        return s*z;
+    }
+    
+    /*
+    static final double pow(double x, double y) {
         if (y == zero) { return one; }
         if (y == one)  { return x; }
         if (x == zero) { return zero; }
@@ -445,6 +687,39 @@ class MoreMath {
             }
         }
         return exp(y * log(x));
+    }
+    */
+
+    static final double copysign(double x, double y) {
+        return Double.longBitsToDouble((Double.doubleToLongBits(x) & 0x7fffffffffffffffL) |
+                                       (Double.doubleToLongBits(y) & 0x8000000000000000L));
+    }
+
+    static final double scalbn(double x, int n) {
+        int hx = HI(x);
+        int lx = LO(x);
+        int k = (hx & 0x7ff00000) >> 20; /* extract exponent */
+        if (k==0) {				/* 0 or subnormal x */
+            if ((lx|(hx&0x7fffffff))==0) return x; /* +-0 */
+            x *= two54; 
+            hx = HI(x);
+            k = ((hx&0x7ff00000)>>20) - 54; 
+            if (n< -50000) return tiny*x; 	/*underflow*/
+	    }
+        if (k==0x7ff) return x+x;		/* NaN or Inf */
+        k = k+n; 
+        if (k >  0x7fe) return huge * copysign(huge, x); /* overflow  */
+        if (k > 0) {
+            setHI(x, (hx&0x800fffff)|(k<<20)); 
+            return x;
+        }
+        if (k <= -54)
+            if (n > 50000) 	/* in case integer overflow in n+k */
+                return huge*copysign(huge,x);	/*overflow*/
+            else return tiny*copysign(tiny,x); 	/*underflow*/
+        k += 54;				/* subnormal result */
+        setHI(x, (hx&0x800fffff)|(k<<20));
+        return x * twom54;
     }
 
     static final double log10(double x) {
