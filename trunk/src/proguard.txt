@@ -1,4 +1,4 @@
--keep public class M 
+-keep public class C 
 -overloadaggressively
 -mergeallclasses
 -printusage

@@ -90,16 +90,17 @@ class CalcCanvas extends Canvas {
             paintEdit(g);
         }
         if (intersects(keypadX, h, keypadW, keypadH)) {
-            keypad.paint(g);
+            //keypad.paint(g);
+            KeyState.digits.paint(g);
         }
-        g.setColor(0x101010);
+        g.setColor(0xe0e0e0);
         g.fillRect(0, blank1Y, w, blank1H);
         g.fillRect(0, blank2Y, w, blank2H);
         g.fillRect(0, h, keypadX, keypadH);
         g.fillRect(keypadXEnd, h, w - keypadXEnd, keypadH);
     }
 
-    KeyState keypad;
+    KeyState keypad = KeyState.digits;
     char line[] = new char[256];
     int lineSize = 256;
     int  last = -1;
