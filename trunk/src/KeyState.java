@@ -5,7 +5,7 @@ final class KeyState {
     static int fontHeight;
     static int w, h, cellWidth, cellHeight, xPos, yPos;
     static KeyState digits, rootOp, trigs, hyps, logs, ints, vars, funcs, rootExp;
-    static KeyState keypad;
+    static KeyState keypad, lastPainted;
 
     /*
     static String logicOp[] = {
@@ -36,7 +36,7 @@ final class KeyState {
             "1",     "2", "3",
             "4",     "5", "6",
             "7",     "8", "9",
-            null,    "0", ".-",
+            null,    "0", ". -",
         });
 
         // ! "f:=" "," "hyp"
@@ -120,7 +120,7 @@ final class KeyState {
         }
         if (o instanceof String) {
             String str = (String)o;
-            if (str.equals(".-")) { 
+            if (str.equals(". -")) { 
                 digits.set(11, "-");
                 return "."; 
             }
@@ -150,10 +150,23 @@ final class KeyState {
         wantRedraw = true;
     }
 
-    void paint(Graphics g) {
+    static boolean needPaint() {
+        boolean ret = (lastPainted != keypad) ||
+            keypad.wantRedraw;
+        //System.out.println("needPaint " + ret);
+        return ret;
+    }
+
+    static void paint(Graphics g) {
+        keypad.doPaint(g);
+        lastPainted = keypad;
+        System.out.println("painted");
+    }
+
+    void doPaint(Graphics g) {
         if (wantRedraw) {
             if (img == null) {
-                System.out.println("screen " + w + "x" + h);
+                System.out.println("img " + w + "x" + h);
                 img = Image.createImage(w, h);
                 imgG = img.getGraphics();
             }

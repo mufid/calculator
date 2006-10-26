@@ -51,7 +51,7 @@ echo $CMD
 $CMD
 jar cfm tmp/class.jar $MANF -C src C.gif -C class .
 #jar cfm tmp/class-EN.jar $MANF -C src M.gif -C class .
-if [ a$2 != "a-ng" ] ; then
+if [ a$1 != "a-ng" ] ; then
     $PROGUARD -libraryjars $CLASS -injars tmp/class.jar -outjar tmp/$FULLNAME.jar
 #    $PROGUARD -libraryjars ${CLASS[$1]} -injars tmp$1/class$1-EN.jar -outjar tmp$1/$FULLNAME-EN.jar
 else
