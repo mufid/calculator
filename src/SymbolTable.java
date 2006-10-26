@@ -1,6 +1,6 @@
 import java.util.Hashtable;
 
-class SymbolTable {
+final class SymbolTable {
     private Hashtable ht = new Hashtable(50);
 
     Symbol get(String name) {

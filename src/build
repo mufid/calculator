@@ -3,7 +3,8 @@
 WTK=/home/preda/WTK2.2
 PREV=$WTK/bin/preverify
 #PROGUARD="java -jar /home/preda/proguard3.6/lib/proguard.jar @src/proguard.txt"
-PROGUARD="java -jar /home/preda/proguard.jar @src/proguard.txt"
+#PROGUARD="java -jar /home/preda/proguard.jar @src/proguard.txt"
+PROGUARD="java -jar /home/preda/proguard3.7beta2/lib/proguard.jar @src/proguard.txt"
 
 NAME=JaviaCalc
 VERSION="0.0.1"

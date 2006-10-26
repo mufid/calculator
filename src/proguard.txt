@@ -1,5 +1,5 @@
 -keep public class C 
 -overloadaggressively
--mergeallclasses
 -printusage
 -printmapping map.txt
+#-mergeallclasses

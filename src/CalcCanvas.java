@@ -90,8 +90,7 @@ class CalcCanvas extends Canvas {
             paintEdit(g);
         }
         if (intersects(keypadX, h, keypadW, keypadH)) {
-            //keypad.paint(g);
-            KeyState.digits.paint(g);
+            KeyState.keypad.paint(g);
         }
         g.setColor(0xe0e0e0);
         g.fillRect(0, blank1Y, w, blank1H);
@@ -100,7 +99,6 @@ class CalcCanvas extends Canvas {
         g.fillRect(keypadXEnd, h, w - keypadXEnd, keypadH);
     }
 
-    KeyState keypad = KeyState.digits;
     char line[] = new char[256];
     int lineSize = 256;
     int  last = -1;
@@ -187,7 +185,7 @@ class CalcCanvas extends Canvas {
             if (openParens > 0) { break; }
         }
         KeyState.rootOp.set(8, (openParens > 0) ? ")" : null);
-        keypad = id ? KeyState.rootOp : KeyState.digits;
+        KeyState.keypad = id ? KeyState.rootOp : KeyState.digits;
     }
     
     static final boolean isDigit(char c) {
@@ -203,7 +201,7 @@ class CalcCanvas extends Canvas {
     protected void keyPressed(int key) {
         int keyPos = getKeyPos(key);
         if (keyPos >= 0) {
-            String s = keypad.handleKey(keyPos);
+            String s = KeyState.keypad.handleKey(keyPos);
             if (s != null) {
                 if (pos >= 0 && line[pos] == '.' && 
                     s.length() == 1 && !isDigit(s.charAt(0))) {
@@ -235,10 +233,10 @@ class CalcCanvas extends Canvas {
                 case Canvas.FIRE:
                 }
             } else {
-                if (key == -8 || key == -11) {
-                    KeyState save = keypad;
+                if (key == -8 || key == -11) { //delete
+                    KeyState save = KeyState.keypad;
                     resetState();
-                    if (save == keypad) {
+                    if (save == KeyState.keypad) {
                         delFromLine();
                         resetState();
                     }
