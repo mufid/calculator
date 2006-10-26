@@ -2,16 +2,17 @@ abstract class Symbol {
     Symbol(String iniName) {
         name = iniName;
     }
-
     String name;
-    abstract double eval(SymbolTable symbols, double params[]);
+    boolean isFun   = false;
+    boolean isValue = false;
 
+    abstract double eval(SymbolTable symbols, double params[]);
     static final double evaluate(SymbolTable symbols, String name, double params[]) {
-        Symbol s = symbols.get(name);
-        if (s == null) {
+        Symbol symb = symbols.get(name);
+        if (symb == null) {
             throw new Error("Unknown id '" + name + "'");
         }
-        return s.eval(symbols, params);
+        return symb.eval(symbols, params);
     }
 }
 
@@ -19,6 +20,7 @@ class Constant extends Symbol {
     Constant(String name, double iniValue) {
         super(name);
         value = iniValue;
+        isValue = true;
     }
 
     double value;
@@ -43,7 +45,8 @@ class BuiltinFun extends Symbol {
         "sin",  "cos",  "tan",  "asin",  "acos",  "atan",
         "sinh", "cosh", "tanh", "asinh", "acosh", "atanh",
         "exp",  "log",  "ln",   "log10", "log2",  "pow",
-        "abs",  "sqrt", "cbrt" 
+        "abs",  "sqrt", "cbrt",
+        "\u221a", "\u221b",
     };
         
     /* keep 'codes' in sync with 'names' above */
@@ -51,7 +54,8 @@ class BuiltinFun extends Symbol {
         SIN,  COS,  TAN,  ASIN,  ACOS,  ATAN,
         SINH, COSH, TANH, ASINH, ACOSH, ATANH,
         EXP,  LOG,  LOG,  LOG10, LOG2,  POW,
-        ABS,  SQRT, CBRT 
+        ABS,  SQRT, CBRT,
+        SQRT, CBRT,
     };
 
     static void init(SymbolTable ht) {
@@ -63,6 +67,7 @@ class BuiltinFun extends Symbol {
     BuiltinFun(String name, int iniCode) {
         super(name);
         code = iniCode;
+        isFun = true;
     }
         
     int code;
@@ -104,6 +109,7 @@ class DefinedFun extends Symbol {
         super(name);
         args = iniArgs;
         definition = iniDef;
+        isFun = true;
     }
 
     String args[];

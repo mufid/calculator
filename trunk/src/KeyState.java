@@ -5,6 +5,7 @@ final class KeyState {
     static int fontHeight;
     static int w, h, cellWidth, cellHeight, xPos, yPos;
     static KeyState digits, rootOp, trigs, hyps, logs, ints, vars, funcs, rootExp;
+    static KeyState keypad;
 
     /*
     static String logicOp[] = {
@@ -35,42 +36,53 @@ final class KeyState {
             "1",     "2", "3",
             "4",     "5", "6",
             "7",     "8", "9",
-            null,    "0", null
+            null,    "0", ".-",
         });
 
-        rootOp = new KeyState(new Object[] {
-            null, "!",  null,
-            "^",   "%",  "f:=", 
-            "*",   "/",  ")", 
-            "+",   "E",  ",",
-        });
+        // ! "f:=" "," "hyp"
         
         trigs = new KeyState(new Object[] {
             "sin",   "cos",   "tan", 
             "asin",  "acos",  "atan", 
-            "hyp",    null,    null,
-            "pi",   null,    null,
+            null,    null,    null,
+            null,   null,    null,
+        });
+                
+        logs = new KeyState(new Object[] {
+            "log10", "ln",  "log2",
+            null,    null,    null,
+            null,     null,    null,
+            null,     null,    null
+        });
+
+        rootOp = new KeyState(new Object[] {
+            null, null, null,
+            "^", "%",  ")", 
+            "*", "/",  null, 
+            "+", "E",  ",",
+        });
+
+        rootExp = new KeyState(new Object[] {
+            trigs,    logs,  null,
+            "\u03c0",  "e",  "(",
+            null, null, null,
+            "ans", "\u221a", "\u221b",
         });
         
+        /*
+        ints = new KeyState(new Object[] {
+            "int",  "frac", "ceil",
+            "sign", "abs",  "floor",
+            "min",  "max",  null,
+            null, null, null,
+            //"comb", "perm", "fib",
+        });
+
         hyps = new KeyState(new Object[] {
             "sinh",  "cosh",  "tanh",
             "asinh", "acosh", "atanh",
             null, null, null,
             null, null, null,
-        });
-        
-        logs = new KeyState(new Object[] {
-            "cbrt",   "sqrt",  null,
-            "ln",     "log10", "log2",
-            "lgamma", null,    null,
-            "e",     null,    null
-        });
-        
-        ints = new KeyState(new Object[] {
-            "int",  "frac", "ceil",
-            "sign", "abs",  "floor",
-            "min",  "max",  null,
-            "comb", "perm", "fib",
         });
 
         vars = new KeyState(new Object[] {
@@ -86,13 +98,9 @@ final class KeyState {
             null, null, null,
             null, null, null,
         });
-    
-        rootExp = new KeyState(new Object[] {
-            trigs, logs,  ints,
-            vars,  funcs, "DEF",
-            null,  null,  "(",
-            "ans", null,  null,
-        });
+        */
+
+        keypad = digits;
     }
 
     Object keys[];
@@ -106,36 +114,29 @@ final class KeyState {
     }
 
     String handleKey(int keyPos) {
-        if (keyPos == -1) {
-            return null; //key not recognized
-        }
-        if (keyPos >= keys.length) {
-            return null;
-        }
         Object o = keys[keyPos];
         if (o == null) {
             return null;
         }
         if (o instanceof String) {
-            String ret = (String)o;
-            /*
-            if (state == funcs) {
-                ret = ret + "(";
+            String str = (String)o;
+            if (str.equals(".-")) { 
+                digits.set(11, "-");
+                return "."; 
             }
-            */
-            if (ret.equals("f:=")) {
-            } else if (ret.equals("f(x)")) {
-                //state = funcs;
-                return null;
-            } else if (/*state == consts || */ ret.equals("ans")) {
-                //state = rootOp;
-            } else {
-                //state = digits;
+            keypad = digits;
+            Symbol symbol = Expr.symbols.get(str);
+            if (symbol == null) {
+                return str;
             }
-            if (ret.equals(".-")) { ret = "."; }
-            return ret;
+            if (symbol.isFun) {
+                str += "(";
+            } else if (symbol.isValue) {
+                keypad = rootOp;                
+            }
+            return str;
         } else {
-            //state = (Object[])o;
+            keypad = (KeyState)o;
             return null;
         }
     }
