@@ -6,7 +6,7 @@ class Expr {
     static SymbolTable symbols = new SymbolTable();
     static { 
         BuiltinFun.init(symbols);
-        symbols.put(new Constant("pi", Math.PI));
+        symbols.put(new Constant("\u03c0", Math.PI));
         symbols.put(new Constant("e",  Math.E));
         symbols.put(new DefinedFun("hypot", new String[]{"x", "y"}, "sqrt(x*x+y*y)")); 
     }
