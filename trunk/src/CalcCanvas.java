@@ -9,6 +9,7 @@ class CalcCanvas extends Canvas {
     int blank1Y, blank1H, blank2Y, blank2H;
     int blank3Y, blank3H, blank4X;
     int keypadX, keypadW, keypadH, keypadXEnd;
+    int cursorX, cursorY, cursorW = 2, cursorH;
 
     Font smallFont, normalFont, largeFont, largeBold;
     int smallHeight, normalHeight, largeHeight;
@@ -26,12 +27,6 @@ class CalcCanvas extends Canvas {
         keypadXEnd = keypadX + keypadW;
         h = screenH - keypadH;
 
-        img  = Image.createImage(w, h);
-        imgG = img.getGraphics();
-
-        imgG.setColor(0xe0e0e0);
-        imgG.fillRect(0, 0, w, h);
-
         smallFont  = Font.getFont(0, 0, Font.SIZE_SMALL);
         normalFont = Font.getFont(0, 0, Font.SIZE_MEDIUM);
         largeFont  = Font.getFont(0, 0, Font.SIZE_LARGE);
@@ -41,9 +36,6 @@ class CalcCanvas extends Canvas {
         normalHeight = normalFont.getHeight();
         largeHeight  = largeFont.getHeight();
 
-        cursorImg = Image.createImage(2, largeHeight);
-        cursorG   = cursorImg.getGraphics();
-
         topH = largeHeight;
         blank1Y = topH;
         blank1H = 3;
@@ -51,51 +43,82 @@ class CalcCanvas extends Canvas {
         editH = largeHeight;
         blank2Y = editY + editH;
         blank2H = h - blank2Y;
-        
+
+        cursorX = 0;
+        cursorY = editY;
+        cursorH = largeHeight;
+        cursorImg = Image.createImage(cursorW, cursorH);
+        cursorG   = cursorImg.getGraphics();
+
+        img  = Image.createImage(w, h);
+        imgG = img.getGraphics();
+
+        imgG.setColor(0xe0e0e0);
+        imgG.fillRect(0, 0, w, h);
+
+        imgG.setColor(0xffffff);
+        imgG.fillRect(0, editY, w, editH);
+
+        imgG.setColor(0);
+        imgG.fillRect(0, 0, w, topH);
+                
         cursorBlink.schedule(new TimerTask() {
                 public void run() {
+                    setCursor(!drawCursor);
+                    /*
                     drawCursor = !drawCursor;
                     repaint(0, editY, w, editH);
+                    */
                 }
             }, 5000, 5000);
         resetState();
     }
-    
-    int clipX, clipY, clipW, clipH;
-    boolean intersects(int x2, int y2, int w2, int h2) {
-        return !(clipX + clipW <= x2 || x2 + w2 <= clipX ||
-                 clipY + clipH <= y2 || y2 + h2 <= clipY);
-    }
-    /*
-    void clear(Graphics g, int x, int y, int w, int h) {
-        if (intersects(x, y, w, h)) {
-            g.fillRect(x, y, w, h);
-        }
-    }
-    */
 
+    /*
     void paintTop(Graphics g) {
-        g.setColor(0);
-        g.fillRect(0, 0, w, topH);
         g.setFont(largeBold);
         g.setColor(0xffffff);
         g.drawString("0.31415E1", w, 0, Graphics.TOP|Graphics.RIGHT);
     }
+    */
 
-    char buf[] = new char[256];
     boolean drawCursor = true;
+
+    void setCursor(boolean setOn) {
+        drawCursor = setOn;
+        repaint(cursorX, cursorY, cursorW, cursorH);
+    }
+
+    int drawnLen = 0;
+    char drawn[] = new char[256];
+    char buf[] = new char[256];
 
     void paintEdit(Graphics g) {
         g.translate(0, editY);
-        g.setColor(0xffffff);
-        g.fillRect(0, 0, w, editH);
-        g.setColor(0);
         g.setFont(largeFont);
         int len = line.length();
         line.getChars(0, len, buf, 0);
-        int cursorX = largeFont.charsWidth(buf, 0, pos + 1);
-        g.drawChars(buf, 0, len, 0, 0, 0);
+        buf[len] = 0;
 
+        int common = 0;
+        while (common < len && drawn[common] == buf[common]) { ++common; }
+        int commonW = largeFont.charsWidth(buf, 0, common);
+        int paintLen = Math.max(len, drawnLen) - common;
+        int paintW  = largeFont.charsWidth(buf, common, paintLen);
+        g.setColor(0xffffff);
+        g.fillRect(commonW, 0, paintW, editH);
+        g.setColor(0);
+        g.drawChars(buf, common, len - common, commonW, 0, 0);
+        repaint(commonW, editY, paintW, editH);
+        System.arraycopy(buf, common, drawn, common, len - common + 1);
+        drawnLen = len;
+
+        setCursor(drawCursor);
+        cursorX = largeFont.charsWidth(buf, 0, pos + 1);
+        setCursor(true);
+        g.translate(0, -editY);
+
+        /*
         if (drawCursor) {
             cursorG.setColor(0);
             cursorG.fillRect(0, 0, 2, largeHeight);
@@ -105,41 +128,20 @@ class CalcCanvas extends Canvas {
             }
             g.drawImage(cursorImg, cursorX, 0, 0);
         }
-        //drawCursor = true;
-
-        g.translate(0, -editY);
+        */
     }
 
     protected void paint(Graphics g) {
         g.drawImage(img, 0, 0, 0);
+        if (drawCursor) {
+            g.setColor(0);
+            g.fillRect(cursorX, cursorY, cursorW, cursorH);
+            //g.drawImage(cursorImg, cursorX, cursorY, 0);
+        }
         KeyState.paint(g);
         g.setColor(0xe0e0e0);
         g.fillRect(0, h, keypadX, keypadH);
         g.fillRect(keypadXEnd, h, w - keypadXEnd, keypadH);
-        
-        /*
-        if (clipY < h) {
-            int smallH = Math.min(clipH, h - clipY);
-            g.drawRegion(img, clipX, clipY, clipW, smallH, 0, clipX, clipY, 0);
-        }
-        */
-
-        /*
-        System.out.println("Clip " + clipX + " " + clipY + " " +
-                           clipW + " " + clipH);
-        */
-
-        /*
-        if (intersects(keypadX, h, keypadW, keypadH)) {
-            KeyState.paint(g);
-        }
-
-        g.fillRect(0, blank1Y, w, blank1H);
-        g.fillRect(0, blank2Y, w, blank2H);
-        if (KeyState.needPaint()) {
-            repaint(keypadX, h, keypadW, keypadH);
-        }
-        */
     }
 
     StringBuffer line = new StringBuffer();
@@ -349,8 +351,7 @@ class CalcCanvas extends Canvas {
             }
         }
         if (redrawEdit) {
-            drawCursor = true;
-            repaint(0, editY, w, editH);
+            paintEdit(imgG);
             resetState();
         } else if (KeyState.needPaint()) {
             repaint(keypadX, h, keypadW, keypadH);
