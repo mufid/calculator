@@ -2,8 +2,8 @@ import javax.microedition.lcdui.*;
 import java.util.*;
 
 class CalcCanvas extends Canvas {
-    Image cursorImg;
-    Graphics cursorG;
+    Image img, cursorImg;
+    Graphics imgG, cursorG;
     int w, h, screenH;
     int topH, editY, editH;
     int blank1Y, blank1H, blank2Y, blank2H;
@@ -26,10 +26,11 @@ class CalcCanvas extends Canvas {
         keypadXEnd = keypadX + keypadW;
         h = screenH - keypadH;
 
-        /*
-        img = Image.createImage(w, h);
-        g = img.getGraphics();
-        */
+        img  = Image.createImage(w, h);
+        imgG = img.getGraphics();
+
+        imgG.setColor(0xe0e0e0);
+        imgG.fillRect(0, 0, w, h);
 
         smallFont  = Font.getFont(0, 0, Font.SIZE_SMALL);
         normalFont = Font.getFont(0, 0, Font.SIZE_MEDIUM);
@@ -110,37 +111,35 @@ class CalcCanvas extends Canvas {
     }
 
     protected void paint(Graphics g) {
-        clipX = g.getClipX();
-        clipY = g.getClipY();
-        clipW = g.getClipWidth();
-        clipH = g.getClipHeight();
+        g.drawImage(img, 0, 0, 0);
+        KeyState.paint(g);
+        g.setColor(0xe0e0e0);
+        g.fillRect(0, h, keypadX, keypadH);
+        g.fillRect(keypadXEnd, h, w - keypadXEnd, keypadH);
+        
+        /*
+        if (clipY < h) {
+            int smallH = Math.min(clipH, h - clipY);
+            g.drawRegion(img, clipX, clipY, clipW, smallH, 0, clipX, clipY, 0);
+        }
+        */
+
         /*
         System.out.println("Clip " + clipX + " " + clipY + " " +
                            clipW + " " + clipH);
         */
 
-        if (clipX < topH) {
-            paintTop(g);
-        }
-        if (intersects(0, editY, w, editH)) {
-            paintEdit(g);
-        }
-
         /*
-        System.out.println("keypad " + keypadX + " " + h + " " 
-                           + keypadW + " " + keypadH);
-        */
         if (intersects(keypadX, h, keypadW, keypadH)) {
             KeyState.paint(g);
         }
-        g.setColor(0xe0e0e0);
+
         g.fillRect(0, blank1Y, w, blank1H);
         g.fillRect(0, blank2Y, w, blank2H);
-        g.fillRect(0, h, keypadX, keypadH);
-        g.fillRect(keypadXEnd, h, w - keypadXEnd, keypadH);
         if (KeyState.needPaint()) {
             repaint(keypadX, h, keypadW, keypadH);
         }
+        */
     }
 
     StringBuffer line = new StringBuffer();
