@@ -2,25 +2,9 @@ import javax.microedition.lcdui.*;
 import java.util.*;
 
 class CalcCanvas extends Canvas {
-    Image img, cursorImg;
-    Graphics imgG, cursorG;
-    int w, h, screenH;
-
-    int resultY, resultH;
-
-    int blank3Y, blank3H, blank4X;
-    int keypadX, keypadW, keypadH, keypadXEnd;
-    int cursorX, cursorY, cursorW = 2, cursorH;
-
-    Font smallFont, normalFont, largeFont, largeBold;
-    int smallHeight, normalHeight, largeHeight;
-    Timer cursorBlink = new Timer();
-
-    CalcCanvas() {
-        setFullScreenMode(true);
-        w = getWidth();
-        screenH = getHeight();
-
+    static Font smallFont, normalFont, largeFont, largeBold;
+    static int smallHeight, normalHeight, largeHeight;    
+    static {
         smallFont  = Font.getFont(0, 0, Font.SIZE_SMALL);
         normalFont = Font.getFont(0, 0, Font.SIZE_MEDIUM);
         largeFont  = Font.getFont(0, 0, Font.SIZE_LARGE);
@@ -29,12 +13,28 @@ class CalcCanvas extends Canvas {
         smallHeight  = smallFont.getHeight();
         normalHeight = normalFont.getHeight();
         largeHeight  = largeFont.getHeight();
+    }
+
+
+    Image img, cursorImg;
+    Graphics imgG, cursorG;
+    int w, h, screenH;
+
+    int resultY, resultH;
+
+    int blank3Y, blank3H, blank4X;
+    int keypadH;
+    int cursorX, cursorY, cursorW = 2, cursorH;
+
+    Timer cursorBlink = new Timer();
+
+    CalcCanvas() {
+        setFullScreenMode(true);
+        w = getWidth();
+        screenH = getHeight();
 
         KeyState.init(w, screenH);
-        keypadX = KeyState.xPos;
-        keypadW = KeyState.w;
         keypadH = KeyState.h;
-        keypadXEnd = keypadX + keypadW;
         h = screenH - keypadH;
 
         resultH = largeHeight;
@@ -69,7 +69,7 @@ class CalcCanvas extends Canvas {
                 public void run() {
                     setCursor(!drawCursor);
                 }
-            }, 5000, 5000);
+            }, 400, 400);
         resetState();
     }
 
@@ -118,9 +118,6 @@ class CalcCanvas extends Canvas {
             //g.drawImage(cursorImg, cursorX, cursorY, 0);
         }
         KeyState.paint(g);
-        g.setColor(0xe0e0e0);
-        g.fillRect(0, h, keypadX, keypadH);
-        g.fillRect(keypadXEnd, h, w - keypadXEnd, keypadH);
     }
 
     StringBuffer line = new StringBuffer();
@@ -332,9 +329,13 @@ class CalcCanvas extends Canvas {
         if (redrawEdit) {
             paintEdit();
             resetState();
-        } else if (KeyState.needPaint()) {
+        } 
+        KeyState.repaint(this);
+        /*
+        else if (KeyState.needPaint()) {
             repaint(keypadX, h, keypadW, keypadH);
         }
+        */
     }
 
     static int getKeyPos(int key) {

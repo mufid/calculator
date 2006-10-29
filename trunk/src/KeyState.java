@@ -3,7 +3,7 @@ import javax.microedition.lcdui.*;
 final class KeyState {
     static Font font, bold;
     static int fontHeight;
-    static int w, h, cellWidth, cellHeight, xPos, yPos;
+    static int w, h, cellWidth, cellHeight, yPos, interSpace;
     static KeyState digits, rootOp, trigs, hyps, logs, ints, vars, funcs, rootExp;
     static KeyState keypad, lastPainted;
 
@@ -17,19 +17,21 @@ final class KeyState {
     */
 
     static void init(int sw, int sh) {
-        font = Font.getFont(0, 0, Font.SIZE_SMALL);
-        bold = Font.getFont(0, Font.STYLE_BOLD, Font.SIZE_SMALL);
+        w = sw;
+        int available = (sh - CalcCanvas.largeHeight * 6) / 5;
+        int size = CalcCanvas.normalHeight < available ? Font.SIZE_MEDIUM : Font.SIZE_SMALL;
+        font = Font.getFont(0, 0, size);
+        bold = Font.getFont(0, Font.STYLE_BOLD, size);
         fontHeight = font.getHeight();
 
         int w1 = (sw + 1) / 3;
         int w2 = font.stringWidth("mmmmm");
         cellWidth = Math.min(w1, w2);
-        cellHeight = fontHeight + 1;
+        cellHeight = fontHeight + 3;
 
-        w = cellWidth  * 3;
+        interSpace = (sw - cellWidth*3 + 3)/6;
+
         h = cellHeight * 4;
-
-        xPos = (sw - w) / 2;
         yPos = sh - h;
 
         digits = new KeyState(new Object[] {
@@ -104,13 +106,16 @@ final class KeyState {
     }
 
     Object keys[];
-    Image img;
-    Graphics imgG;
-    boolean wantRedraw;
+    Image img[] = new Image[3];
+    Graphics imgG[] = new Graphics[3];
+    boolean wantRedraw[] = {true, true, true};
 
     KeyState(Object keys[]) {
         this.keys = keys;
-        wantRedraw = true;
+        for (int i = 0; i < 3; ++i) {
+            img[i] = Image.createImage(cellWidth, cellHeight * 4);
+            imgG[i] = img[i].getGraphics();
+        }
     }
 
     String handleKey(int keyPos) {
@@ -147,72 +152,79 @@ final class KeyState {
             return;
         }
         keys[pos] = obj;
-        wantRedraw = true;
-    }
-
-    static boolean needPaint() {
-        boolean ret = (lastPainted != keypad) ||
-            keypad.wantRedraw;
-        //System.out.println("needPaint " + ret);
-        return ret;
+        wantRedraw[pos%3] = true;
     }
 
     static void paint(Graphics g) {
         keypad.doPaint(g);
         lastPainted = keypad;
-        System.out.println("painted");
+        //System.out.println("painted");
     }
 
     void doPaint(Graphics g) {
-        if (wantRedraw) {
-            if (img == null) {
-                System.out.println("img " + w + "x" + h);
-                img = Image.createImage(w, h);
-                imgG = img.getGraphics();
-            }
-            draw(imgG);
-            wantRedraw = false;
+        int doubleSpace = interSpace + interSpace;
+        g.setColor(0xe0e0e0);
+        g.fillRect(0, yPos, interSpace, h);
+        g.fillRect(interSpace + cellWidth, yPos, doubleSpace, h);
+        g.fillRect(3*interSpace + 2*cellWidth, yPos, doubleSpace, h);
+        g.fillRect(w - interSpace, yPos, interSpace, h);
+        for (int i = 0; i < 3; ++i) {
+            paintColumn(g, i);
         }
-        g.drawImage(img, xPos, yPos, 0);
+    }
+
+    void paintColumn(Graphics destG, int col) {
+        if (wantRedraw[col]) {
+            Graphics g = imgG[col];
+            g.setColor(BACKGR);
+            g.fillRect(0, 0, cellWidth, h);
+            int pos = col;
+            for (int y = 0; y < h; y += cellHeight, pos += 3) {
+                g.setColor(LIGHTER);
+                g.drawLine(0, y, cellWidth, y);
+                g.drawLine(0, y, 0, y + cellHeight - 2);
+                g.setColor(DARKER);
+                g.drawLine(cellWidth - 1, y + 1, cellWidth - 1, y + cellHeight - 3);
+                g.drawLine(1, y + cellHeight - 3, cellWidth, y + cellHeight - 3);
+                Object o = keys[pos];
+                if (o != null) {
+                    String txt;
+                    if (o instanceof String) {
+                        txt = (String)o;
+                        g.setColor(FOREGR);
+                        g.drawString(txt, cellWidth/2, y+1, Graphics.HCENTER|Graphics.TOP);
+                    } else {
+                        txt = (String) ((KeyState)o).keys[pos];
+                        g.setColor(FOREGR2);
+                        g.setFont(bold);
+                        g.drawString(txt, cellWidth/2, y+1, Graphics.HCENTER|Graphics.TOP);
+                        g.setFont(font);
+                    }
+                }
+            }
+        }
+
+        int x = interSpace * (col + col + 1) + cellWidth * col;
+        destG.drawImage(img[col], x, yPos, 0);
+        wantRedraw[col] = false;
+    }
+
+    static void repaint(Canvas c) {
+        keypad.doRepaint(c);
+    }
+
+    void doRepaint(Canvas c) {
+        for (int i = 0; i < 3; ++i) {
+            if (lastPainted != keypad || wantRedraw[i]) {
+                c.repaint(interSpace*(i+i+1)+cellWidth*i, yPos, cellWidth, h);
+            }
+        }
     }
 
     static final int
-        BACKGR  = 0x101010,
-        FOREGR  = 0xffffff,
-        FOREGR2 = 0x8080ff,
-        LIGHTER = 0x202020,
-        DARKER  = 0x000000;    
-
-    private void drawMenuOption(Graphics g, String s, int x, int y) {
-        g.setColor(FOREGR2);
-        g.setFont(bold);
-        g.drawString(s, x, y, Graphics.HCENTER|Graphics.TOP);
-    }
-
-    private void drawFinalOption(Graphics g, String s, int x, int y) {
-        g.setColor(FOREGR);
-        g.setFont(font);
-        g.drawString(s, x, y, Graphics.HCENTER|Graphics.TOP);
-    }
-
-    private void draw(Graphics g) {
-        g.setColor(BACKGR);
-        g.fillRect(0, 0, w, h);
-        int pos = 0;
-        for (int y = 0; y < h; y += cellHeight) {
-            for (int x = cellWidth / 2; x < w; x+= cellWidth) {
-                Object o = keys[pos];
-                if (o != null) {
-                    if (o instanceof String) {
-                        String str = (String)o;
-                        drawFinalOption(g, str, x, y);
-                    } else {
-                        KeyState child = (KeyState)o;
-                        drawMenuOption(g, (String) child.keys[pos], x, y);
-                    }
-                }
-                ++pos;
-            }
-        }
-    }
+        BACKGR  = 0xe0e0e0,
+        FOREGR  = 0x000000,
+        FOREGR2 = 0x000080,
+        LIGHTER = 0xffffff,
+        DARKER  = 0x808080;    
 }
