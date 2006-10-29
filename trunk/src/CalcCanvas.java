@@ -5,8 +5,9 @@ class CalcCanvas extends Canvas {
     Image img, cursorImg;
     Graphics imgG, cursorG;
     int w, h, screenH;
-    int topH, editY, editH;
-    int blank1Y, blank1H, blank2Y, blank2H;
+
+    int resultY, resultH;
+
     int blank3Y, blank3H, blank4X;
     int keypadX, keypadW, keypadH, keypadXEnd;
     int cursorX, cursorY, cursorW = 2, cursorH;
@@ -20,13 +21,6 @@ class CalcCanvas extends Canvas {
         w = getWidth();
         screenH = getHeight();
 
-        KeyState.init(w, screenH);
-        keypadX = KeyState.xPos;
-        keypadW = KeyState.w;
-        keypadH = KeyState.h;
-        keypadXEnd = keypadX + keypadW;
-        h = screenH - keypadH;
-
         smallFont  = Font.getFont(0, 0, Font.SIZE_SMALL);
         normalFont = Font.getFont(0, 0, Font.SIZE_MEDIUM);
         largeFont  = Font.getFont(0, 0, Font.SIZE_LARGE);
@@ -36,13 +30,18 @@ class CalcCanvas extends Canvas {
         normalHeight = normalFont.getHeight();
         largeHeight  = largeFont.getHeight();
 
-        topH = largeHeight;
-        blank1Y = topH;
-        blank1H = 3;
-        editY = blank1Y + blank1H;
+        KeyState.init(w, screenH);
+        keypadX = KeyState.xPos;
+        keypadW = KeyState.w;
+        keypadH = KeyState.h;
+        keypadXEnd = keypadX + keypadW;
+        h = screenH - keypadH;
+
+        resultH = largeHeight;
+        resultY = h - 5 - resultH;
+
         editH = largeHeight;
-        blank2Y = editY + editH;
-        blank2H = h - blank2Y;
+        editY = resultY - 5 - editH;
 
         cursorX = 0;
         cursorY = editY;
@@ -53,6 +52,10 @@ class CalcCanvas extends Canvas {
         img  = Image.createImage(w, h);
         imgG = img.getGraphics();
 
+        editG = img.getGraphics();
+        editG.translate(0, editY);
+        editG.setFont(largeFont);
+
         imgG.setColor(0xe0e0e0);
         imgG.fillRect(0, 0, w, h);
 
@@ -60,42 +63,24 @@ class CalcCanvas extends Canvas {
         imgG.fillRect(0, editY, w, editH);
 
         imgG.setColor(0);
-        imgG.fillRect(0, 0, w, topH);
+        imgG.fillRect(0, resultY, w, resultH);
                 
         cursorBlink.schedule(new TimerTask() {
                 public void run() {
                     setCursor(!drawCursor);
-                    /*
-                    drawCursor = !drawCursor;
-                    repaint(0, editY, w, editH);
-                    */
                 }
             }, 5000, 5000);
         resetState();
     }
 
-    /*
-    void paintTop(Graphics g) {
-        g.setFont(largeBold);
-        g.setColor(0xffffff);
-        g.drawString("0.31415E1", w, 0, Graphics.TOP|Graphics.RIGHT);
-    }
-    */
-
-    boolean drawCursor = true;
-
-    void setCursor(boolean setOn) {
-        drawCursor = setOn;
-        repaint(cursorX, cursorY, cursorW, cursorH);
-    }
-
+    //Edit
+    int editY, editH;
+    Graphics editG;
     int drawnLen = 0;
     char drawn[] = new char[256];
     char buf[] = new char[256];
 
-    void paintEdit(Graphics g) {
-        g.translate(0, editY);
-        g.setFont(largeFont);
+    void paintEdit() {
         int len = line.length();
         line.getChars(0, len, buf, 0);
         buf[len] = 0;
@@ -105,10 +90,10 @@ class CalcCanvas extends Canvas {
         int commonW = largeFont.charsWidth(buf, 0, common);
         int paintLen = Math.max(len, drawnLen) - common;
         int paintW  = largeFont.charsWidth(buf, common, paintLen);
-        g.setColor(0xffffff);
-        g.fillRect(commonW, 0, paintW, editH);
-        g.setColor(0);
-        g.drawChars(buf, common, len - common, commonW, 0, 0);
+        editG.setColor(0xffffff);
+        editG.fillRect(commonW, 0, paintW, editH);
+        editG.setColor(0);
+        editG.drawChars(buf, common, len - common, commonW, 0, 0);
         repaint(commonW, editY, paintW, editH);
         System.arraycopy(buf, common, drawn, common, len - common + 1);
         drawnLen = len;
@@ -116,19 +101,13 @@ class CalcCanvas extends Canvas {
         setCursor(drawCursor);
         cursorX = largeFont.charsWidth(buf, 0, pos + 1);
         setCursor(true);
-        g.translate(0, -editY);
+    }
 
-        /*
-        if (drawCursor) {
-            cursorG.setColor(0);
-            cursorG.fillRect(0, 0, 2, largeHeight);
-            if (pos + 1 < len) {
-                cursorG.setColor(0xffff00);
-                cursorG.drawChar(buf[pos + 1], 0, 0, 0);
-            }
-            g.drawImage(cursorImg, cursorX, 0, 0);
-        }
-        */
+    boolean drawCursor = true;
+
+    void setCursor(boolean setOn) {
+        drawCursor = setOn;
+        repaint(cursorX, cursorY, cursorW, cursorH);
     }
 
     protected void paint(Graphics g) {
@@ -351,7 +330,7 @@ class CalcCanvas extends Canvas {
             }
         }
         if (redrawEdit) {
-            paintEdit(imgG);
+            paintEdit();
             resetState();
         } else if (KeyState.needPaint()) {
             repaint(keypadX, h, keypadW, keypadH);
