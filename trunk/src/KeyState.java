@@ -25,13 +25,13 @@ final class KeyState {
         fontHeight = font.getHeight();
 
         int w1 = (sw + 1) / 3;
-        int w2 = font.stringWidth("mmmmm");
+        int w2 = font.stringWidth("mmmm");
         cellWidth = Math.min(w1, w2);
-        cellHeight = fontHeight + 3;
+        cellHeight = fontHeight + 2;
 
         interSpace = (sw - cellWidth*3 + 3)/6;
 
-        h = cellHeight * 4;
+        h = cellHeight * 4 - 1;
         yPos = sh - h;
 
         digits = new KeyState(new Object[] {
@@ -68,7 +68,7 @@ final class KeyState {
             trigs,    logs,  null,
             "\u03c0",  "e",  "(",
             null, null, null,
-            "ans", "\u221a", "\u221b",
+            "ans", "sqrt", "cbrt", //"\u221a", "\u221b",
         });
         
         /*
@@ -115,6 +115,7 @@ final class KeyState {
         for (int i = 0; i < 3; ++i) {
             img[i] = Image.createImage(cellWidth, cellHeight * 4);
             imgG[i] = img[i].getGraphics();
+            imgG[i].setFont(font);
         }
     }
 
@@ -163,12 +164,11 @@ final class KeyState {
 
     void doPaint(Graphics g) {
         int doubleSpace = interSpace + interSpace;
-        g.setColor(0xe0e0e0);
+        g.setColor(BACKGR);
         g.fillRect(0, yPos, interSpace, h);
         g.fillRect(interSpace + cellWidth, yPos, doubleSpace, h);
         g.fillRect(3*interSpace + 2*cellWidth, yPos, doubleSpace, h);
         g.fillRect(w - interSpace, yPos, interSpace, h);
-        g.setFont(font);
         for (int i = 0; i < 3; ++i) {
             paintColumn(g, i);
         }
@@ -185,8 +185,8 @@ final class KeyState {
                 g.drawLine(0, y, cellWidth, y);
                 g.drawLine(0, y, 0, y + cellHeight - 2);
                 g.setColor(DARKER);
-                g.drawLine(cellWidth - 1, y + 1, cellWidth - 1, y + cellHeight - 3);
-                g.drawLine(1, y + cellHeight - 3, cellWidth, y + cellHeight - 3);
+                g.drawLine(cellWidth - 1, y + 1, cellWidth - 1, y + cellHeight - 2);
+                g.drawLine(1, y + cellHeight - 2, cellWidth, y + cellHeight - 2);
                 Object o = keys[pos];
                 if (o != null) {
                     String txt;
@@ -223,9 +223,9 @@ final class KeyState {
     }
 
     static final int
-        BACKGR  = 0xe0e0e0,
+        BACKGR  = 0xffff00, //0xe0e0e0,
         FOREGR  = 0x000000,
-        FOREGR2 = 0x000080,
+        FOREGR2 = 0x0000a0,
         LIGHTER = 0xffffff,
         DARKER  = 0x808080;    
 }
