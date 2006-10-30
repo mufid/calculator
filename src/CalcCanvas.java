@@ -27,6 +27,8 @@ class CalcCanvas extends Canvas {
     int cursorX, cursorY, cursorW = 2, cursorH;
 
     Timer cursorBlink = new Timer();
+    Expr expr = new Expr();
+    String result = "";
 
     CalcCanvas() {
         setFullScreenMode(true);
@@ -85,6 +87,7 @@ class CalcCanvas extends Canvas {
         line.getChars(0, len, buf, 0);
         buf[len] = 0;
 
+        int startRed = expr.tokenStart;
         int common = 0;
         while (common < len && drawn[common] == buf[common]) { ++common; }
         int commonW = largeFont.charsWidth(buf, 0, common);
@@ -92,8 +95,18 @@ class CalcCanvas extends Canvas {
         int paintW  = largeFont.charsWidth(buf, common, paintLen);
         editG.setColor(0xffffff);
         editG.fillRect(commonW, 0, paintW, editH);
-        editG.setColor(0);
-        editG.drawChars(buf, common, len - common, commonW, 0, 0);
+        int pos2 = commonW;
+        if (startRed > common) {
+            editG.setColor(0);
+            editG.drawChars(buf, common, startRed - common, commonW, 0, 0);
+            pos2 += largeFont.charsWidth(buf, common, startRed - common);
+        }
+        if (startRed < len) {
+            int start = Math.max(common, startRed);
+            editG.setColor(0x800000);
+            editG.drawChars(buf, start, len - start, pos2, 0, 0);
+        }
+
         repaint(commonW, editY, paintW, editH);
         System.arraycopy(buf, common, drawn, common, len - common + 1);
         drawnLen = len;
@@ -327,15 +340,25 @@ class CalcCanvas extends Canvas {
             }
         }
         if (redrawEdit) {
+            String newResult = "";
+            try {
+                double value = expr.parseNoDecl(line.toString());
+                newResult = Double.toString(value);
+            } catch (Error e) {
+            }
+            if (!newResult.equals(result)) {
+                result = newResult;
+                imgG.setColor(0);
+                imgG.fillRect(0, resultY, w, resultH);
+                imgG.setColor(0xffffff);
+                imgG.setFont(largeFont);
+                imgG.drawString(result, w, resultY, Graphics.TOP|Graphics.RIGHT);
+                repaint(0, resultY, w, resultH);
+            }
             paintEdit();
             resetState();
         } 
         KeyState.repaint(this);
-        /*
-        else if (KeyState.needPaint()) {
-            repaint(keypadX, h, keypadW, keypadH);
-        }
-        */
     }
 
     static int getKeyPos(int key) {

@@ -168,6 +168,7 @@ final class KeyState {
         g.fillRect(interSpace + cellWidth, yPos, doubleSpace, h);
         g.fillRect(3*interSpace + 2*cellWidth, yPos, doubleSpace, h);
         g.fillRect(w - interSpace, yPos, interSpace, h);
+        g.setFont(font);
         for (int i = 0; i < 3; ++i) {
             paintColumn(g, i);
         }

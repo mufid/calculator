@@ -17,8 +17,9 @@ class Expr {
     char tokenType;
     double tokenValue;
     StringBuffer tokenID = new StringBuffer();
-    int pos = 0;
-
+    int pos = 0, tokenStart = -1;
+    int goodUntil = -1;
+    
     boolean insideFunDef;
     int arity;
     
@@ -42,11 +43,12 @@ class Expr {
         text = s.toCharArray();
         n = text.length;
         pos = 0;
+        tokenStart = -1;
         tokenType = '$';
     }
 
     double parseNoDecl(String str) {
-        init(str);
+        init(str + '$');
         insideFunDef = false;
         return parseWholeExpression();
     }
@@ -91,31 +93,33 @@ class Expr {
 
     private void scan() {
         tokenType = '$';
+        tokenStart = pos;
         if (pos < n) { 
             char c = text[pos];
             if ((c >= '0' && c <= '9') || c == '.') {
                 tokenType = '0';
                 int start = pos;
-                try {
+                while (c >= '0' && c <= '9') {
+                    c = text[++pos];
+                }
+                if (c == '.') {
+                    c = text[++pos];
                     while (c >= '0' && c <= '9') {
                         c = text[++pos];
                     }
-                    if (c == '.') {
+                }
+                if (c == 'E') {
+                    c = text[++pos];
+                    if (c == '-') {
                         c = text[++pos];
-                        while (c >= '0' && c <= '9') {
-                            c = text[++pos];
-                        }
                     }
-                    if (c == 'E') {
+                    if (!('0' <= c && c <= '9')) {
+                        tokenType = 'x';
+                        return;
+                    }
+                    while (c >= '0' && c <= '9') {
                         c = text[++pos];
-                        if (c == '-') {
-                            c = text[++pos];
-                        }
-                        while (c >= '0' && c <= '9') {
-                            c = text[++pos];
-                        }
                     }
-                } catch (ArrayIndexOutOfBoundsException e) {
                 }
                 tokenValue = Double.parseDouble(new String(text, start, pos - start));
             } else try {
@@ -150,7 +154,7 @@ class Expr {
     private final double parseWholeExpression() {
         double ret = parseExpression();
         if (tokenType != '$') {
-            throw new Error("Unexpected " + tokenType);
+            throw new Error(); //tokenType);
         }
         return ret;
     }
@@ -239,7 +243,7 @@ class Expr {
             return Symbol.evaluate(symbols, id, params);
             
         default:
-            throw new Error("Unexpected " + tokenType);
+            throw new Error(); //tokenType);
         }
         scan();
         return value;
