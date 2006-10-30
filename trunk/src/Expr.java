@@ -18,7 +18,6 @@ class Expr {
     double tokenValue;
     StringBuffer tokenID = new StringBuffer();
     int pos = 0, tokenStart = -1;
-    int goodUntil = -1;
     
     boolean insideFunDef;
     int arity;
@@ -124,10 +123,10 @@ class Expr {
                 tokenValue = Double.parseDouble(new String(text, start, pos - start));
             } else try {
                 c = Character.toLowerCase(c);
-                if ((c >= 'a' && c <= 'z') || c == '_') {
+                if (CalcCanvas.isLetter(c)) {
                     tokenType = 'a';
                     tokenID.setLength(0);
-                    while ((c >= 'a' && c <= 'z') || c == '_' || (c >= '0' && c <= '9')) {
+                    while (CalcCanvas.isLetter(c) || Character.isDigit(c)) {
                         tokenID.append(c);
                         ++pos;
                         c = Character.toLowerCase(text[pos]);
