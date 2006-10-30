@@ -200,7 +200,7 @@ class CalcCanvas extends Canvas {
         boolean acceptDot = !pastE;
         if (p >= 0) {
             char c = Character.toLowerCase(line.charAt(p));
-            if (('a' <= c && c <= 'z') || c == ')' || c == '!') {
+            if (isLetter(c) || c == ')' || c == '!') {
                 id = true;
                 number = false;
                 pastE = false;
@@ -248,17 +248,16 @@ class CalcCanvas extends Canvas {
         KeyState.keypad = id ? KeyState.rootOp : KeyState.digits;
     }
     
-    static final boolean isDigit(char c) {
-        return '0' <= c && c <= '9';
+    final boolean isDigitAt(int p) {
+        return Character.isDigit(line.charAt(p));
     }
 
-    final boolean isDigitAt(int p) {
-        return isDigit(line.charAt(p));
+    static final boolean isLetter(char c) {
+        return ('a' <= c && c <= 'z') || c == '_' || c == '\u03c0';
     }
 
     final boolean isLetterAt(int p) {
-        char c = line.charAt(p);
-        return ('a' <= c && c <= 'z') || c == '_';
+        return isLetter(line.charAt(p));
     }
 
     void delFromLine() {
@@ -289,7 +288,7 @@ class CalcCanvas extends Canvas {
             String s = KeyState.keypad.handleKey(keyPos);
             if (s != null) {
                 if (pos >= 0 && line.charAt(pos) == '.' && 
-                    s.length() == 1 && !isDigit(s.charAt(0))) {
+                    s.length() == 1 && !Character.isDigit(s.charAt(0))) {
                     delFromLine();
                 }
                 insertIntoLine(s);
