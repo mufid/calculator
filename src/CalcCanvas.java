@@ -29,6 +29,15 @@ class CalcCanvas extends Canvas {
     Timer cursorBlink = new Timer();
     Expr expr = new Expr();
     String result = "";
+    Font font;
+
+    void setFont(Font afont) {
+        font = afont;
+        int height = afont.getHeight();
+        editH = resultH = height + 1;
+        resultY = h - 1 - resultH;
+        editY   = resultY - 1 - editH;
+    }
 
     CalcCanvas() {
         setFullScreenMode(true);
@@ -39,11 +48,7 @@ class CalcCanvas extends Canvas {
         keypadH = KeyState.h;
         h = screenH - keypadH;
 
-        resultH = largeHeight;
-        resultY = h - 5 - resultH;
-
-        editH = largeHeight;
-        editY = resultY - 5 - editH;
+        setFont(h > largeHeight * 4 ? largeFont : normalFont);
 
         cursorX = 0;
         cursorY = editY;
@@ -56,7 +61,7 @@ class CalcCanvas extends Canvas {
 
         editG = img.getGraphics();
         editG.translate(0, editY);
-        editG.setFont(largeFont);
+        editG.setFont(font);
 
         imgG.setColor(0xe0e0e0);
         imgG.fillRect(0, 0, w, h);
@@ -73,6 +78,7 @@ class CalcCanvas extends Canvas {
                 }
             }, 400, 400);
         resetState();
+        repaint();
     }
 
     //Edit
@@ -90,16 +96,16 @@ class CalcCanvas extends Canvas {
         int startRed = expr.tokenStart;
         int common = 0;
         while (common < len && drawn[common] == buf[common]) { ++common; }
-        int commonW = largeFont.charsWidth(buf, 0, common);
+        int commonW = font.charsWidth(buf, 0, common);
         int paintLen = Math.max(len, drawnLen) - common;
-        int paintW  = largeFont.charsWidth(buf, common, paintLen);
+        int paintW  = font.charsWidth(buf, common, paintLen);
         editG.setColor(0xffffff);
         editG.fillRect(commonW, 0, paintW, editH);
         int pos2 = commonW;
         if (startRed > common) {
             editG.setColor(0);
             editG.drawChars(buf, common, startRed - common, commonW, 0, 0);
-            pos2 += largeFont.charsWidth(buf, common, startRed - common);
+            pos2 += font.charsWidth(buf, common, startRed - common);
         }
         if (startRed < len) {
             int start = Math.max(common, startRed);
@@ -112,7 +118,7 @@ class CalcCanvas extends Canvas {
         drawnLen = len;
 
         setCursor(drawCursor);
-        cursorX = largeFont.charsWidth(buf, 0, pos + 1);
+        cursorX = font.charsWidth(buf, 0, pos + 1);
         setCursor(true);
     }
 
@@ -244,7 +250,7 @@ class CalcCanvas extends Canvas {
             }
             if (openParens > 0) { break; }
         }
-        KeyState.rootOp.set(8, (openParens > 0) ? ")" : null);
+        KeyState.rootOp.set(5, (openParens > 0) ? ")" : null);
         KeyState.keypad = id ? KeyState.rootOp : KeyState.digits;
     }
     
@@ -300,7 +306,7 @@ class CalcCanvas extends Canvas {
                 action = getGameAction(key);
             } catch (IllegalArgumentException e) {
             }
-            
+            System.out.println("key " + key + " action " + action);
             if (action != 0) {
                 switch (action) {
                 case Canvas.LEFT: 
@@ -328,7 +334,7 @@ class CalcCanvas extends Canvas {
                     
                 }
             } else {
-                if (key == -8 || key == -11) { //delete
+                if (key == -8 || key == -11 || key == -12) { //delete
                     KeyState save = KeyState.keypad;
                     resetState();
                     if (save == KeyState.keypad) {
@@ -350,7 +356,7 @@ class CalcCanvas extends Canvas {
                 imgG.setColor(0);
                 imgG.fillRect(0, resultY, w, resultH);
                 imgG.setColor(0xffffff);
-                imgG.setFont(largeFont);
+                imgG.setFont(font);
                 imgG.drawString(result, w, resultY, Graphics.TOP|Graphics.RIGHT);
                 repaint(0, resultY, w, resultH);
             }
