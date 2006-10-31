@@ -23,9 +23,11 @@ class Expr {
     int arity;
     
     public static void main(String argv[]) {
+        /*
         System.out.println(Double.doubleToLongBits(Math.PI) + "   " + Double.doubleToLongBits(Math.E));
         System.out.println(Double.doubleToLongBits(MoreMath.PI) + "   " + Double.doubleToLongBits(MoreMath.E));
         System.out.println(MoreMath.PI + " " + MoreMath.E);
+        */
 
         Expr parser = new Expr();
         int n = argv.length;
@@ -96,16 +98,24 @@ class Expr {
         if (pos < n) { 
             char c = text[pos];
             if ((c >= '0' && c <= '9') || c == '.') {
+                boolean ok = false;
                 tokenType = '0';
                 int start = pos;
                 while (c >= '0' && c <= '9') {
+                    ok = true;
                     c = text[++pos];
                 }
                 if (c == '.') {
                     c = text[++pos];
                     while (c >= '0' && c <= '9') {
+                        ok = true;
                         c = text[++pos];
                     }
+                }
+                if (!ok) {
+                    tokenStart = pos;
+                    tokenType = 'x';
+                    return;
                 }
                 if (c == 'E') {
                     c = text[++pos];
@@ -113,6 +123,7 @@ class Expr {
                         c = text[++pos];
                     }
                     if (!('0' <= c && c <= '9')) {
+                        tokenStart = pos;
                         tokenType = 'x';
                         return;
                     }
@@ -120,7 +131,11 @@ class Expr {
                         c = text[++pos];
                     }
                 }
-                tokenValue = Double.parseDouble(new String(text, start, pos - start));
+                try {
+                    tokenValue = Double.parseDouble(new String(text, start, pos - start));
+                } catch (NumberFormatException e) {
+
+                }
             } else try {
                 c = Character.toLowerCase(c);
                 if (CalcCanvas.isLetter(c)) {
