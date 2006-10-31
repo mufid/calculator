@@ -15,7 +15,17 @@ class CalcCanvas extends Canvas {
         largeHeight  = largeFont.getHeight();
     }
 
+    //static final int MAX_HIST = 32;
+    Vector history;
+    int historyPos = 0;
+    HistEntry entry;
 
+    /*
+    String history[] = new String[MAX_HIST];
+    StringBuffer lines[] = new StringBuffer[MAX_HIST];
+    double results[] = new double[MAX_HIST];
+    */
+    
     Image img, cursorImg;
     Graphics imgG, cursorG;
     int w, h, screenH;
@@ -29,8 +39,9 @@ class CalcCanvas extends Canvas {
     Timer cursorBlink = new Timer();
     Expr expr = new Expr();
     Constant ans = new Constant("ans", 0);
-    String result = "";
-    double resultValue = 0;
+    //String result = "";
+    //double resultValue = 0;
+
     Font font;
 
     void setFont(Font afont) {
@@ -145,9 +156,11 @@ class CalcCanvas extends Canvas {
         KeyState.paint(g);
     }
 
+    /*
     StringBuffer line = new StringBuffer();
     int  pos = -1;
-    
+    */
+
     boolean startsWithLetter(int p) {
         for (int i = p; i >= 0; --i) {
             if (isLetterAt(i)) {
@@ -319,17 +332,29 @@ class CalcCanvas extends Canvas {
                     break;
                     
                 case Canvas.UP:
+                    if (historyPos < history.size() - 1) {
+                        entry = history.elementAt(++historyPos);
+                        redrawEdit = true;
+                    }
                     break;
                     
                 case Canvas.DOWN:
+                    if (historyPos > 0) {
+                        entry = history.elementAt(--historyPos);
+                        redrawEdit = true;
+                    }
                     break;
                     
                 case Canvas.FIRE:
                     if (result.length() > 0) {
                         ans.value = resultValue;
-                    }
+                    }                    
+                    entry = new HistEntry(entry.freeze());
+                    history.insertElementAt(entry, 0);
+                    /*
                     line.setLength(0);
                     pos = -1;
+                    */
                     redrawEdit = true;
                     break;
                 }
