@@ -28,6 +28,7 @@ class CalcCanvas extends Canvas {
 
     Timer cursorBlink = new Timer();
     Expr expr = new Expr();
+    Constant ans = new Constant("ans", 0);
     String result = "";
     Font font;
 
@@ -79,22 +80,25 @@ class CalcCanvas extends Canvas {
             }, 400, 400);
         resetState();
         repaint();
+
+        expr.symbols.put(ans);
     }
 
     //Edit
     int editY, editH;
     Graphics editG;
-    int drawnLen = 0;
+    int drawnLen = 0, drawnStartRed = 0;
     char drawn[] = new char[256];
     char buf[] = new char[256];
 
     void paintEdit() {
         int len = line.length();
+        //System.out.println("Len " + len);
         line.getChars(0, len, buf, 0);
         buf[len] = 0;
 
-        int startRed = expr.tokenStart;
-        int maxCommon = Math.min(Math.min(startRed, len), drawnLen);
+        int startRed = expr.tokenStart - 2;
+        int maxCommon = Math.min(Math.min(startRed, len), drawnStartRed);
         int common = 0;
         while (common < maxCommon && drawn[common] == buf[common]) { ++common; }
         int commonW = font.charsWidth(buf, 0, common);
@@ -116,8 +120,8 @@ class CalcCanvas extends Canvas {
 
         repaint(commonW, editY, paintW, editH);
         System.arraycopy(buf, common, drawn, common, len - common + 1);
-        drawnLen = Math.min(len, startRed);
-
+        drawnLen = len;
+        drawnStartRed = startRed;
         setCursor(drawCursor);
         cursorX = font.charsWidth(buf, 0, pos + 1);
         setCursor(true);
@@ -242,6 +246,7 @@ class CalcCanvas extends Canvas {
             KeyState.digits.set(11, null);
         }
         
+        /*
         int openParens = 0;
         for (int i = pos; i >= 0; --i) {
             if (line.charAt(i) == '(') {
@@ -252,6 +257,7 @@ class CalcCanvas extends Canvas {
             if (openParens > 0) { break; }
         }
         KeyState.rootOp.set(5, (openParens > 0) ? ")" : null);
+        */
         KeyState.keypad = id ? KeyState.rootOp : KeyState.digits;
     }
     
@@ -349,7 +355,7 @@ class CalcCanvas extends Canvas {
             String newResult = "";
             try {
                 double value = expr.parseNoDecl(line.toString());
-                newResult = Double.toString(value);
+                newResult = Float.toString((float)value);
             } catch (Error e) {
             }
             if (!newResult.equals(result)) {
