@@ -560,7 +560,7 @@ class MoreMath {
             u = ivln2_h*t;	/* ivln2_h has 21 sig. bits */
             v = t*ivln2_l-w * LOG2E;
             t1 = u+v;
-            setLO(t1, 0);
+            t1 = setLO(t1, 0);
             t2 = v-(t1-u);
         } else {
             double ss,s2,s_h,s_l,t_h,t_l;
@@ -581,17 +581,17 @@ class MoreMath {
                 k=0;n+=1;
                 ix -= 0x00100000;
             }
-            setHI(ax, ix);
+            ax = setHI(ax, ix);
             
             /* compute ss = s_h+s_l = (x-1)/(x+1) or (x-1.5)/(x+1.5) */
             u = ax-bp[k];		/* bp[0]=1.0, bp[1]=1.5 */
             v = one/(ax+bp[k]);
             ss = u*v;
             s_h = ss;
-            setLO(s_h, 0);
+            s_h = setLO(s_h, 0);
             /* t_h=ax+bp[k] High */
             t_h = zero;
-            setHI(t_h, ((ix>>1)|0x20000000)+0x00080000+(k<<18)); 
+            t_h = setHI(t_h, ((ix>>1)|0x20000000)+0x00080000+(k<<18)); 
             t_l = ax - (t_h-bp[k]);
             s_l = v*((u-s_h*t_h)-s_h*t_l);
             /* compute log(ax) */
@@ -600,27 +600,26 @@ class MoreMath {
             r += s_l*(s_h+ss);
             s2  = s_h*s_h;
             t_h = 3.0+s2+r;
-            setLO(t_h, 0);
+            t_h = setLO(t_h, 0);
             t_l = r-((t_h-3.0)-s2);
             /* u+v = ss*(1+...) */
             u = s_h*t_h;
             v = s_l*t_h+t_l*ss;
             /* 2/(3log2)*(ss+...) */
             p_h = u+v;
-            setLO(p_h, 0);
+            p_h = setLO(p_h, 0);
             p_l = v-(p_h-u);
             z_h = cp_h*p_h;		/* cp_h+cp_l = 2/(3*log2) */
             z_l = cp_l*p_h+p_l*cp+dp_l[k];
             /* log2(ax) = (ss+..)*2/(3*log2) = n + dp_h + z_h + z_l */
             t = (double)n;
             t1 = (((z_h+z_l)+dp_h[k])+t);
-            setLO(t1, 0);
+            t1 = setLO(t1, 0);
             t2 = z_l-(((t1-t)-dp_h[k])-z_h);
         }
         
         /* split up y into y1+y2 and compute (y1+y2)*(t1+t2) */
-        y1  = y;
-        setLO(y1, 0);
+        y1 = setLO(y, 0);
         p_l = (y-y1)*t1+y*t2;
         p_h = y1*t1;
         z = p_l+p_h;
@@ -649,13 +648,13 @@ class MoreMath {
             n = j+(0x00100000>>(k+1));
             k = ((n&0x7fffffff)>>20)-0x3ff;	/* new k for n */
             t = zero;
-            setHI(t, (n&~(0x000fffff>>k)));
+            t = setHI(t, (n&~(0x000fffff>>k)));
             n = ((n&0x000fffff)|0x00100000)>>(20-k);
             if(j<0) n = -n;
             p_h -= t;
         } 
         t = p_l+p_h;
-        setLO(t, 0);
+        t = setLO(t, 0);
         u = t*lg2_h;
         v = (p_l-(t-p_h)) * LN2 +t*lg2_l;
         z = u+v;
@@ -669,7 +668,7 @@ class MoreMath {
         if ((j>>20) <= 0) {
             z = scalbn(z,n);	/* subnormal output */
         } else {
-            setHI(z, HI(z) + (n<<20));
+            z = setHI(z, HI(z) + (n<<20));
         }
         return s*z;
     }

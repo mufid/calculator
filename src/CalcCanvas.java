@@ -35,7 +35,7 @@ class CalcCanvas extends Canvas {
         font = afont;
         int height = afont.getHeight();
         editH = resultH = height + 1;
-        resultY = h - 1 - resultH;
+        resultY = h - resultH;
         editY   = resultY - 1 - editH;
     }
 
@@ -63,7 +63,7 @@ class CalcCanvas extends Canvas {
         editG.translate(0, editY);
         editG.setFont(font);
 
-        imgG.setColor(0xe0e0e0);
+        imgG.setColor(0xe0e0ff);
         imgG.fillRect(0, 0, w, h);
 
         imgG.setColor(0xffffff);
@@ -94,8 +94,9 @@ class CalcCanvas extends Canvas {
         buf[len] = 0;
 
         int startRed = expr.tokenStart;
+        int maxCommon = Math.min(Math.min(startRed, len), drawnLen);
         int common = 0;
-        while (common < len && drawn[common] == buf[common]) { ++common; }
+        while (common < maxCommon && drawn[common] == buf[common]) { ++common; }
         int commonW = font.charsWidth(buf, 0, common);
         int paintLen = Math.max(len, drawnLen) - common;
         int paintW  = font.charsWidth(buf, common, paintLen);
@@ -109,13 +110,13 @@ class CalcCanvas extends Canvas {
         }
         if (startRed < len) {
             int start = Math.max(common, startRed);
-            editG.setColor(0x800000);
+            editG.setColor(0xff0000);
             editG.drawChars(buf, start, len - start, pos2, 0, 0);
         }
 
         repaint(commonW, editY, paintW, editH);
         System.arraycopy(buf, common, drawn, common, len - common + 1);
-        drawnLen = len;
+        drawnLen = Math.min(len, startRed);
 
         setCursor(drawCursor);
         cursorX = font.charsWidth(buf, 0, pos + 1);
@@ -306,7 +307,7 @@ class CalcCanvas extends Canvas {
                 action = getGameAction(key);
             } catch (IllegalArgumentException e) {
             }
-            System.out.println("key " + key + " action " + action);
+            //System.out.println("key " + key + " action " + action);
             if (action != 0) {
                 switch (action) {
                 case Canvas.LEFT: 

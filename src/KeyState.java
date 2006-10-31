@@ -27,11 +27,11 @@ final class KeyState {
         int w1 = (sw + 1) / 3;
         int w2 = font.stringWidth("mmmm");
         cellWidth = Math.min(w1, w2);
-        cellHeight = fontHeight + 2;
+        cellHeight = fontHeight + 3;
 
         interSpace = (sw - cellWidth*3 + 3)/6;
 
-        h = cellHeight * 4 - 1;
+        h = cellHeight * 4;
         yPos = sh - h;
 
         digits = new KeyState(new Object[] {
@@ -180,13 +180,14 @@ final class KeyState {
             g.setColor(BACKGR);
             g.fillRect(0, 0, cellWidth, h);
             int pos = col;
-            for (int y = 0; y < h; y += cellHeight, pos += 3) {
+            for (int y = 1; y < h; y += cellHeight, pos += 3) {
                 g.setColor(LIGHTER);
+                int bottom = y + cellHeight - 3;
                 g.drawLine(0, y, cellWidth, y);
-                g.drawLine(0, y, 0, y + cellHeight - 2);
+                g.drawLine(0, y, 0, bottom);
                 g.setColor(DARKER);
-                g.drawLine(cellWidth - 1, y + 1, cellWidth - 1, y + cellHeight - 2);
-                g.drawLine(1, y + cellHeight - 2, cellWidth, y + cellHeight - 2);
+                g.drawLine(cellWidth - 1, y + 1, cellWidth - 1, bottom);
+                g.drawLine(1, bottom, cellWidth, bottom);
                 Object o = keys[pos];
                 if (o != null) {
                     String txt;
@@ -225,7 +226,7 @@ final class KeyState {
     static final int
         BACKGR  = 0xffff00, //0xe0e0e0,
         FOREGR  = 0x000000,
-        FOREGR2 = 0x0000a0,
+        FOREGR2 = 0x0000ff,
         LIGHTER = 0xffffff,
-        DARKER  = 0x808080;    
+        DARKER  = 0x808000;    
 }
