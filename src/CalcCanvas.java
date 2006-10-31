@@ -30,6 +30,7 @@ class CalcCanvas extends Canvas {
     Expr expr = new Expr();
     Constant ans = new Constant("ans", 0);
     String result = "";
+    double resultValue = 0;
     Font font;
 
     void setFont(Font afont) {
@@ -245,19 +246,6 @@ class CalcCanvas extends Canvas {
         } else {
             KeyState.digits.set(11, null);
         }
-        
-        /*
-        int openParens = 0;
-        for (int i = pos; i >= 0; --i) {
-            if (line.charAt(i) == '(') {
-                ++openParens;
-            } else if (line.charAt(i) == ')') {
-                --openParens;
-            }
-            if (openParens > 0) { break; }
-        }
-        KeyState.rootOp.set(5, (openParens > 0) ? ")" : null);
-        */
         KeyState.keypad = id ? KeyState.rootOp : KeyState.digits;
     }
     
@@ -337,8 +325,13 @@ class CalcCanvas extends Canvas {
                     break;
                     
                 case Canvas.FIRE:
+                    if (result.length() > 0) {
+                        ans.value = resultValue;
+                    }
+                    line.setLength(0);
+                    pos = -1;
+                    redrawEdit = true;
                     break;
-                    
                 }
             } else {
                 if (key == -8 || key == -11 || key == -12) { //delete
@@ -354,9 +347,10 @@ class CalcCanvas extends Canvas {
         if (redrawEdit) {
             String newResult = "";
             try {
-                double value = expr.parseNoDecl(line.toString());
-                newResult = Float.toString((float)value);
+                resultValue = expr.parseNoDecl(line.toString());
+                newResult = Float.toString((float)resultValue);
             } catch (Error e) {
+                resultValue = 0;
             }
             if (!newResult.equals(result)) {
                 result = newResult;
