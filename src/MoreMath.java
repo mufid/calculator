@@ -728,4 +728,18 @@ class MoreMath {
     static final double log2(double x) {
         return log(x) * LOG2E;
     }
+
+    static final boolean isPiMultiple(double x) {
+        double npi = x / Math.PI;
+        return Math.floor(npi) == npi;
+    }
+
+    /*
+    static final double sin(double x) {
+        if (isPiMultiple(x)) { return 0.0; }
+        return Math.sin(x);
+    }
+    */
+
+    
 }

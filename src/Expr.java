@@ -8,6 +8,7 @@ class Expr {
         BuiltinFun.init(symbols);
         symbols.put(new Constant("\u03c0", Math.PI));
         symbols.put(new Constant("e",  Math.E));
+        //symbols.put(new Constant("ans", 0));
         symbols.put(new DefinedFun("hypot", new String[]{"x", "y"}, "sqrt(x*x+y*y)")); 
     }
 
@@ -49,7 +50,7 @@ class Expr {
     }
 
     double parseNoDecl(String str) {
-        init(str + '$');
+        init("((" + str + '$');
         insideFunDef = false;
         return parseWholeExpression();
     }

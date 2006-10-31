@@ -74,8 +74,8 @@ class BuiltinFun extends Symbol {
     double eval(SymbolTable symbols, double params[]) {
         double x = params[0];
         switch (code) {
-        case SIN:   return Math.sin(x);
-        case COS:   return Math.cos(x);
+        case SIN:   return MoreMath.isPiMultiple(x) ? .0 : Math.sin(x);
+        case COS:   return MoreMath.isPiMultiple(x + MoreMath.PI_2) ? .0 : Math.cos(x);
         case TAN:   return Math.tan(x);
 
         case ASIN:  return MoreMath.asin(x);

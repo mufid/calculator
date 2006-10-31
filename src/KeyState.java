@@ -60,8 +60,8 @@ final class KeyState {
         rootOp = new KeyState(new Object[] {
             null, null, null,
             "^", "%",  ")", 
-            "*", "/",  null, 
-            "+", "E",  ",",
+            "*", "/",  null,  //","
+            "+", "E",  "-",
         });
 
         rootExp = new KeyState(new Object[] {
