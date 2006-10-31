@@ -16,15 +16,9 @@ class CalcCanvas extends Canvas {
     }
 
     //static final int MAX_HIST = 32;
-    Vector history;
+    Vector history = new Vector();
     int historyPos = 0;
     HistEntry entry;
-
-    /*
-    String history[] = new String[MAX_HIST];
-    StringBuffer lines[] = new StringBuffer[MAX_HIST];
-    double results[] = new double[MAX_HIST];
-    */
     
     Image img, cursorImg;
     Graphics imgG, cursorG;
@@ -39,8 +33,8 @@ class CalcCanvas extends Canvas {
     Timer cursorBlink = new Timer();
     Expr expr = new Expr();
     Constant ans = new Constant("ans", 0);
-    //String result = "";
-    //double resultValue = 0;
+    double result;
+    boolean hasResult = false;
 
     Font font;
 
@@ -53,6 +47,12 @@ class CalcCanvas extends Canvas {
     }
 
     CalcCanvas() {
+        entry = new HistEntry();
+        entry.line = new StringBuffer();
+        entry.save = "";
+        entry.pos  = -1;
+        history.addElement(entry);
+
         setFullScreenMode(true);
         w = getWidth();
         screenH = getHeight();
@@ -104,9 +104,9 @@ class CalcCanvas extends Canvas {
     char buf[] = new char[256];
 
     void paintEdit() {
-        int len = line.length();
+        int len = entry.line.length();
         //System.out.println("Len " + len);
-        line.getChars(0, len, buf, 0);
+        entry.line.getChars(0, len, buf, 0);
         buf[len] = 0;
 
         int startRed = expr.tokenStart - 2;
@@ -135,7 +135,7 @@ class CalcCanvas extends Canvas {
         drawnLen = len;
         drawnStartRed = startRed;
         setCursor(drawCursor);
-        cursorX = font.charsWidth(buf, 0, pos + 1);
+        cursorX = font.charsWidth(buf, 0, entry.pos + 1);
         setCursor(true);
     }
 
@@ -178,7 +178,7 @@ class CalcCanvas extends Canvas {
             return pos;
         }
         int p = pos;
-        if (p >= 0 && line.charAt(p) == '(') --p;
+        if (p >= 0 && entry.line.charAt(p) == '(') --p;
         while (p >= 0 && isDigitAt(p)) --p;
         if (p >= 0 && isLetterAt(p)) {
             while (p >= 0 && (isLetterAt(p) || isDigitAt(p))) --p;
@@ -188,7 +188,7 @@ class CalcCanvas extends Canvas {
     }
 
     int nextFlexPoint(int pos) {
-        int len = line.length();
+        int len = entry.line.length();
         if (pos >= len - 1) {
             return pos;
         }
@@ -196,24 +196,24 @@ class CalcCanvas extends Canvas {
         if (isLetterAt(p)) {
             ++p;
             while (p < len && (isLetterAt(p) || isDigitAt(p))) ++p;
-            if (p < len && line.charAt(p) == '(') ++p;
+            if (p < len && entry.line.charAt(p) == '(') ++p;
             return p - 1;
         }
         return pos + 1;
     }
 
     void resetState() {
-        int p = pos;
+        int p = entry.pos;
         boolean number = false;
         while (p >= 0 && isDigitAt(p)) {
             number = true;
             --p;
         }
         boolean pastE = false;
-        if (p >= 0 && line.charAt(p) == 'E') {
+        if (p >= 0 && entry.line.charAt(p) == 'E') {
             pastE = true;
             --p;
-        } else if (p >= 1 && line.charAt(p) == '-' && line.charAt(p-1) == 'E') {
+        } else if (p >= 1 && entry.line.charAt(p) == '-' && entry.line.charAt(p-1) == 'E') {
             pastE = true;
             p -= 2;
         }
@@ -224,7 +224,7 @@ class CalcCanvas extends Canvas {
         boolean id = false;
         boolean acceptDot = !pastE;
         if (p >= 0) {
-            char c = Character.toLowerCase(line.charAt(p));
+            char c = Character.toLowerCase(entry.line.charAt(p));
             if (isLetter(c) || c == ')' || c == '!') {
                 id = true;
                 number = false;
@@ -237,11 +237,11 @@ class CalcCanvas extends Canvas {
                 }
             }
         }
-        boolean acceptMinus = !pastE || line.charAt(pos) == 'E';
-        if (pastE && (line.charAt(pos) == 'E' || line.charAt(pos) == '-')) {
+        boolean acceptMinus = !pastE || entry.line.charAt(entry.pos) == 'E';
+        if (pastE && (entry.line.charAt(entry.pos) == 'E' || entry.line.charAt(entry.pos) == '-')) {
             number = false;
         }
-        boolean atStart = acceptDot && (pos == -1 || !isDigitAt(pos));
+        boolean atStart = acceptDot && (entry.pos == -1 || !isDigitAt(entry.pos));
 
         KeyState.rootOp.set(10, (number && !pastE) ? "E" : null);
         if (id || number) {
@@ -263,7 +263,7 @@ class CalcCanvas extends Canvas {
     }
     
     final boolean isDigitAt(int p) {
-        return Character.isDigit(line.charAt(p));
+        return Character.isDigit(entry.line.charAt(p));
     }
 
     static final boolean isLetter(char c) {
@@ -271,28 +271,28 @@ class CalcCanvas extends Canvas {
     }
 
     final boolean isLetterAt(int p) {
-        return isLetter(line.charAt(p));
+        return isLetter(entry.line.charAt(p));
     }
 
     void delFromLine() {
-        int prev = prevFlexPoint(pos);
-        line.delete(prev + 1, pos + 1);
-        pos = prev;
+        int prev = prevFlexPoint(entry.pos);
+        entry.line.delete(prev + 1, entry.pos + 1);
+        entry.pos = prev;
     }
 
     void insertIntoLine(String s) {
-        line.insert(pos + 1, s);
-        pos += s.length();
+        entry.line.insert(entry.pos + 1, s);
+        entry.pos += s.length();
     }
 
     void movePrev() {
-        int prev = prevFlexPoint(pos);
-        pos = prev;
+        int prev = prevFlexPoint(entry.pos);
+        entry.pos = prev;
     }
 
     void moveNext() {
-        int next = nextFlexPoint(pos);
-        pos = next;
+        int next = nextFlexPoint(entry.pos);
+        entry.pos = next;
     }
 
     protected void keyPressed(int key) {
@@ -301,7 +301,7 @@ class CalcCanvas extends Canvas {
         if (keyPos >= 0) {
             String s = KeyState.keypad.handleKey(keyPos);
             if (s != null) {
-                if (pos >= 0 && line.charAt(pos) == '.' && 
+                if (entry.pos >= 0 && entry.line.charAt(entry.pos) == '.' && 
                     s.length() == 1 && !Character.isDigit(s.charAt(0))) {
                     delFromLine();
                 }
@@ -318,14 +318,14 @@ class CalcCanvas extends Canvas {
             if (action != 0) {
                 switch (action) {
                 case Canvas.LEFT: 
-                    if (pos >= 0) {
+                    if (entry.pos >= 0) {
                         movePrev();
                     }
                     redrawEdit = true;
                     break;
                     
                 case Canvas.RIGHT:
-                    if (pos < line.length()) {
+                    if (entry.pos < entry.line.length()) {
                         moveNext();
                     }
                     redrawEdit = true;
@@ -333,24 +333,24 @@ class CalcCanvas extends Canvas {
                     
                 case Canvas.UP:
                     if (historyPos < history.size() - 1) {
-                        entry = history.elementAt(++historyPos);
+                        entry = (HistEntry) history.elementAt(++historyPos);
+                        //System.out.println("size " + history.size() + " pos " + historyPos + " entry " + entry);
                         redrawEdit = true;
                     }
                     break;
                     
                 case Canvas.DOWN:
                     if (historyPos > 0) {
-                        entry = history.elementAt(--historyPos);
+                        entry = (HistEntry) history.elementAt(--historyPos);
                         redrawEdit = true;
                     }
                     break;
                     
                 case Canvas.FIRE:
-                    if (result.length() > 0) {
-                        ans.value = resultValue;
-                    }                    
-                    entry = new HistEntry(entry.freeze());
-                    history.insertElementAt(entry, 0);
+                    ans.value = hasResult ? result : 0;
+                    history.insertElementAt(entry.copyFlush(), 1);
+                    historyPos = 0;
+                    entry = (HistEntry) history.elementAt(historyPos);
                     /*
                     line.setLength(0);
                     pos = -1;
@@ -370,20 +370,22 @@ class CalcCanvas extends Canvas {
             }
         }
         if (redrawEdit) {
-            String newResult = "";
+            double newResult = 0;
+            boolean hasNewResult = false;
             try {
-                resultValue = expr.parseNoDecl(line.toString());
-                newResult = Float.toString((float)resultValue);
+                newResult = expr.parseNoDecl(entry.line.toString());
+                hasNewResult = true;
+                //newResult = 
             } catch (Error e) {
-                resultValue = 0;
             }
-            if (!newResult.equals(result)) {
+            if (hasNewResult != hasResult || newResult != result) {
                 result = newResult;
+                hasResult = hasNewResult;
                 imgG.setColor(0);
                 imgG.fillRect(0, resultY, w, resultH);
                 imgG.setColor(0xffffff);
                 imgG.setFont(font);
-                imgG.drawString(result, w, resultY, Graphics.TOP|Graphics.RIGHT);
+                imgG.drawString(Float.toString((float)result), w, resultY, Graphics.TOP|Graphics.RIGHT);
                 repaint(0, resultY, w, resultH);
             }
             paintEdit();
