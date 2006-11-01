@@ -61,7 +61,7 @@ class CalcCanvas extends Canvas {
         keypadH = KeyState.h;
         h = screenH - keypadH;
 
-        setFont(h > largeHeight * 4 ? largeFont : normalFont);
+        setFont(h > largeHeight * 5 ? largeFont : normalFont);
 
         cursorX = 0;
         cursorY = editY;
@@ -114,8 +114,8 @@ class CalcCanvas extends Canvas {
         int common = 0;
         while (common < maxCommon && drawn[common] == buf[common]) { ++common; }
         int commonW = font.charsWidth(buf, 0, common);
-        int paintLen = Math.max(len, drawnLen) - common;
-        int paintW  = font.charsWidth(buf, common, paintLen);
+        //int paintLen = Math.max(len, drawnLen) - common;
+        int paintW  = Math.max(font.charsWidth(buf, common, len-common), font.charsWidth(drawn, common, drawnLen-common));
         editG.setColor(0xffffff);
         editG.fillRect(commonW, 0, paintW, editH);
         int pos2 = commonW;
