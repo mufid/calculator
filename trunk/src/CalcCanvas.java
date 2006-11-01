@@ -37,13 +37,19 @@ class CalcCanvas extends Canvas {
     boolean hasResult = false;
 
     Font font;
+    int nEditLines;
+    int lineHeight;
 
     void setFont(Font afont) {
         font = afont;
-        int height = afont.getHeight();
-        editH = resultH = height + 1;
+        lineHeight = afont.getHeight() + 1;
+        resultH = lineHeight;
         resultY = h - resultH;
-        editY   = resultY - 1 - editH;
+        int avail = resultY / lineHeight;
+        nEditLines = Math.min(avail, 3);
+        editH   = nEditLines * lineHeight;
+        editY   = resultY - editH;
+        //System.out.println("lines " + nEditLines + " y " + editY);
     }
 
     CalcCanvas() {
@@ -52,6 +58,11 @@ class CalcCanvas extends Canvas {
         entry.save = "";
         entry.pos  = -1;
         history.addElement(entry);
+
+        for (int i = 0; i < 3; ++i) {
+            drawn[i] = new Line();
+            splited[i] = new Line();
+        }
 
         setFullScreenMode(true);
         w = getWidth();
@@ -72,9 +83,11 @@ class CalcCanvas extends Canvas {
         img  = Image.createImage(w, h);
         imgG = img.getGraphics();
 
+        /*
         editG = img.getGraphics();
         editG.translate(0, editY);
         editG.setFont(font);
+        */
 
         imgG.setColor(0xe0e0ff);
         imgG.fillRect(0, 0, w, h);
@@ -96,46 +109,96 @@ class CalcCanvas extends Canvas {
         expr.symbols.put(ans);
     }
 
+    char splitBuf[] = new char[128];
+    void split(StringBuffer str, int redPos, Line lines[]) {
+        int len = str.length();
+        str.getChars(0, len, splitBuf, 0);
+        Line line;
+        int start = 0, end = 0;
+        int width;
+        for (int i = 0; i < 3; ++i) {
+            line = lines[i];
+            line.redPos = redPos - start;
+            width = 0;
+            while (width < w && end < len) {
+                width += font.charWidth(splitBuf[end++]);
+            }
+            if (width > w) { --end; }
+            line.len = end - start;
+            if (line.len > 0) {
+                System.arraycopy(splitBuf, start, line.chars, 0, line.len);
+                /*
+                if (start <= redPos && redPos < end) {
+                    line.redPos = redPos - start;
+                }
+                */
+            }
+            start = end;
+        }
+    }
+               
     //Edit
     int editY, editH;
-    Graphics editG;
-    int drawnLen = 0, drawnStartRed = 0;
-    char drawn[] = new char[256];
-    char buf[] = new char[256];
+    //Graphics editG;
+    Line drawn[] = new Line[3], splited[] = new Line[3];
+    //int drawnLen = 0, drawnStartRed = 0;
+    //char drawn[] = new char[256];
+    //char buf[] = new char[256];
+
+    void paintLine(int y, Line drawn, Line line) {
+        //int maxCommon = Math.min(Math.min(startRed, len), drawnStartRed);
+        int maxCommon = Math.min(drawn.len, line.len);
+        if (drawn.redPos != line.redPos) {
+            if (drawn.redPos < maxCommon) { maxCommon = drawn.redPos; }
+            if (line.redPos  < maxCommon) { maxCommon = line.redPos; }
+        }
+        int common = 0;
+        while (common < maxCommon && drawn.chars[common] == line.chars[common]) { ++common; }
+        int commonW = font.charsWidth(line.chars, 0, common);
+        int w1 = font.charsWidth(line.chars,  common, line.len - common);
+        int w2 = font.charsWidth(drawn.chars, common, drawn.len - common);
+        int paintW  = Math.max(w1, w2);
+        imgG.setColor(0xffffff);
+        imgG.fillRect(commonW, y, paintW, lineHeight);
+        imgG.setColor(0);
+        imgG.drawChars(line.chars, common, line.len - common, commonW, y, 0);
+        if (common <= line.redPos && line.redPos < line.len) {
+            int pos = commonW + font.charsWidth(line.chars, common, line.redPos - common);
+            imgG.setColor(0xff0000);
+            imgG.drawChar(line.chars[line.redPos], pos, y, 0);
+        }
+
+        System.arraycopy(line.chars, common, drawn.chars, common, line.len - common);
+        drawn.len = line.len;
+        drawn.redPos = line.redPos;
+
+        repaint(commonW, y, paintW, lineHeight);
+    }
 
     void paintEdit() {
-        int len = entry.line.length();
+        //int len = entry.line.length();
         //System.out.println("Len " + len);
-        entry.line.getChars(0, len, buf, 0);
-        buf[len] = 0;
-
-        int startRed = expr.tokenStart - 2;
-        int maxCommon = Math.min(Math.min(startRed, len), drawnStartRed);
-        int common = 0;
-        while (common < maxCommon && drawn[common] == buf[common]) { ++common; }
-        int commonW = font.charsWidth(buf, 0, common);
-        //int paintLen = Math.max(len, drawnLen) - common;
-        int paintW  = Math.max(font.charsWidth(buf, common, len-common), font.charsWidth(drawn, common, drawnLen-common));
-        editG.setColor(0xffffff);
-        editG.fillRect(commonW, 0, paintW, editH);
-        int pos2 = commonW;
-        if (startRed > common) {
-            editG.setColor(0);
-            editG.drawChars(buf, common, startRed - common, commonW, 0, 0);
-            pos2 += font.charsWidth(buf, common, startRed - common);
+        //entry.line.getChars(0, len, buf, 0);
+        //buf[len] = 0;
+        setCursor(drawCursor); //invalidate
+        int redPos = expr.tokenStart - 2;
+        split(entry.line, redPos, splited);
+        int y = editY;
+        imgG.setFont(font);
+        int cursorPos = entry.pos + 1;
+        //System.out.println("cursor " + cursorPos);
+        Line line;
+        for (int i = 0; i < 3; ++i, y += lineHeight) {
+            line = splited[i];
+            paintLine(y, drawn[i], line);
+            if (cursorPos >= 0 && cursorPos <= line.len) {
+                cursorX = font.charsWidth(line.chars, 0, cursorPos);
+                cursorY = y;
+                cursorPos = -1;
+            } else {
+                cursorPos -= line.len;
+            }
         }
-        if (startRed < len) {
-            int start = Math.max(common, startRed);
-            editG.setColor(0xff0000);
-            editG.drawChars(buf, start, len - start, pos2, 0, 0);
-        }
-
-        repaint(commonW, editY, paintW, editH);
-        System.arraycopy(buf, common, drawn, common, len - common + 1);
-        drawnLen = len;
-        drawnStartRed = startRed;
-        setCursor(drawCursor);
-        cursorX = font.charsWidth(buf, 0, entry.pos + 1);
         setCursor(true);
     }
 
