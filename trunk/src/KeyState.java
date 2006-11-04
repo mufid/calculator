@@ -97,7 +97,7 @@ final class KeyState {
         });
         */
 
-        keypad = digits;
+        //keypad = digits;
     }
 
     Object keys[];
@@ -122,10 +122,10 @@ final class KeyState {
         if (o instanceof String) {
             String str = (String)o;
             if (str.equals(". -")) { 
-                digits.set(11, "-");
+                //digits.set(11, "-");
                 return "."; 
             }
-            keypad = digits;
+            //keypad = digits;
             Symbol symbol = Expr.symbols.get(str);
             if (symbol == null) {
                 return str;
