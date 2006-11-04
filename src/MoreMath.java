@@ -430,7 +430,8 @@ class MoreMath {
         } 
         return x > 1e-10 ? x : 0;
     }
-    
+
+    /*
     // coefficients for gamma=7, kmax=8  Lanczos method
     static final double L[] = {
         0.99999999999980993227684700473478,
@@ -446,17 +447,21 @@ class MoreMath {
         1.50563273514931155834e-7
     };
     static final double SQRT2PI_E7 = 0.0022857491179850423937807; //sqrt(2*pi)/e**7
-
-    static final double gammaFact(double x) {
+    static final double lanczosGamma(double x) {
         if (x <= -1) return Double.NaN;
         double a = L[0];
         for (int i = 1; i < 9; ++i) {
             a += L[i] / (x + i);
         }
-        //double t = x + 7.5;
-        //return SQRT2PI * pow(t, x+.5) * exp(-t) * a; 
         return (SQRT2PI_E7 * a) * Math.pow((x+7.5)/Math.E, x + .5);        
     }
+    */
+
+    /*
+    static final double fact(double x) {
+        return SQRT2PI * Math.sqrt(x) * (1 + 1/(12*x) + 1/(288*x*x)) * Math.pow(x/Math.E, x);
+    }
+    */
 
     static final double FACT[] = {
         1.,
@@ -484,34 +489,27 @@ class MoreMath {
     };
 
     static final double factorial(double x) {
-        if (x < 0) {
+        if (x <= -1) {
             return Double.NaN;
         }
-        if (x > 170) {
-            return Double.POSITIVE_INFINITY;
-        }
-        if (Math.floor(x) == x) {
-            int n = (int)x;
-            double extra = x;
-            switch (n & 7) {
-            case 7: extra *= --x;
-            case 6: extra *= --x;
-            case 5: extra *= --x;
-            case 4: extra *= --x;
-            case 3: extra *= --x;
-            case 2: extra *= --x;
-            case 1: return FACT[n >> 3] * extra;
-            case 0: return FACT[n >> 3];
+        if (x <= 170) {
+            if (Math.floor(x) == x) {
+                int n = (int)x;
+                double extra = x;
+                switch (n & 7) {
+                case 7: extra *= --x;
+                case 6: extra *= --x;
+                case 5: extra *= --x;
+                case 4: extra *= --x;
+                case 3: extra *= --x;
+                case 2: extra *= --x;
+                case 1: return FACT[n >> 3] * extra;
+                case 0: return FACT[n >> 3];
+                }
             }
         }
-        return gammaFact(x);
+        return exp(lgamma(x+1));
     }
-
-    /*
-    static final double fact4(double x) {
-        return SQRT2PI * Math.sqrt(x) * (1 + 1/(12*x) + 1/(288*x*x)) * Math.pow(x/Math.E, x);
-    }
-    */
 
     static final double
         a0  =  7.72156649015328655494e-02, /* 0x3FB3C467, 0xE37DB0C8 */
@@ -657,7 +655,31 @@ class MoreMath {
             r =  x*(log(x)-one);
         return r;
     }
-    
+
+    static final double comb(double n, double k) {
+        //if (k > n) { return Double.NaN; }
+        if (Math.floor(n) == n && Math.floor(k) == k) {
+            if (n <= 170 && k <= 170) {
+                return factorial(n)/factorial(k)/factorial(n-k);
+            } else {
+                return Math.floor(exp(lgamma(n) - lgamma(k) - lgamma(n-k)) + .5);
+            }
+        } else {
+            return exp(lgamma(n) - lgamma(k) - lgamma(n-k));
+        }
+    }
+
+    static final double perm(double n, double k) {
+        if (Math.floor(n) == n && Math.floor(k) == k) {
+            if (n <= 170 && k <= 170) {
+                return factorial(n)/factorial(n-k);
+            } else {
+                return Math.floor(exp(lgamma(n) - lgamma(n-k)) + .5);
+            }
+        } else {
+            return exp(lgamma(n) - lgamma(n-k));
+        }
+    }
 
     static final double pow(double x, double y) {
         double z,ax,z_h,z_l,p_h,p_l;

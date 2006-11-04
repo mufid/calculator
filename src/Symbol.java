@@ -125,9 +125,9 @@ class BuiltinFun extends Symbol {
         case MIN:  return Math.min(x, params[1]);
         case MAX:  return Math.max(x, params[1]);
         case GCD:  return MoreMath.gcd(x, params[1]);
-        case COMB: return 0;
-        case PERM: return 0;
-        case RND: return random.nextDouble();
+        case COMB: return MoreMath.comb(x, params[1]);
+        case PERM: return MoreMath.perm(x, params[1]);
+        case RND:  return random.nextDouble();
         }
         throw new Error("unhandled code " + code);
     }

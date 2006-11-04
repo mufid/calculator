@@ -290,6 +290,7 @@ class CalcCanvas extends Canvas {
         boolean atStart = acceptDot && (entry.pos == -1 || !isDigitAt(entry.pos));
 
         KeyState.rootOp.set(10, (number && !pastE) ? "E" : null);
+        /*
         if (id || number) {
             KeyState.digits.set(9, KeyState.rootOp);
         } else if (atStart) {
@@ -297,7 +298,9 @@ class CalcCanvas extends Canvas {
         } else {
             KeyState.digits.set(9, null);
         }
+        */
         
+        /*
         if (acceptDot) {
             KeyState.digits.set(11, ". -");
         } else if (acceptMinus) {
@@ -305,7 +308,8 @@ class CalcCanvas extends Canvas {
         } else {
             KeyState.digits.set(11, null);
         }
-        KeyState.keypad = id ? KeyState.rootOp : KeyState.digits;
+        */
+        //KeyState.keypad = id ? KeyState.rootOp : KeyState.digits;
     }
     
     final boolean isDigitAt(int p) {
