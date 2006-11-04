@@ -22,6 +22,14 @@ class Expr {
     
     boolean insideFunDef;
     int arity;
+
+    final static double fact(double n) {
+        double r = n;
+        while (--n > 0) {
+            r *= n;
+        }
+        return r;
+    }
     
     public static void main(String argv[]) {
         /*
@@ -30,12 +38,37 @@ class Expr {
         System.out.println(MoreMath.PI + " " + MoreMath.E);
         */
 
+        /*
         Expr parser = new Expr();
         int n = argv.length;
         for (int i = 0; i < n; ++i) {
             double v = parser.parseDecl(argv[i]);
             System.out.println("   = " + v);
         }
+        */
+        
+        /*
+        System.out.println("gcd = " + MoreMath.gcd(1/3., 1/5.));
+        for (double i = 2.; i < 65.; i += 3.) {
+            double f1 = fact(i);
+            double f2 = MoreMath.factorial(i);
+            //System.out.println("" + i + " " +  f1 + "   " + f2 + "    " + (f2 - f1)/f1);
+            System.out.println("" + i + " " +  (f2 - f1)/f1 + "   " + (MoreMath.fact2(i) - f1)/f1);
+        }
+        */
+
+        for (double i = 1; i < 172; i += 8) {
+            double f1 = MoreMath.factorial(i);
+            double f2 = MoreMath.gammaFact(i);
+            //double f3 = MoreMath.fact2(i);
+                //MoreMath.gammaFact(i-2) * ((i-1)*i);
+                //MoreMath.fact2(i);
+            //System.out.println("" + i + "   " + (f2 - f1)/f1 + "    " + (f3 - f1)/f1);
+            System.out.println("" + (i+1 - MoreMath.gammaFact(i + 1) / f2) + "   " +
+                               (i+1 - MoreMath.fact4(i + 1) / MoreMath.fact4(i)));
+        }
+
+        //System.out.println("" + MoreMath.factorial(167.9) + "  " + MoreMath.factorial(171));
     }
 
     Expr() {
@@ -93,6 +126,10 @@ class Expr {
         }
     }
 
+    static final boolean isLetter(char c) {
+        return ('a' <= c && c <= 'z') || c == '_' || c == '\u03c0';
+    }
+
     private void scan() {
         tokenType = '$';
         tokenStart = pos;
@@ -139,10 +176,10 @@ class Expr {
                 }
             } else try {
                 c = Character.toLowerCase(c);
-                if (CalcCanvas.isLetter(c)) {
+                if (isLetter(c)) {
                     tokenType = 'a';
                     tokenID.setLength(0);
-                    while (CalcCanvas.isLetter(c) || Character.isDigit(c)) {
+                    while (isLetter(c) || Character.isDigit(c)) {
                         tokenID.append(c);
                         ++pos;
                         c = Character.toLowerCase(text[pos]);
@@ -191,13 +228,14 @@ class Expr {
     
     private final double parseMul() {
         double left = parseExp();
+        double right;
         while (tokenType == '*' || tokenType == '/' || tokenType == '%') {
             char save = tokenType;
-            double right = parseExp();
+            right = parseExp();
             switch (save) {
             case '*': left *= right; break;
             case '/': left /= right; break;
-            case '%': left = MoreMath.mod(left, right); break;
+            case '%': left = left % right; break;
             }
         }
         return left;
