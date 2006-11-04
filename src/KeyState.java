@@ -4,7 +4,7 @@ final class KeyState {
     static Font font, bold;
     static int fontHeight;
     static int w, h, cellWidth, cellHeight, yPos, interSpace;
-    static KeyState digits, rootOp, trigs, hyps, logs, ints, vars, funcs, rootExp;
+    static KeyState rootOp, trigs, hyps, logs, ints, vars, funcs, rootExp;
     static KeyState keypad, lastPainted;
 
     /*
@@ -34,69 +34,64 @@ final class KeyState {
         h = cellHeight * 4;
         yPos = sh - h;
 
+        /*
         digits = new KeyState(new Object[] {
             "1",     "2", "3",
             "4",     "5", "6",
             "7",     "8", "9",
             null,    "0", ". -",
         });
+        */
 
         // ! "f:=" "," "hyp"
         
         trigs = new KeyState(new Object[] {
             "sin",   "cos",   "tan", 
             "asin",  "acos",  "atan", 
-            null,    null,    null,
-            null,   null,    null,
+            "sinh",  "cosh",  "tanh",
+            "asinh", "acosh", "atanh",
         });
                 
         logs = new KeyState(new Object[] {
             "log10", "ln",  "log2",
-            null,    null,    null,
+            null,    "cbrt",    null,
             null,     null,    null,
             null,     null,    null
         });
 
         rootOp = new KeyState(new Object[] {
-            null, null, null,
-            "^", "%",  ")", 
-            "*", "/",  null,  //","
-            "+", "E",  "-",
+            "(",  ",",  ")",
+            "^",  "!",  null, 
+            "*",  "/",  "%",
+            "+",  "-",  null,
         });
 
         rootExp = new KeyState(new Object[] {
-            trigs,    logs,  null,
-            "\u03c0",  "e",  "(",
-            null, null, null,
-            "ans", "sqrt", "cbrt", //"\u221a", "\u221b",
+            trigs,    logs,  ints,
+            "\u03c0", "e",  "sqrt",
+            vars,      ":=", "ans",
+            null,     "E",   ".",
         });
         
-        /*
         ints = new KeyState(new Object[] {
-            "int",  "frac", "ceil",
-            "sign", "abs",  "floor",
-            "min",  "max",  null,
-            null, null, null,
-            //"comb", "perm", "fib",
-        });
-
-        hyps = new KeyState(new Object[] {
-            "sinh",  "cosh",  "tanh",
-            "asinh", "acosh", "atanh",
-            null, null, null,
-            null, null, null,
+            "int",  "frac", "abs",
+            "floor","ceil", "sign",
+            "min",  "max",  "gcd",
+            "comb", "perm", "rnd",
         });
 
         vars = new KeyState(new Object[] {
-            "a",    "b",    "c",
-            "pi",   "e",    "phi",
-            "M",    "ans1", "ans2",
-            null,   null,   null,
+            "f", "g", "h",
+            "x", "y", "z",
+            "a", "b", "c",
+            "phi", null, null,
         });
+        
 
-        funcs = new KeyState(new Object[] {
-            "f",     "g",    "h",
-            "hypot", "dist", null,
+        /*
+        hyps = new KeyState(new Object[] {
+            "sinh",  "cosh",  "tanh",
+            "asinh", "acosh", "atanh",
             null, null, null,
             null, null, null,
         });

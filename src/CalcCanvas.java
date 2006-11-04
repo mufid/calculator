@@ -271,7 +271,7 @@ class CalcCanvas extends Canvas {
         boolean acceptDot = !pastE;
         if (p >= 0) {
             char c = Character.toLowerCase(entry.line.charAt(p));
-            if (isLetter(c) || c == ')' || c == '!') {
+            if (Expr.isLetter(c) || c == ')' || c == '!') {
                 id = true;
                 number = false;
                 pastE = false;
@@ -312,12 +312,8 @@ class CalcCanvas extends Canvas {
         return Character.isDigit(entry.line.charAt(p));
     }
 
-    static final boolean isLetter(char c) {
-        return ('a' <= c && c <= 'z') || c == '_' || c == '\u03c0';
-    }
-
     final boolean isLetterAt(int p) {
-        return isLetter(entry.line.charAt(p));
+        return Expr.isLetter(entry.line.charAt(p));
     }
 
     void delFromLine() {

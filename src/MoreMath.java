@@ -45,7 +45,8 @@ class MoreMath {
         LOG10E = 0.43429448190325182765,
         LN2    = 0.69314718055994530942,
         LN10   = 2.30258509299404568402,
-        SQRT2  = 1.41421356237309504880;
+        SQRT2  = 1.41421356237309504880,
+        SQRT2PI = 2.50662827463100024157;
 
     private static final double
         zero = 0.0,
@@ -408,54 +409,121 @@ class MoreMath {
         return (x < 0) ? -cbrt(-x) : exp(oneThird * log(x)); 
     }
 
-    static final double floor(double x) {
-        int i0,i1,j0;
-        int i, j;
-        i0 = HI(x);
-        i1 = LO(x);
-        j0 = ((i0>>20)&0x7ff)-0x3ff;
-        if(j0<20) {
-            if(j0<0) { 	/* raise inexact if x != 0 */
-                if(huge+x>0.0) {/* return 0*sign(x) if |x|<1 */
-                    if(i0>=0) {i0=i1=0;} 
-                    else if(((i0&0x7fffffff)|i1)!=0)
-                        { i0=0xbff00000;i1=0;}
-                }
-            } else {
-                i = (0x000fffff)>>j0;
-                if(((i0&i)|i1)==0) return x; /* x is integral */
-                if(huge+x>0.0) {	/* raise inexact flag */
-                    if(i0<0) i0 += (0x00100000)>>j0;
-                    i0 &= (~i); i1=0;
-                }
-            }
-        } else if (j0>51) {
-            if(j0==0x400) return x+x;	/* inf or NaN */
-            else return x;		/* x is integral */
-        } else {
-            i = 0xffffffff >>> (j0-20);
-            if((i1&i)==0) return x;	/* x is integral */
-            if(huge+x>0.0) { 		/* raise inexact flag */
-                if(i0<0) {
-                    if(j0==20) i0+=1; 
-                    else {
-                        j = i1+(1<<(52-j0));
-                        if(j<i1) i0 +=1 ; 	/* got a carry */
-                        i1=j;
-                    }
-                }
-                i1 &= (~i);
-            }
-        }
-        //HI(x) = i0;
-        //LO(x) = i1;
-        return Double.longBitsToDouble((((long)i0) << 32) | (((long)(i1)) & 0xffffffffL));
+    static final double trunc(double x) {
+        return x >= 0 ? Math.floor(x) : Math.ceil(x);
     }
 
-    static final double mod(double x, double y) {
-        //return Math.IEEEremainder(x, y);
+    static final double gcd(double x, double y) {
+        //double remainder = y;
+        if (Double.isNaN(x) || Double.isNaN(y) ||
+            Double.isInfinite(x) || Double.isInfinite(y)) {
+            return Double.NaN;
+        }
+        x = Math.abs(x);
         y = Math.abs(y);
-        return (x < 0) ? -mod(-x, y) : (x - floor(x / y) * y);
+        double save;
+        while (y > 1e-12) {
+            save = y;
+            y = x % y;
+            x = save;
+            //System.out.println(y);
+        } 
+        return x > 1e-10 ? x : 0;
+    }
+    
+    /* coefficients for gamma=7, kmax=8  Lanczos method */
+    static final double L[] = {
+        0.99999999999980993227684700473478,
+        676.520368121885098567009190444019,
+        -1259.13921672240287047156078755283,
+        771.3234287776530788486528258894,
+        -176.61502916214059906584551354,
+        12.507343278686904814458936853,
+        -0.13857109526572011689554707,
+        9.984369578019570859563e-6,
+        1.50563273514931155834e-7
+    };
+    //static final double ONE_E_7 = 9.11881965554516208003e-4;
+    static final double SQRT2PI_E7 = 2.2857491179850423937807e-3; //sqrt(2*pi)/e**7
+    
+    static final double gammaFact(double x) {
+        if (x < 0) return Double.NaN;
+        double a = L[0];
+        for (int i = 1; i < 9; ++i) {
+            a += L[i] / (x + i);
+        }
+        //double t = x + 7.5;
+        //return SQRT2PI * pow(t, x+.5) * exp(-t) * a; 
+        return (SQRT2PI_E7 * a) * pow((x+7.5)/Math.E, x + .5);
+        
+    }
+
+    static final double FACT[] = {
+        1.,
+        40320.,
+        20922789888000.,
+        620448401733239439360000.,
+        263130836933693530167218012160000000.,
+        8.15915283247897734345611269600e47,
+        1.24139155925360726708622890474e61,
+        7.10998587804863451854045647464e74,
+        1.268869321858841641034333893350e89,
+        6.123445837688608686152407038530e103,
+        7.156945704626380229481153372320e118,
+        1.854826422573984391147968456460e134,
+        9.916779348709496892095714015400e149,
+        1.02990167451456276238485838648e166,
+        1.974506857221074023536820372760e182,
+        6.68950291344912705758811805409e198,
+        3.85620482362580421735677065923e215,
+        3.65904288195254865768972722052e232,
+        5.55029383273930478955105466055e249,
+        1.31133588568345254560672467123e267,
+        4.71472363599206132240694321176e284,
+        2.52607574497319838753801886917e302,
+    };
+
+    static final double factorial(double x) {
+        if (x < 0) {
+            return Double.NaN;
+        }
+        if (x > 170) {
+            return Double.POSITIVE_INFINITY;
+        }
+        if (Math.floor(x) == x) {
+            int n = (int)x;
+            double extra = x;
+            switch (n & 7) {
+            case 7: extra *= --x;
+            case 6: extra *= --x;
+            case 5: extra *= --x;
+            case 4: extra *= --x;
+            case 3: extra *= --x;
+            case 2: extra *= --x;
+            case 1: return FACT[n >> 3] * extra;
+            case 0: return FACT[n >> 3];
+            }
+        }
+        return gammaFact(x);
+    }
+
+    static final double fact2(double x) {
+        double floor = Math.floor(x);
+        double frac = x - floor;
+        //return factorial(x - 1) * pow(x, 1);
+        //return factorial(floor) * pow(x, frac) * ((Math.sqrt(x/floor) + 1) / 2);
+
+        //return Math.sqrt(x/floor) * pow(x/Math.E, frac) * pow(x/floor, floor) *
+        //    (1 - frac/(x*(12*floor+1))) *  factorial(floor);
+        return fact4(x)/fact4(floor)*factorial(floor);
+    }
+
+    static final double fact3(double x) {
+        return SQRT2PI * Math.sqrt(x) * pow(x/Math.E, x) * exp(1/12.32/x);
+    }
+
+    static final double fact4(double x) {
+        return SQRT2PI * Math.sqrt(x) * (1 + 1/(12*x) + 1/(288*x*x)) * pow(x/Math.E, x);
     }
 
     static final double pow(double x, double y) {

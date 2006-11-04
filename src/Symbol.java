@@ -1,3 +1,5 @@
+import java.util.*;
+
 abstract class Symbol {
     Symbol(String iniName) {
         name = iniName;
@@ -38,15 +40,24 @@ class BuiltinFun extends Symbol {
         ASIN = 4, ACOS = 5, ATAN = 6,
         SINH = 7, COSH = 8, TANH = 9,
         ASINH = 10, ACOSH = 11, ATANH = 12,
-        EXP  = 20, LOG  = 21, LOG10 = 22, LOG2  = 23,
-        ABS  = 30, SQRT = 31, CBRT  = 32, POW   = 33;
+        EXP   = 20, LOG  = 21, LOG10 = 22, LOG2  = 23,
+        SQRT = 31, CBRT  = 32, POW   = 33,
+        INT   = 40, FRAC = 41, ABS = 42,
+        FLOOR = 43, CEIL = 44, SIGN = 45,
+        MIN   = 46, MAX  = 47, GCD  = 48,
+        COMB  = 49, PERM = 50, RND  = 51,
+        FACT  = 52;
 
     static final String names[] = {
         "sin",  "cos",  "tan",  "asin",  "acos",  "atan",
         "sinh", "cosh", "tanh", "asinh", "acosh", "atanh",
         "exp",  "log",  "ln",   "log10", "log2",  "pow",
-        "abs",  "sqrt", "cbrt",
+        "sqrt", "cbrt",
         "\u221a", "\u221b",
+        "int", "frac", "abs",
+        "floor", "ceil", "sign",
+        "min", "max", "gcd",
+        "comb", "perm", "rnd",
     };
         
     /* keep 'codes' in sync with 'names' above */
@@ -54,8 +65,12 @@ class BuiltinFun extends Symbol {
         SIN,  COS,  TAN,  ASIN,  ACOS,  ATAN,
         SINH, COSH, TANH, ASINH, ACOSH, ATANH,
         EXP,  LOG,  LOG,  LOG10, LOG2,  POW,
-        ABS,  SQRT, CBRT,
         SQRT, CBRT,
+        SQRT, CBRT,
+        INT,  FRAC, ABS,
+        FLOOR,CEIL, SIGN,
+        MIN,  MAX,  GCD,
+        COMB, PERM, RND,
     };
 
     static void init(SymbolTable ht) {
@@ -71,6 +86,8 @@ class BuiltinFun extends Symbol {
     }
         
     int code;
+    Random random = new Random();
+    
     double eval(SymbolTable symbols, double params[]) {
         double x = params[0];
         switch (code) {
@@ -95,10 +112,22 @@ class BuiltinFun extends Symbol {
         case LOG10: return MoreMath.log10(x);
         case LOG2:  return MoreMath.log2(x);
             
-        case ABS:  return Math.abs(x);
         case SQRT: return Math.sqrt(x);
         case CBRT: return MoreMath.cbrt(x);
         case POW:  return MoreMath.pow(x, params[1]);
+
+        case INT:  return MoreMath.trunc(x);
+        case FRAC: return x - MoreMath.trunc(x);        
+        case ABS:  return Math.abs(x);
+        case FLOOR: return Math.floor(x);
+        case CEIL: return Math.ceil(x);
+        case SIGN: return x > 0 ? 1. : x < 0 ? -1. : 0.;
+        case MIN:  return Math.min(x, params[1]);
+        case MAX:  return Math.max(x, params[1]);
+        case GCD:  return MoreMath.gcd(x, params[1]);
+        case COMB: return 0;
+        case PERM: return 0;
+        case RND: return random.nextDouble();
         }
         throw new Error("unhandled code " + code);
     }
