@@ -57,15 +57,23 @@ class Expr {
         }
         */
 
-        for (double i = 1; i < 172; i += 8) {
-            double f1 = MoreMath.factorial(i);
-            double f2 = MoreMath.gammaFact(i);
-            //double f3 = MoreMath.fact2(i);
+        //System.out.println(MoreMath.xxx + "  " + MoreMath.SQRT2PI_E7);
+
+        for (double i = 169; i < 171; i += .2) {
+            double x = i;
+            double f1 = MoreMath.factorial(x);
+            double f2 = MoreMath.gammaFact(x);
+            double f3 = Math.exp(MoreMath.lgamma(x+1));
+            
+            System.out.println(i + "   " + f1 + "   " + (f2/*-f1*/) + "   " + (f3/*-f1*/));
+
+            
+                //MoreMath.gammaFact2(x);
                 //MoreMath.gammaFact(i-2) * ((i-1)*i);
                 //MoreMath.fact2(i);
-            //System.out.println("" + i + "   " + (f2 - f1)/f1 + "    " + (f3 - f1)/f1);
-            System.out.println("" + (i+1 - MoreMath.gammaFact(i + 1) / f2) + "   " +
-                               (i+1 - MoreMath.fact4(i + 1) / MoreMath.fact4(i)));
+            //System.out.println("" + i + "   " + (f2 - f1)/f1+ "    " + (f3 - f1)/f1);
+            //System.out.println("" + (i+1 - MoreMath.gammaFact(i + 1) / f2) + "   " +
+            //(i+1 - MoreMath.fact4(i + 1) / MoreMath.fact4(i)));
         }
 
         //System.out.println("" + MoreMath.factorial(167.9) + "  " + MoreMath.factorial(171));
