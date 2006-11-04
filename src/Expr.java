@@ -12,7 +12,7 @@ class Expr {
         symbols.put(new DefinedFun("hypot", new String[]{"x", "y"}, "sqrt(x*x+y*y)")); 
     }
 
-    char text[] = null;
+    char text[] = new char[128];
     int n = 0;
 
     char tokenType;
@@ -45,16 +45,42 @@ class Expr {
     Expr() {
     }
 
+    /*
     private void init(String s) {
-        text = s.toCharArray();
-        n = text.length;
+        n = s.length();
+        s.getChars(0, n, text, 0);
         pos = 0;
         tokenStart = -1;
         tokenType = '$';
     }
+    */
 
+    char tmp[] = new char[128];
     double parseNoDecl(String str) {
-        init("((" + str + '$');
+        int sz = str.length();
+        str.getChars(0, sz, tmp, 0);
+        int openParens = 0;
+        for (int i = 0; i < sz; ++i) {
+            if (tmp[i] == '(') {
+                ++openParens;
+            } else if (tmp[i] == ')') {
+                --openParens;
+            }
+        }
+        int p = 0;
+        for (int i = openParens; i < 0; ++i) {
+            text[p++] = '(';
+        }
+        str.getChars(0, sz, text, p);
+        p += sz;
+        for (int i = 0; i < openParens; ++i) {
+            text[p++] = ')';
+        }
+        text[p++] = '$';
+        n = p;
+        pos = 0;
+        tokenStart = -1;
+        tokenType = '$';
         insideFunDef = false;
         return parseWholeExpression();
     }
@@ -64,7 +90,7 @@ class Expr {
         if (equalPos != -1) {
             String text1 = str.substring(0, equalPos);
             String text2 = str.substring(equalPos + 1);
-            init(text1);
+            //!!! init(text1);
             scan();
             if (tokenType != 'a') {
                 throw new Error("Def: expected id, found " + text1);
@@ -74,7 +100,7 @@ class Expr {
             if (tokenType != '$') {
                 throw new Error("Def: expected id, found " + text1);
             }
-            init(text2);
+            //!!! init(text2);
             insideFunDef = true;
             arity = 0;
             double val = parseWholeExpression();
@@ -232,10 +258,10 @@ class Expr {
 
         case '(': 
             value = parseExpression();
-            if (tokenType == ')') {
-                scan();
+            if (tokenType != ')') {
+                throw new Error();
             }
-            return value;
+            break;
             
         case '0': 
             value = tokenValue; 
@@ -255,21 +281,28 @@ class Expr {
                 } while (tokenType == ',');
                 params = new double[pos];
                 System.arraycopy(vect, 0, params, 0, pos);
-                if (tokenType == ')') { scan(); }
-            }
-            if (insideFunDef && (id.length() == 1)) {
+                if (tokenType != ')') { 
+                    throw new Error();
+                }
+            } else if (insideFunDef && (id.length() == 1)) {
                 int p = "xyz".indexOf(id.charAt(0));
                 if (p != -1) {
                     if (arity <= p) { arity = p + 1; }
                 }
-                return 0.;
+                value = 0;
+                break;
             }
-            return Symbol.evaluate(symbols, id, params);
+            value = Symbol.evaluate(symbols, id, params);
+            break;
             
         default:
             throw new Error(); //tokenType);
         }
         scan();
+        if (tokenType == '!') {
+            value = MoreMath.factorial(value);
+            scan();
+        }
         return value;
     }
 }
