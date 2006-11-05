@@ -22,14 +22,6 @@ class Expr {
     
     boolean insideFunDef;
     int arity;
-
-    final static double fact(double n) {
-        double r = n;
-        while (--n > 0) {
-            r *= n;
-        }
-        return r;
-    }
     
     public static void main(String argv[]) {
         /*
@@ -40,22 +32,6 @@ class Expr {
             System.out.println("   = " + v);
         }
         */
-
-        double a, b;
-        String s;
-        for (int i = 0; i < 30; ++i) {
-            System.out.println(MoreMath.factorialInt(i));
-
-            /*
-            a = MoreMath.FACT[i];
-            s = Double.toString(a);
-            b = Double.parseDouble(s);
-            if (a != b) {
-                System.out.println("-----");
-            }
-            System.out.println(s);
-            */
-        }
     }
 
     Expr() {
