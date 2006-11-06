@@ -420,36 +420,8 @@ class MoreMath {
         return x > 1e-10 ? x : 0;
     }
 
-    // coefficients for gamma=7, kmax=8  Lanczos method
-    static final double L[] = {
-        0.99999999999980993227684700473478,
-      //0.99999999999981800227684700473478, //mihai
-        676.520368121885098567009190444019,
-      //676.520368121884898567009190444019, //mihai        
-        -1259.13921672240287047156078755283,
-        771.3234287776530788486528258894,
-        -176.61502916214059906584551354,
-        12.507343278686904814458936853,
-        -0.13857109526572011689554707,
-        9.984369578019570859563e-6,
-        1.50563273514931155834e-7
-    };
-    static final double SQRT2PI_E7 = 0.0022857491179850424; //sqrt(2*pi)/e**7
-    static final double lanczosGamma(double x) {
-        if (x <= -1) return Double.NaN;
-        double a = L[0] + L[1]/(x+1.) + L[2]/(x+2.) + L[3]/(x+3.) + L[4]/(x+4.) +
-        L[5]/(x+5.) + L[6]/(x+6.) + L[7]/(x+7.) + L[8]/(x+8.);
-        return (SQRT2PI_E7 * a) * pow((x+7.5)/Math.E, x + .5);        
-    }
     static final double LN_SQRT2PI = 0.9189385332046727418;
-    static final double lanczosLGamma(double x) {
-        if (x <= -1) return Double.NaN;
-        double a = L[0] + L[1]/(x+1.) + L[2]/(x+2.) + L[3]/(x+3.) + L[4]/(x+4.) +
-        L[5]/(x+5.) + L[6]/(x+6.) + L[7]/(x+7.) + L[8]/(x+8.);
-        return (LN_SQRT2PI + log(a) - 7.) + (x+.5)*log((x+7.5)/Math.E);
-    }
-
-    private static final double[] LL = {
+    private static final double[] L = {
         0.99999999999999709182,
         57.156235665862923517,
         -59.597960355475491248,
@@ -468,43 +440,16 @@ class MoreMath {
     };
     private static final double G_PLUS_HALF = 607/128. + .5;
  
-    static final double lanczosLGamma2(double x) {
+    static final double lanczosLGamma(double x) {
         if (x <= -1) return Double.NaN;
-        double a = LL[0] + 
-            LL[1]/(x+1.)   + LL[2]/(x+2.)   + LL[3]/(x+3.)   + LL[4]/(x+4.) +
-            LL[5]/(x+5.)   + LL[6]/(x+6.)   + LL[7]/(x+7.)   + LL[8]/(x+8.) +
-            LL[9]/(x+9.)   + LL[10]/(x+10.) + LL[11]/(x+11.) + LL[12]/(x+12.) +
-            LL[13]/(x+13.) + LL[14]/(x+14.);
+        double a = L[0];
+        for (int i = 1; i < 15; ++i) {
+            a += L[i]/(x+i);
+        }
         double tmp = x + G_PLUS_HALF;
         return (LN_SQRT2PI + log(a)) + (x+.5)*log(tmp) - tmp;
     }
          
-    static final double 
-        SC1 = 0.08333333333333333, 
-        SC2 = 0.003472222222222222, 
-        SC3 = -0.0026813271604938273,
-        SC4 = -2.2947209362139917E-4,
-        LC2 = -0.002777777777777778,
-        LC3 = 7.936507936507937E-4,
-        LC4 = -5.952380952380953E-4;
-    static final double stirlingGamma(double x) {
-        final double 
-            r1 = 1./x,
-            r2 = r1*r1,
-            r4 = r2*r2;
-        return SQRT2PI * Math.sqrt(x) * (1 + SC1*r1 + SC2*r2 + SC3*r1*r2 + SC4*r4) * pow(x/Math.E, x);
-    }
-
-    static final double stirlingLGamma(double x) {
-        final double 
-            r1 = 1./x,
-            r2 = r1*r1,
-            r3 = r1*r2,
-            r5 = r2*r3,
-            r7 = r3*r3*r1;
-        return (x+.5)*log(x) -x + LN_SQRT2PI + SC1*r1 + LC2*r3 + LC3*r5 + LC4*r7;
-    }
-
     static final double FACT[] = {
         1.0,
         40320.0,
