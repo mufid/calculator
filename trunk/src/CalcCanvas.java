@@ -70,7 +70,6 @@ class CalcCanvas extends Canvas {
         screenH = getHeight();
 
         KeyState.init(w, screenH);
-        //keypadH = ;
         h = screenH - KeyState.h;
 
         setFont(h > largeHeight * 5 ? largeFont : normalFont);
@@ -83,12 +82,6 @@ class CalcCanvas extends Canvas {
 
         img  = Image.createImage(w, h);
         imgG = img.getGraphics();
-
-        /*
-        editG = img.getGraphics();
-        editG.translate(0, editY);
-        editG.setFont(font);
-        */
 
         imgG.setColor(0xe0e0ff);
         imgG.fillRect(0, 0, w, h);
@@ -104,9 +97,7 @@ class CalcCanvas extends Canvas {
                     setCursor(!drawCursor);
                 }
             }, 400, 400);
-        resetState();
         repaint();
-
         expr.symbols.put(ans);
     }
 
@@ -220,14 +211,18 @@ class CalcCanvas extends Canvas {
     }
     
     int prevFlexPoint(int pos) {
-        if (pos == -1) {
+        if (pos < 0) {
             return pos;
         }
+        if (isDigitAt(pos)) {
+            return pos-1;
+        }
         int p = pos;
-        if (p >= 0 && entry.line.charAt(p) == '(') --p;
-        while (p >= 0 && isDigitAt(p)) --p;
+        if (pos >= 1 && entry.line.charAt(pos) == '(') {
+            --p;
+        }
         if (p >= 0 && isLetterAt(p)) {
-            while (p >= 0 && (isLetterAt(p) || isDigitAt(p))) --p;
+            while (p >= 0 && isLetterAt(p)) --p;
             return p;
         }
         return pos - 1;
@@ -238,78 +233,15 @@ class CalcCanvas extends Canvas {
         if (pos >= len - 1) {
             return pos;
         }
-        int p = pos + 1;
-        if (isLetterAt(p)) {
-            ++p;
-            while (p < len && (isLetterAt(p) || isDigitAt(p))) ++p;
-            if (p < len && entry.line.charAt(p) == '(') ++p;
-            return p - 1;
+        ++pos;
+        if (isLetterAt(pos)) {
+            do {
+                ++pos;
+            } while (pos < len && isLetterAt(pos));
+            if (pos < len && entry.line.charAt(pos) == '(') ++pos;
+            return pos - 1;
         }
-        return pos + 1;
-    }
-
-    void resetState() {
-        int p = entry.pos;
-        boolean number = false;
-        while (p >= 0 && isDigitAt(p)) {
-            number = true;
-            --p;
-        }
-        boolean pastE = false;
-        if (p >= 0 && entry.line.charAt(p) == 'E') {
-            pastE = true;
-            --p;
-        } else if (p >= 1 && entry.line.charAt(p) == '-' && entry.line.charAt(p-1) == 'E') {
-            pastE = true;
-            p -= 2;
-        }
-        while (p >= 0 && isDigitAt(p)) {
-            number = true;
-            --p;
-        }
-        boolean id = false;
-        boolean acceptDot = !pastE;
-        if (p >= 0) {
-            char c = Character.toLowerCase(entry.line.charAt(p));
-            if (Expr.isLetter(c) || c == ')' || c == '!') {
-                id = true;
-                number = false;
-                pastE = false;
-                acceptDot = false;
-            } else if (c == '.') {
-                acceptDot = false;
-                if (p > 0 && isDigitAt(p - 1)) {
-                    number = true;
-                }
-            }
-        }
-        boolean acceptMinus = !pastE || entry.line.charAt(entry.pos) == 'E';
-        if (pastE && (entry.line.charAt(entry.pos) == 'E' || entry.line.charAt(entry.pos) == '-')) {
-            number = false;
-        }
-        boolean atStart = acceptDot && (entry.pos == -1 || !isDigitAt(entry.pos));
-
-        KeyState.rootOp.set(10, (number && !pastE) ? "E" : null);
-        /*
-        if (id || number) {
-            KeyState.digits.set(9, KeyState.rootOp);
-        } else if (atStart) {
-            KeyState.digits.set(9, KeyState.rootExp);
-        } else {
-            KeyState.digits.set(9, null);
-        }
-        */
-        
-        /*
-        if (acceptDot) {
-            KeyState.digits.set(11, ". -");
-        } else if (acceptMinus) {
-            KeyState.digits.set(11, "-");
-        } else {
-            KeyState.digits.set(11, null);
-        }
-        */
-        //KeyState.keypad = id ? KeyState.rootOp : KeyState.digits;
+        return pos;
     }
     
     final boolean isDigitAt(int p) {
@@ -426,12 +358,12 @@ class CalcCanvas extends Canvas {
                 }
             } else {
                 if (key == -8 || key == -11 || key == -12) { //delete
-                    KeyState save = KeyState.keypad;
-                    resetState();
-                    if (save == KeyState.keypad) {
+                    if (KeyState.keypad != null) {
                         delFromLine();
+                        redrawEdit = true;
+                    } else {
+                        KeyState.keypad = null;
                     }
-                    redrawEdit = true;
                 }
             }
         }
@@ -457,7 +389,6 @@ class CalcCanvas extends Canvas {
                 repaint(0, resultY, w, resultH);
             }
             paintEdit();
-            resetState();
         } 
         KeyState.repaint(this);
     }
