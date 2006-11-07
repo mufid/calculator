@@ -32,7 +32,7 @@ final class KeyState {
         interSpace = (sw - cellWidth*3 + 3)/6;
 
         h = cellHeight * 4;
-        yPos = 0; //sh - h;
+        yPos = sh - h;
         
         trigs = new KeyState(new Object[] {
             "sin",   "cos",   "tan", 
