@@ -193,7 +193,10 @@ class CalcCanvas extends Canvas {
         for (int i = 0, y = 2; i < nEditLines; ++i, y+=lineHeight) {
             paintLine(y, drawn[i], splited[i]);
         }
-        nDrawnLines = nEditLines;
+        if (nEditLines != nDrawnLines) {
+            repaint();
+            nDrawnLines = nEditLines;
+        }
     }
 
     private final int cursorLC[] = new int[2];
@@ -201,7 +204,7 @@ class CalcCanvas extends Canvas {
         setCursor(drawCursor);
         computeLineCoords(splited, nEditLines, entry.pos, cursorLC);
         int cursorL = cursorLC[0];
-        cursorY = 2 + cursorL * lineHeight;
+        cursorY = cursorL * lineHeight + 1;
         cursorX = font.charsWidth(splited[cursorL].chars, 0, cursorLC[1] + 1);
         System.out.println("cursor: l " + cursorL + " c " + cursorLC[1] +
                            " x " + cursorX + " y " + cursorY);
@@ -267,17 +270,18 @@ class CalcCanvas extends Canvas {
             //newResult = 
         } catch (Error e) {
         }
+        //System.out.println("result " + newResult);
         if (hasNewResult != hasResult || newResult != result) {
             result = newResult;
             hasResult = hasNewResult;
             Graphics g = gg[RESULT];
             g.setColor(bgCol[RESULT]);
             g.fillRect(0, 0, w, height[RESULT]);
-            int resultY = nEditLines * lineHeight + 2;
             if (hasResult) {
                 g.setColor(fgCol[RESULT]);
-                g.drawString(format(result), w, resultY, Graphics.TOP|Graphics.RIGHT);
+                g.drawString("= " + format(result), 0, 0, 0);
             }
+            int resultY = nEditLines * lineHeight + 2;
             repaint(0, resultY, w, height[RESULT]);
         }        
     }
