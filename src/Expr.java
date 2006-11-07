@@ -25,14 +25,12 @@ class Expr {
     int arity;
     
     public static void main(String argv[]) {
-        /*
         Expr parser = new Expr();
         int n = argv.length;
         for (int i = 0; i < n; ++i) {
-            double v = parser.parseDecl(argv[i]);
+            double v = parser.parseNoDecl(argv[i]);
             System.out.println("   = " + v);
         }
-        */
     }
 
     Expr() {
@@ -123,6 +121,7 @@ class Expr {
     private void scan() {
         tokenType = '$';
         tokenStart = pos;
+        //System.out.println("pos " + pos + "; n " + n + "; c " + text[pos]);
         if (pos < n) { 
             char c = text[pos];
             if ((c >= '0' && c <= '9') || c == '.') {
@@ -164,33 +163,22 @@ class Expr {
                 } catch (NumberFormatException e) {
 
                 }
-            } else try {
-                c = Character.toLowerCase(c);
+            } else {
                 if (isLetter(c)) {
                     tokenType = 'a';
                     tokenID.setLength(0);
                     while (isLetter(c) || Character.isDigit(c)) {
                         tokenID.append(c);
                         ++pos;
-                        c = Character.toLowerCase(text[pos]);
+                        c = text[pos];
                     }
                 } else {
                     //+-*/%^()
                     ++pos;
                     tokenType = c;
                 }
-            } catch (ArrayIndexOutOfBoundsException e) {
             }
         }
-        /*
-        if (tokenType == '0') {
-            System.out.println(tokenValue);
-        } else if (tokenType == 'a') {
-            System.out.println(tokenID.toString());
-        } else {
-            System.out.println(tokenType);
-        }
-        */
     }
 
     private final double parseWholeExpression() {
@@ -254,10 +242,12 @@ class Expr {
             if (tokenType != ')') {
                 throw new Error();
             }
+            scan();
             break;
             
         case '0': 
-            value = tokenValue; 
+            value = tokenValue;
+            scan();
             break;
 
         case 'a':
@@ -274,9 +264,10 @@ class Expr {
                 } while (tokenType == ',');
                 params = new double[pos];
                 System.arraycopy(vect, 0, params, 0, pos);
-                if (tokenType != ')') { 
+                if (tokenType != ')') {
                     throw new Error();
                 }
+                scan();
             } else if (insideFunDef && (id.length() == 1)) {
                 int p = "xyz".indexOf(id.charAt(0));
                 if (p != -1) {
@@ -291,7 +282,7 @@ class Expr {
         default:
             throw new Error(); //tokenType);
         }
-        scan();
+        //scan();
         if (tokenType == '!') {
             value = MoreMath.factorial(value);
             scan();

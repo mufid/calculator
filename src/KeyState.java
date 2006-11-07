@@ -193,11 +193,12 @@ final class KeyState {
     }
 
     static void repaint(Canvas c) {
-        if (keypad != null) {
-            keypad.doRepaint(c);
+        if (lastPainted != keypad) {
+            c.repaint(0, 0, w, h);
         }
     }
 
+    /*
     void doRepaint(Canvas c) {
         for (int i = 0; i < 3; ++i) {
             if (lastPainted != keypad || wantRedraw[i]) {
@@ -205,6 +206,7 @@ final class KeyState {
             }
         }
     }
+    */
 
     static final int
         BACKGR  = 0xffff00, //0xe0e0e0,
