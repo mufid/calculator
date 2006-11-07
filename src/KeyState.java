@@ -18,8 +18,8 @@ final class KeyState {
 
     static void init(int sw, int sh) {
         w = sw;
-        int available = (sh - CalcCanvas.largeHeight * 6) / 5;
-        int size = CalcCanvas.normalHeight < available ? Font.SIZE_MEDIUM : Font.SIZE_SMALL;
+        int available = sh - CalcCanvas.largeHeight*5;
+        int size = CalcCanvas.normalHeight*5 < available ? Font.SIZE_MEDIUM : Font.SIZE_SMALL;
         font = Font.getFont(0, 0, size);
         bold = Font.getFont(0, Font.STYLE_BOLD, size);
         fontHeight = font.getHeight();
@@ -32,18 +32,7 @@ final class KeyState {
         interSpace = (sw - cellWidth*3 + 3)/6;
 
         h = cellHeight * 4;
-        yPos = sh - h;
-
-        /*
-        digits = new KeyState(new Object[] {
-            "1",     "2", "3",
-            "4",     "5", "6",
-            "7",     "8", "9",
-            null,    "0", ". -",
-        });
-        */
-
-        // ! "f:=" "," "hyp"
+        yPos = 0; //sh - h;
         
         trigs = new KeyState(new Object[] {
             "sin",   "cos",   "tan", 
@@ -53,10 +42,10 @@ final class KeyState {
         });
                 
         logs = new KeyState(new Object[] {
-            "log10", "ln",  "log2",
-            null,    "cbrt",    null,
-            null,     null,    null,
-            null,     null,    null
+            "lg",  "ln",   "lb",
+            null,  "cbrt", null,
+            null,  null,   null,
+            null,  null,   null
         });
 
         rootOp = new KeyState(new Object[] {
@@ -69,7 +58,7 @@ final class KeyState {
         rootExp = new KeyState(new Object[] {
             trigs,    logs,  ints,
             "\u03c0", "e",  "sqrt",
-            vars,      ":=", "ans",
+            vars,     ":=", "ans",
             null,     "E",   ".",
         });
         
@@ -86,18 +75,6 @@ final class KeyState {
             "a", "b", "c",
             "phi", null, null,
         });
-        
-
-        /*
-        hyps = new KeyState(new Object[] {
-            "sinh",  "cosh",  "tanh",
-            "asinh", "acosh", "atanh",
-            null, null, null,
-            null, null, null,
-        });
-        */
-
-        //keypad = digits;
     }
 
     Object keys[];
@@ -114,28 +91,31 @@ final class KeyState {
         }
     }
 
-    String handleKey(int keyPos) {
+    private static final String base[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
+    static String handleKey(int pos) {
+        if (keypad == null) {
+            switch (pos) {
+            case 9: keypad = rootOp; return null;
+            case 10: return "0";
+            case 11: keypad = rootExp; return null;
+            default: return (0 <= pos && pos <= 8) ? base[pos] : null;
+            }
+        }
+        return keypad.intHandleKey(pos);
+    }
+    
+    private String intHandleKey(int keyPos) {
         Object o = keys[keyPos];
+        /*
         if (o == null) {
             return null;
         }
+        */
         if (o instanceof String) {
-            String str = (String)o;
-            if (str.equals(". -")) { 
-                //digits.set(11, "-");
-                return "."; 
+            if (o != null) {
+                keypad = null;
             }
-            //keypad = digits;
-            Symbol symbol = Expr.symbols.get(str);
-            if (symbol == null) {
-                return str;
-            }
-            if (symbol.isFun) {
-                str += "(";
-            } else if (symbol.isValue) {
-                keypad = rootOp;                
-            }
-            return str;
+            return (String)o;
         } else {
             keypad = (KeyState)o;
             return null;
@@ -156,7 +136,9 @@ final class KeyState {
     }
 
     static void paint(Graphics g) {
-        keypad.doPaint(g);
+        if (keypad != null) {
+            keypad.doPaint(g);
+        }
         lastPainted = keypad;
         //System.out.println("painted");
     }
@@ -211,7 +193,9 @@ final class KeyState {
     }
 
     static void repaint(Canvas c) {
-        keypad.doRepaint(c);
+        if (keypad != null) {
+            keypad.doRepaint(c);
+        }
     }
 
     void doRepaint(Canvas c) {

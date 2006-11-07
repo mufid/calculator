@@ -28,7 +28,8 @@ class CalcCanvas extends Canvas {
     int cursorX, cursorY, cursorW = 2, cursorH;
 
     //int editY, editH, nLines;
-    Line drawn[] = new Line[10], splited[] = new Line[10];
+    private static final int MAX_LINES = 10;
+    Line drawn[] = new Line[MAX_LINES], splited[] = new Line[MAX_LINES];
 
     Timer cursorBlink = new Timer();
     Expr expr = new Expr();
@@ -37,13 +38,13 @@ class CalcCanvas extends Canvas {
     boolean hasResult = false;
 
     Font font;
-    //int nEditLines;
+    int nEditLines;
     int maxEditLines;
     int lineHeight;
     int editH, historyH, keypadH;
 
     static final int RESULT = 0, EDIT = 1, HISTORY = 2, N_ZONES = 3;
-    static final int bgCol[] = { 0x0,      0xffffff, 0xe0e0eff};
+    static final int bgCol[] = { 0x0,      0xffffff, 0xe0e0ff};
     static final int fgCol[] = { 0xffffff, 0x0     , 0x0};
     int height[] = new int[N_ZONES];
     Image img[] = new Image[N_ZONES];
@@ -103,44 +104,62 @@ class CalcCanvas extends Canvas {
                     setCursor(!drawCursor);
                 }
             }, 400, 400);
+        editChanged();
         repaint();
         expr.symbols.put(ans);
     }
 
     char splitBuf[] = new char[256];
-    int split(StringBuffer str, int redPos, Line lines[]) {
+    int split(Font font, StringBuffer str, int w, Line lines[]) {
         int len = str.length();
         str.getChars(0, len, splitBuf, 0);
         Line line;
         int start = 0, end = 0;
         int width;
-        int nLines = 0;
-        for (int i = 0; i < 4; ++i) {
+        int mW = font.charWidth('m');
+        int i, n;
+        int sizeLeft = len;
+        int cw;
+        for (i = 0; i < MAX_LINES; ++i) {
             line = lines[i];
-            width = 0;
-            while (width < w && end < len) {
-                width += font.charWidth(splitBuf[end++]);
+            int left = w;
+            //assert(left >= 0);
+            while ((n = Math.min(left/mW, sizeLeft)) > 0) {
+                left-= font.charsWidth(splitBuf, end, n);
+                end += n;
+                sizeLeft -= n;
             }
-            if (width > w) { --end; }
+            while (sizeLeft > 0 && left > (cw = font.charWidth(splitBuf[end]))) {
+                ++end;
+                --sizeLeft;
+                left-= cw;
+            }
+            if (start == end) { break; }
             line.len = end - start;
-            line.redPos = start <= redPos && redPos < end ? redPos - start : line.len;
-
-            if (line.len > 0) {
-                System.arraycopy(splitBuf, start, line.chars, 0, line.len);
-                ++nLines;
-            }
+            //line.redPos = start <= redPos && redPos < end ? redPos - start : line.len;
+            System.arraycopy(splitBuf, start, line.chars, 0, line.len);
             start = end;
         }
-        return nLines;
+        int nLines = i;
+        return nLines > 0 ? nLines : 1;
+    }
+
+    void computeLineCoords(Line lines[], int nLines, int p, int outLC[]) {
+        int line = 0;
+        while (line < nLines && p >= lines[line].len) { p-= lines[line++].len; }
+        outLC[0] = line;
+        outLC[1] = p;
     }
                
-    void paintLine(int y, Line drawn, Line line, int offsetY) {
+    void paintLine(int y, Line drawn, Line line) {
         //int maxCommon = Math.min(Math.min(startRed, len), drawnStartRed);
         int maxCommon = Math.min(drawn.len, line.len);
+        /*
         if (drawn.redPos != line.redPos) {
             if (drawn.redPos < maxCommon) { maxCommon = drawn.redPos; }
             if (line.redPos  < maxCommon) { maxCommon = line.redPos; }
         }
+        */
         int common = 0;
         while (common < maxCommon && drawn.chars[common] == line.chars[common]) { ++common; }
         int commonW = font.charsWidth(line.chars, 0, common);
@@ -152,45 +171,46 @@ class CalcCanvas extends Canvas {
         g.fillRect(commonW, y, paintW, lineHeight);
         g.setColor(fgCol[EDIT]);
         g.drawChars(line.chars, common, line.len - common, commonW, y, 0);
+        /*
         if (common <= line.redPos && line.redPos < line.len) {
             int pos = commonW + font.charsWidth(line.chars, common, line.redPos - common);
             g.setColor(0xff0000);
             g.drawChar(line.chars[line.redPos], pos, y, 0);
         }
+        */
 
         System.arraycopy(line.chars, common, drawn.chars, common, line.len - common);
         drawn.len = line.len;
-        drawn.redPos = line.redPos;
-
-        repaint(commonW, y + offsetY, paintW, lineHeight);
+        //drawn.redPos = line.redPos;
+        repaint(commonW, y, paintW, lineHeight);
     }
 
-    void updateEdit() {
-        setCursor(drawCursor); //invalidate
-        int redPos = expr.tokenStart - 2;
-        int nEditLines = split(entry.line, redPos, splited);
-        int y = 0;
-        int cursorPos = entry.pos + 1;
-        //System.out.println("cursor " + cursorPos);
-        
-        editH = nEditLines * lineHeight;
+    void computeHeights() {
         keypadH = KeyState.getH();
         int avail = h - resultH - keypadH;
-        if (avail < editH) { editH = avail; }
+        editH = Math.min(nEditLines * lineHeight, avail);
         historyH = avail - editH;
+    }
 
-        Line line;
-        for (int i = 0; i < nEditLines; ++i, y += lineHeight) {
-            line = splited[i];
-            paintLine(y, drawn[i], line, keypadH + historyH);
-            if (cursorPos >= 0 && cursorPos <= line.len) {
-                cursorX = font.charsWidth(line.chars, 0, cursorPos);
-                cursorY = y;
-                cursorPos = -1;
-            } else {
-                cursorPos -= line.len;
-            }
+    void editChanged() {
+        //int redPos = expr.tokenStart - 2;
+        //int y = 0;
+        nEditLines = split(font, entry.line, w, splited);
+        //computeHeights();
+        for (int i = nEditLines-1, y= h-resultH-lineHeight; i >= 0; --i, y-=lineHeight) {
+            paintLine(y, drawn[i], splited[i]);
         }
+    }
+
+    private final int cursorLC[] = new int[2];
+    void updateCursor() {
+        setCursor(drawCursor);
+        computeLineCoords(splited, nEditLines, entry.pos, cursorLC);
+        int cursorL = cursorLC[0];
+        cursorY = keypadH + historyH + cursorL * lineHeight;
+        cursorX = font.charsWidth(splited[cursorL].chars, 0, cursorLC[1] + 1);
+        System.out.println("cursor: l " + cursorL + " c " + cursorLC[1] +
+                           " x " + cursorX + " y " + cursorY);
         setCursor(true);
     }
 
@@ -207,10 +227,10 @@ class CalcCanvas extends Canvas {
             StringBuffer strBuf = new StringBuffer(str);
             try {
                 double v = expr.parseNoDecl(str);
-                strBuf.append("= ").append(Float.toString((float)v));
+                strBuf.append(" = ").append(format(v));
             } catch (Error e) {
             }
-            int nLines = split(strBuf, -1, splited);
+            int nLines = split(normalFont, strBuf, w, splited);
             for (int i = nLines - 1; i >= 0 && y > 0; --i) {
                 g.drawChars(splited[i].chars, 0, splited[i].len, 0, y, Graphics.BOTTOM|Graphics.LEFT);
                 y-= lineHeight;
@@ -218,6 +238,37 @@ class CalcCanvas extends Canvas {
             y-= lineHeight / 2;
             ++p;
         }
+    }
+
+    private StringBuffer formatBuf = new StringBuffer();
+    private Line formatLines[] = {new Line(), new Line()};
+    String format(double v) {
+        String s = Double.toString(v);
+        int ePos = s.lastIndexOf('E');
+        String tail = null;
+        int tailW = 0;
+        if (ePos != -1) {
+            tail = s.substring(ePos);
+            tailW = font.stringWidth(tail);
+            s = s.substring(0, ePos);
+        }
+        int len = s.length();
+        /*
+        if (s.endsWith(".0")) {
+            s = s.substring(0, len - 2);
+        }
+        */
+        formatBuf.setLength(0);
+        formatBuf.append(s);
+        if (len > 2 && formatBuf.charAt(len-1) == '0' && formatBuf.charAt(len-2) == '.') {
+            formatBuf.setLength(len - 2);
+        }
+        split(font, formatBuf, w - tailW, formatLines);
+        formatBuf.setLength(formatLines[0].len);
+        if (tail != null) {
+            formatBuf.append(tail);
+        }
+        return formatBuf.toString();
     }
 
     void updateResult() {
@@ -237,7 +288,7 @@ class CalcCanvas extends Canvas {
             g.fillRect(0, 0, w, height[RESULT]);
             if (hasResult) {
                 g.setColor(fgCol[RESULT]);
-                g.drawString(Float.toString((float)result), w, resultY, Graphics.TOP|Graphics.RIGHT);
+                g.drawString(format(result), w, resultY, Graphics.TOP|Graphics.RIGHT);
             }
             repaint(0, resultY, w, resultH);
         }        
@@ -251,7 +302,12 @@ class CalcCanvas extends Canvas {
     }
 
     protected void paint(Graphics g) {
+        computeHeights();
         KeyState.paint(g);
+        /*
+        System.out.println("historyH " + historyH + " keypadH " + keypadH +
+                           " editH " + editH + " w " + w + " resultY " + resultY);
+        */
         g.drawRegion(img[HISTORY], 0, height[HISTORY]-historyH, w, historyH, 0, 
                      0, keypadH, 0);
         g.drawRegion(img[EDIT], 0, height[EDIT]-editH, w, editH, 0, 
@@ -343,13 +399,16 @@ class CalcCanvas extends Canvas {
         boolean redrawEdit = false;
         int keyPos = getKeyPos(key);
         if (keyPos >= 0) {
-            String s = KeyState.keypad.handleKey(keyPos);
+            String s = KeyState.handleKey(keyPos);
             if (s != null) {
-                if (entry.pos >= 0 && entry.line.charAt(entry.pos) == '.' && 
-                    s.length() == 1 && !Character.isDigit(s.charAt(0))) {
-                    delFromLine();
+                Symbol symbol = Expr.symbols.get(s);
+                if (symbol != null && symbol.isFun) {
+                    s += "()";
+                    insertIntoLine(s);
+                    movePrev();
+                } else {
+                    insertIntoLine(s);
                 }
-                insertIntoLine(s);
                 redrawEdit = true;
             }
         } else {
@@ -414,7 +473,8 @@ class CalcCanvas extends Canvas {
             }
         }
         if (redrawEdit) {
-            updateEdit();
+            editChanged();
+            updateCursor();
             updateResult();
         } 
         KeyState.repaint(this);
