@@ -105,6 +105,7 @@ class CalcCanvas extends Canvas {
                 }
             }, 400, 400);
         editChanged();
+        updateCursor();
         repaint();
         expr.symbols.put(ans);
     }
@@ -134,8 +135,8 @@ class CalcCanvas extends Canvas {
                 --sizeLeft;
                 left-= cw;
             }
-            if (start == end) { break; }
             line.len = end - start;
+            if (start == end) { break; }
             //line.redPos = start <= redPos && redPos < end ? redPos - start : line.len;
             System.arraycopy(splitBuf, start, line.chars, 0, line.len);
             start = end;
@@ -209,8 +210,8 @@ class CalcCanvas extends Canvas {
         int cursorL = cursorLC[0];
         cursorY = keypadH + historyH + cursorL * lineHeight;
         cursorX = font.charsWidth(splited[cursorL].chars, 0, cursorLC[1] + 1);
-        System.out.println("cursor: l " + cursorL + " c " + cursorLC[1] +
-                           " x " + cursorX + " y " + cursorY);
+        //System.out.println("cursor: l " + cursorL + " c " + cursorLC[1] +
+        //                   " x " + cursorX + " y " + cursorY);
         setCursor(true);
     }
 
@@ -463,7 +464,7 @@ class CalcCanvas extends Canvas {
                 }
             } else {
                 if (key == -8 || key == -11 || key == -12) { //delete
-                    if (KeyState.keypad != null) {
+                    if (KeyState.keypad == null) {
                         delFromLine();
                         redrawEdit = true;
                     } else {
