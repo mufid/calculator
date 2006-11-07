@@ -151,6 +151,10 @@ final class KeyState {
         wantRedraw[pos%3] = true;
     }
 
+    static int getH() {
+        return keypad == null ? 0 : h;
+    }
+
     static void paint(Graphics g) {
         keypad.doPaint(g);
         lastPainted = keypad;
