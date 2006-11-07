@@ -51,7 +51,7 @@ class BuiltinFun extends Symbol {
     static final String names[] = {
         "sin",  "cos",  "tan",  "asin",  "acos",  "atan",
         "sinh", "cosh", "tanh", "asinh", "acosh", "atanh",
-        "exp",  "log",  "ln",   "log10", "log2",  "pow",
+        "exp",  "ln", "lg", "lb",  "pow",
         "sqrt", "cbrt",
         "\u221a", "\u221b",
         "int", "frac", "abs",
@@ -64,7 +64,7 @@ class BuiltinFun extends Symbol {
     static final int codes[] = {
         SIN,  COS,  TAN,  ASIN,  ACOS,  ATAN,
         SINH, COSH, TANH, ASINH, ACOSH, ATANH,
-        EXP,  LOG,  LOG,  LOG10, LOG2,  POW,
+        EXP,  LOG,  LOG10, LOG2,  POW,
         SQRT, CBRT,
         SQRT, CBRT,
         INT,  FRAC, ABS,
