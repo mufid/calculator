@@ -55,13 +55,6 @@ final class KeyState {
             "+",  "-",  null,
         });
 
-        rootExp = new KeyState(new Object[] {
-            trigs,    logs,  ints,
-            "\u03c0", "e",  "sqrt",
-            vars,     ":=", "ans",
-            null,     "E",   ".",
-        });
-        
         ints = new KeyState(new Object[] {
             "int",  "frac", "abs",
             "floor","ceil", "sign",
@@ -74,6 +67,13 @@ final class KeyState {
             "x", "y", "z",
             "a", "b", "c",
             "phi", null, null,
+        });
+
+        rootExp = new KeyState(new Object[] {
+            trigs,    logs,  ints,
+            "\u03c0", "e",  "sqrt",
+            vars,     ":=", "ans",
+            null,     "E",   ".",
         });
     }
 
@@ -194,7 +194,7 @@ final class KeyState {
 
     static void repaint(Canvas c) {
         if (lastPainted != keypad) {
-            c.repaint(0, 0, w, h);
+            c.repaint(0, yPos, w, h);
         }
     }
 

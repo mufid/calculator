@@ -1,12 +1,14 @@
 import java.util.*;
 
 abstract class Symbol {
-    Symbol(String iniName) {
+    Symbol(String iniName, int iniArity) {
         name = iniName;
+        arity = iniArity;
     }
     String name;
-    boolean isFun   = false;
-    boolean isValue = false;
+    //boolean isFun   = false;
+    //boolean isValue = false;
+    int arity;
 
     abstract double eval(SymbolTable symbols, double params[]);
     static final double evaluate(SymbolTable symbols, String name, double params[]) {
@@ -20,16 +22,17 @@ abstract class Symbol {
 
 class Constant extends Symbol {
     Constant(String name, double iniValue) {
-        super(name);
+        super(name, 0);
         value = iniValue;
-        isValue = true;
     }
 
     double value;
     double eval(SymbolTable symbols, double params[]) {
+        /*
         if (params != null && params.length > 0) {
             throw new Error("Args for " + name + ": expected 0, got " + params.length);
         }
+        */
         return value;
     }
 }
@@ -53,7 +56,7 @@ class BuiltinFun extends Symbol {
         "sinh", "cosh", "tanh", "asinh", "acosh", "atanh",
         "exp",  "ln", "lg", "lb",  "pow",
         "sqrt", "cbrt",
-        "\u221a", "\u221b",
+        //"\u221a", "\u221b",
         "int", "frac", "abs",
         "floor", "ceil", "sign",
         "min", "max", "gcd",
@@ -66,30 +69,45 @@ class BuiltinFun extends Symbol {
         SINH, COSH, TANH, ASINH, ACOSH, ATANH,
         EXP,  LOG,  LOG10, LOG2,  POW,
         SQRT, CBRT,
-        SQRT, CBRT,
+        //SQRT, CBRT,
         INT,  FRAC, ABS,
         FLOOR,CEIL, SIGN,
         MIN,  MAX,  GCD,
         COMB, PERM, RND,
     };
+    /* keep in sync with codes above */
+    static final int arities[] = {
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1,
+        1, 1, 1,
+        1, 1, 1,
+        2, 2, 2,
+        2, 2, 0,
+    };
 
     static void init(SymbolTable ht) {
         for (int i = names.length - 1; i >= 0; --i) {
-            ht.put(new BuiltinFun(names[i], codes[i]));
+            ht.put(new BuiltinFun(names[i], codes[i], arities[i]));
         } 
     }
     
-    BuiltinFun(String name, int iniCode) {
-        super(name);
+    BuiltinFun(String name, int iniCode, int arity) {
+        super(name, arity);
         code = iniCode;
-        isFun = true;
     }
         
     int code;
     Random random = new Random();
     
     double eval(SymbolTable symbols, double params[]) {
-        double x = params[0];
+        double x = 0, y = 0, z = 0;
+        switch (arity) {
+        case 3: z = params[2];
+        case 2: y = params[1];
+        case 1: x = params[0];
+        }
         switch (code) {
         case SIN:   return MoreMath.isPiMultiple(x) ? .0 : Math.sin(x);
         case COS:   return MoreMath.isPiMultiple(x + MoreMath.PI_2) ? .0 : Math.cos(x);
@@ -114,7 +132,7 @@ class BuiltinFun extends Symbol {
             
         case SQRT: return Math.sqrt(x);
         case CBRT: return MoreMath.cbrt(x);
-        case POW:  return MoreMath.pow(x, params[1]);
+        case POW:  return MoreMath.pow(x, y);
 
         case INT:  return MoreMath.trunc(x);
         case FRAC: return x - MoreMath.trunc(x);        
@@ -122,11 +140,11 @@ class BuiltinFun extends Symbol {
         case FLOOR: return Math.floor(x);
         case CEIL: return Math.ceil(x);
         case SIGN: return x > 0 ? 1. : x < 0 ? -1. : 0.;
-        case MIN:  return Math.min(x, params[1]);
-        case MAX:  return Math.max(x, params[1]);
-        case GCD:  return MoreMath.gcd(x, params[1]);
-        case COMB: return MoreMath.comb(x, params[1]);
-        case PERM: return MoreMath.perm(x, params[1]);
+        case MIN:  return Math.min(x, y);
+        case MAX:  return Math.max(x, y);
+        case GCD:  return MoreMath.gcd(x, y);
+        case COMB: return MoreMath.comb(x, y);
+        case PERM: return MoreMath.perm(x, y);
         case RND:  return random.nextDouble();
         }
         throw new Error("unhandled code " + code);
@@ -134,31 +152,34 @@ class BuiltinFun extends Symbol {
 }
 
 class DefinedFun extends Symbol {
-    DefinedFun(String name, String iniArgs[], String iniDef) {
-        super(name);
-        args = iniArgs;
+    static final String args[] = {"x", "y", "z"}; 
+
+    DefinedFun(String name, int arity, String iniDef) {
+        super(name, arity);
+        //args = iniArgs;
         definition = iniDef;
-        isFun = true;
     }
 
-    String args[];
+    //String args[];
     String definition;
               
     double eval(SymbolTable symbols, double params[]) {
         //System.out.println(name + " " + args + " " + params);
+        /*
         int n = args.length;
         int nParams = params == null ? 0 : params.length;
         if (nParams != n) {
             throw new Error("Args for " + name + 
                             ": expected " + n + ", got " + nParams);
         }
+        */
         
-        Symbol saves[] = new Symbol[n];
-        for (int i = 0; i < n; ++i) {
+        Symbol saves[] = new Symbol[arity];
+        for (int i = 0; i < arity; ++i) {
             saves[i] = symbols.put(new Constant(args[i], params[i]));
         }
         double ret = new Expr().parseNoDecl(definition);
-        for (int i = 0; i < n; ++i) {
+        for (int i = 0; i < arity; ++i) {
             if (saves[i] == null) {
                 symbols.remove(args[i]);
             } else {

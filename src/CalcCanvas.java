@@ -12,6 +12,8 @@ class CalcCanvas extends Canvas {
         largeHeight  = largeFont.getHeight();
     }
 
+    static final String arityParens[] = { "", "()", "(,)", "(,,)"};
+
     //static final int MAX_HIST = 32;
     Vector history = new Vector();
     int historyPos = 0;
@@ -206,8 +208,8 @@ class CalcCanvas extends Canvas {
         int cursorL = cursorLC[0];
         cursorY = cursorL * lineHeight + 1;
         cursorX = font.charsWidth(splited[cursorL].chars, 0, cursorLC[1] + 1);
-        System.out.println("cursor: l " + cursorL + " c " + cursorLC[1] +
-                           " x " + cursorX + " y " + cursorY);
+        //System.out.println("cursor: l " + cursorL + " c " + cursorLC[1] +
+        //                   " x " + cursorX + " y " + cursorY);
         setCursor(true);
     }
 
@@ -404,13 +406,15 @@ class CalcCanvas extends Canvas {
         if (keyPos >= 0) {
             String s = KeyState.handleKey(keyPos);
             if (s != null) {
+                insertIntoLine(s);
                 Symbol symbol = Expr.symbols.get(s);
-                if (symbol != null && symbol.isFun) {
-                    s += "()";
-                    insertIntoLine(s);
-                    movePrev();
-                } else {
-                    insertIntoLine(s);
+                if (symbol != null) { // && symbol.arity > 0) {
+                    String parens = arityParens[symbol.arity];
+                    int len = parens.length();
+                    if (len > 0) {
+                        insertIntoLine(parens);
+                        entry.pos -= len - 1;
+                    }
                 }
                 redrawEdit = true;
             }

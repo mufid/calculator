@@ -10,7 +10,10 @@ class Expr {
         symbols.put(new Constant("pi", Math.PI));
         symbols.put(new Constant("e",  Math.E));
         //symbols.put(new Constant("ans", 0));
-        symbols.put(new DefinedFun("hypot", new String[]{"x", "y"}, "sqrt(x*x+y*y)")); 
+        symbols.put(new DefinedFun("hypot", 2, "sqrt(x*x+y*y)"));
+        for (int i = 0; i < 3; ++i) {
+            symbols.put(new Constant(DefinedFun.args[i], i)); //NaN
+        }
     }
 
     char text[] = new char[128];
@@ -22,7 +25,8 @@ class Expr {
     int pos = 0, tokenStart = -1;
     
     boolean insideFunDef;
-    int arity;
+    int computedArity;
+    Error error = new Error();
     
     public static void main(String argv[]) {
         Expr parser = new Expr();
@@ -84,30 +88,24 @@ class Expr {
             //!!! init(text1);
             scan();
             if (tokenType != 'a') {
-                throw new Error("Def: expected id, found " + text1);
+                throw error; //new Error("Def: expected id, found " + text1);
             }
             String id = tokenID.toString();
             scan();
             if (tokenType != '$') {
-                throw new Error("Def: expected id, found " + text1);
+                throw error; //new Error("Def: expected id, found " + text1);
             }
             //!!! init(text2);
             insideFunDef = true;
-            arity = 0;
+            computedArity = 0;
             double val = parseWholeExpression();
-            if (arity == 0) {
+            if (computedArity == 0) {
                 symbols.put(new Constant(id, val));
                 return val;
             } else {
-                String args[] = new String[arity];
-                char ca[] = {'x'}; 
-                for (int i = 0; i < arity; ++i) {
-                    ca[0] = (char)('x' + i);
-                    args[i] = new String(ca);
-                    //System.out.println("arg " + args[i]);
-                }
-                symbols.put(new DefinedFun(id, args, text2));
-                return 0;
+                symbols.put(new DefinedFun(id, computedArity, text2));
+                return Double.NaN;
+                //throw error;
             }
         } else {
             return parseNoDecl(str);
@@ -184,7 +182,7 @@ class Expr {
     private final double parseWholeExpression() {
         double ret = parseExpression();
         if (tokenType != '$') {
-            throw new Error(); //tokenType);
+            throw error; //new Error(); //tokenType);
         }
         return ret;
     }
@@ -240,7 +238,7 @@ class Expr {
         case '(': 
             value = parseExpression();
             if (tokenType != ')') {
-                throw new Error();
+                throw error; //new Error();
             }
             scan();
             break;
@@ -252,35 +250,36 @@ class Expr {
 
         case 'a':
             String id = tokenID.toString();
-            double[] params = null;
+            Symbol symbol = symbols.get(id);
+            if (symbol == null) {
+                throw error; //new Error();
+            }
             scan();
-            if (tokenType == '(') {
-                double vect[] = new double[8];
-                int pos = 0;
-                do {
-                    //scan();
-                    //System.out.println(" " + tokenType);
-                    vect[pos++] = parseExpression();
-                } while (tokenType == ',');
-                params = new double[pos];
-                System.arraycopy(vect, 0, params, 0, pos);
-                if (tokenType != ')') {
-                    throw new Error();
+            double[] params = null;
+            int arity = symbol.arity;
+            if (arity == 0) {
+                char c = id.charAt(0);
+                if (id.length() == 1 && 'x' <= c && c <= 'z') {
+                    computedArity = Math.max(computedArity, c - 'x' + 1);
+                }
+            } else {
+                if (tokenType != '(') {
+                    throw error;
+                }
+                params = new double[arity];
+                for (int i = 0; i < arity; ++i) {
+                    params[i] = parseExpression();
+                    if (tokenType != ((i == arity - 1) ? ')' : ',')) {
+                        throw error;
+                    }
                 }
                 scan();
-            } else if (insideFunDef && (id.length() == 1)) {
-                int p = "xyz".indexOf(id.charAt(0));
-                if (p != -1) {
-                    if (arity <= p) { arity = p + 1; }
-                }
-                value = 0;
-                break;
             }
             value = Symbol.evaluate(symbols, id, params);
             break;
             
         default:
-            throw new Error(); //tokenType);
+            throw error; //new Error(); //tokenType);
         }
         //scan();
         if (tokenType == '!') {
