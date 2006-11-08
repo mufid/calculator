@@ -1,7 +1,7 @@
 import javax.microedition.lcdui.*;
 import java.util.*;
 
-class CalcCanvas extends Canvas {
+class CalcCanvas extends Canvas implements Runnable {
     static final Font 
         normalFont = Font.getFont(0, 0, Font.SIZE_MEDIUM), 
         largeFont  = Font.getFont(0, 0, Font.SIZE_LARGE), 
@@ -27,11 +27,11 @@ class CalcCanvas extends Canvas {
     private static final int MAX_LINES = 10;
     Line drawn[], splited[];
 
-    Timer cursorBlink = new Timer();
     Expr expr = new Expr();
     Constant ans = new Constant("ans", 0);
     double result;
     boolean hasResult = false;
+    boolean needUpdateResult, changed;
 
     Font font = largeFont;
     int lineHeight = font.getHeight() + 1;
@@ -47,6 +47,7 @@ class CalcCanvas extends Canvas {
     int height[] = new int[N_ZONES];
     Image img[] = new Image[N_ZONES];
     Graphics gg[] = new Graphics[N_ZONES];
+    Thread thread;
 
     CalcCanvas() {
         entry = new HistEntry();
@@ -92,15 +93,28 @@ class CalcCanvas extends Canvas {
         cursorY = 10;
         cursorH = lineHeight;
 
-        cursorBlink.schedule(new TimerTask() {
-                public void run() {
-                    setCursor(!drawCursor);
-                }
-            }, 400, 400);
         editChanged();
         updateCursor();
         repaint();
         expr.symbols.put(ans);
+        thread = new Thread(this);
+    }
+
+    boolean twiced;
+    public void run() {
+        if (twiced) {
+            setCursor(!drawCursor);
+        }
+        twiced = !twiced;
+        if (!changed && needUpdateResult) {
+            needUpdateResult = false;
+            updateResult();
+        }
+        changed = false;
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+        }
     }
 
     char splitBuf[] = new char[256];
@@ -119,6 +133,7 @@ class CalcCanvas extends Canvas {
             int left = w;
             //assert(left >= 0);
             while ((n = Math.min(left/mW, sizeLeft)) > 0) {
+                //System.out.println("n " + n + "; left " + left);
                 left-= font.charsWidth(splitBuf, end, n);
                 end += n;
                 sizeLeft -= n;
@@ -155,10 +170,12 @@ class CalcCanvas extends Canvas {
         }
         */
         int common = 0;
-        while (common < maxCommon && drawn.chars[common] == line.chars[common]) { ++common; }
+        while (common < maxCommon && drawn.chars[common] == line.chars[common]) { 
+            ++common; 
+        }
         int commonW = font.charsWidth(line.chars, 0, common);
-        int w1 = font.charsWidth(line.chars,  common, line.len - common);
-        int w2 = font.charsWidth(drawn.chars, common, drawn.len - common);
+        int w1 = line.len  == common ? 0 : font.charsWidth(line.chars,  common, line.len - common);
+        int w2 = drawn.len == common ? 0 : font.charsWidth(drawn.chars, common, drawn.len - common);
         int paintW  = Math.max(w1, w2);
         Graphics g = gg[EDIT];
         g.setColor(bgCol[EDIT]);
@@ -176,7 +193,9 @@ class CalcCanvas extends Canvas {
         System.arraycopy(line.chars, common, drawn.chars, common, line.len - common);
         drawn.len = line.len;
         //drawn.redPos = line.redPos;
-        repaint(commonW, y, paintW, lineHeight);
+        if (paintW > 0) {
+            repaint(commonW, y, paintW, lineHeight);
+        }
     }
 
     /*
@@ -400,6 +419,10 @@ class CalcCanvas extends Canvas {
         entry.pos = next;
     }
 
+    protected void keyRepeated(int key) {
+        keyPressed(key);
+    }
+
     protected void keyPressed(int key) {
         boolean redrawEdit = false;
         int keyPos = getKeyPos(key);
@@ -482,7 +505,8 @@ class CalcCanvas extends Canvas {
         if (redrawEdit) {
             editChanged();
             updateCursor();
-            updateResult();
+            needUpdateResult = true;
+            changed = true;
         } 
         KeyState.repaint(this);
     }
