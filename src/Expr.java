@@ -16,7 +16,7 @@ class Expr {
         }
     }
 
-    char text[] = new char[128];
+    char text[] = new char[256];
     int n = 0;
 
     char tokenType;
