@@ -1,8 +1,4 @@
-import java.util.Hashtable;
-
-class Expr {
-    Object test[] = {"foo", "bar"};
-
+final class Expr {
     static SymbolTable symbols = new SymbolTable();
     static { 
         BuiltinFun.init(symbols);
@@ -15,6 +11,7 @@ class Expr {
             symbols.put(new Constant(DefinedFun.args[i], i)); //NaN
         }
     }
+    private static final Error error = new Error();
 
     char text[] = new char[256];
     int n = 0;
@@ -24,15 +21,13 @@ class Expr {
     StringBuffer tokenID = new StringBuffer();
     int pos = 0, tokenStart = -1;
     
-    boolean insideFunDef;
     int computedArity;
-    Error error = new Error();
-    
+
     public static void main(String argv[]) {
         Expr parser = new Expr();
         int n = argv.length;
         for (int i = 0; i < n; ++i) {
-            double v = parser.parseNoDecl(argv[i]);
+            double v = parser.parse(argv[i]);
             System.out.println("   = " + v);
         }
     }
@@ -50,24 +45,35 @@ class Expr {
     }
     */
 
-    char tmp[] = new char[128];
-    double parseNoDecl(String str) {
-        int sz = str.length();
-        str.getChars(0, sz, tmp, 0);
+    static int countParens(char str[], int size) {
         int openParens = 0;
-        for (int i = 0; i < sz; ++i) {
-            if (tmp[i] == '(') {
+        char c;
+        for (int i = 0; i < size; ++i) {
+            c = str[i];
+            if (c == '(') {
                 ++openParens;
-            } else if (tmp[i] == ')') {
+            } else if (c == ')') {
                 --openParens;
             }
         }
+        return openParens;
+    }
+
+    double parse(String str) {
+        int len = str.length();
+        char buf[] = new char[len];
+        str.getChars(0, len, buf, 0);
+        return parseNoDecl(buf, len);
+    }
+
+    double parseNoDecl(char str[], int size) {
+        int openParens = countParens(str, size);
         int p = 0;
         for (int i = openParens; i < 0; ++i) {
             text[p++] = '(';
         }
-        str.getChars(0, sz, text, p);
-        p += sz;
+        System.arraycopy(str, 0, text, p, size);
+        p += size;
         for (int i = 0; i < openParens; ++i) {
             text[p++] = ')';
         }
@@ -76,10 +82,10 @@ class Expr {
         pos = 0;
         tokenStart = -1;
         tokenType = '$';
-        insideFunDef = false;
         return parseWholeExpression();
     }
 
+    /*
     double parseDecl(String str) {
         int equalPos = str.indexOf('=');
         if (equalPos != -1) {
@@ -96,7 +102,6 @@ class Expr {
                 throw error; //new Error("Def: expected id, found " + text1);
             }
             //!!! init(text2);
-            insideFunDef = true;
             computedArity = 0;
             double val = parseWholeExpression();
             if (computedArity == 0) {
@@ -111,6 +116,7 @@ class Expr {
             return parseNoDecl(str);
         }
     }
+    */
 
     static final boolean isLetter(char c) {
         return ('a' <= c && c <= 'z') || c == '_' || c == '\u03c0';
