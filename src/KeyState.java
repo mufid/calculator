@@ -162,21 +162,28 @@ final class KeyState {
             g.fillRect(0, 0, cellWidth, h);
             int pos = col;
             for (int y = 1; y < h; y += cellHeight, pos += 3) {
-                g.setColor(LIGHTER);
                 int bottom = y + cellHeight - 3;
-                g.drawLine(0, y, cellWidth, y);
-                g.drawLine(0, y, 0, bottom);
-                g.setColor(DARKER);
-                g.drawLine(cellWidth - 1, y + 1, cellWidth - 1, bottom);
-                g.drawLine(1, bottom, cellWidth, bottom);
                 Object o = keys[pos];
                 if (o != null) {
                     String txt;
+                    g.setColor(LIGHTER);
+                    g.drawLine(0, y, cellWidth, y);
+                    g.drawLine(0, y, 0, bottom);
                     if (o instanceof String) {
+                        g.setColor(DARKER);
+                        g.drawLine(cellWidth - 1, y + 1, cellWidth - 1, bottom);
+                        g.drawLine(1, bottom, cellWidth, bottom);
+
                         txt = (String)o;
                         g.setColor(FOREGR);
                         g.drawString(txt, cellWidth/2, y+1, Graphics.HCENTER|Graphics.TOP);
                     } else {
+                        g.setColor(DARKER2);
+                        g.drawLine(cellWidth - 1, y + 1, cellWidth - 1, bottom);
+                        g.drawLine(1, bottom, cellWidth, bottom);
+                        g.setColor(BACKGR2);
+                        g.fillRect(1, y+1, cellWidth-2, cellHeight-4);
+
                         txt = (String) ((KeyState)o).keys[pos];
                         g.setColor(FOREGR2);
                         g.setFont(bold);
@@ -210,8 +217,10 @@ final class KeyState {
 
     static final int
         BACKGR  = 0xffff00, //0xe0e0e0,
+        BACKGR2 = 0x00ffff,
         FOREGR  = 0x000000,
         FOREGR2 = 0x0000ff,
         LIGHTER = 0xffffff,
-        DARKER  = 0x808000;    
+        DARKER  = 0x808000,
+        DARKER2 = 0x008080;
 }

@@ -13,16 +13,9 @@ class CalcCanvas extends Canvas implements Runnable {
     }
 
     static final String arityParens[] = { "", "()", "(,)", "(,,)"};
-    History history;
-
-    //static final int MAX_HIST = 32;
-    //Vector history = new Vector();
-    //int historyPos = 0;
-    //HistEntry entry;
-    
+    History history;    
     int w, h;
 
-    //int resultY, resultH;
     int cursorX, cursorY, cursorW = 2, cursorH;
 
     Expr expr = new Expr();
@@ -34,19 +27,16 @@ class CalcCanvas extends Canvas implements Runnable {
     Font font = largeFont;
     int lineHeight = font.getHeight() + 1;
 
-    //Line drawn[], splited[];
     char line[] = new char[256];
     int len = 0, pos = -1;
     int editLines[];
-    int nEditLines; //, nDrawnLines;
+    int nEditLines;
     int maxEditLines;
     int editH;
-    //, historyH, keypadH;
 
     static final int RESULT = 0, EDIT = 1, HISTORY = 2, N_ZONES = 3;
     static final int bgCol[] = { 0x0,      0xffffff, 0xe0e0ff};
     static final int fgCol[] = { 0xffffff, 0x0     , 0x0};
-    //private static final int cursorLC[] = new int[2];
 
     int height[] = new int[N_ZONES];
     Image img[] = new Image[N_ZONES];
@@ -61,9 +51,6 @@ class CalcCanvas extends Canvas implements Runnable {
         h = getHeight();
 
         KeyState.init(w, h);
-        // - KeyState.h;
-        //resultH = lineHeight + 2;
-        //resultY = h - resultH;
 
         maxEditLines = (h - KeyState.h)/lineHeight;
         System.out.println("max edit lines " + maxEditLines);
@@ -108,7 +95,7 @@ class CalcCanvas extends Canvas implements Runnable {
             }
             changed = false;
             try {
-                Thread.sleep(1000);
+                Thread.sleep(200);
             } catch (InterruptedException e) {
             }
         }
@@ -138,33 +125,21 @@ class CalcCanvas extends Canvas implements Runnable {
             lines[i] = end;
             //System.out.println("line " + i + "; end " + end + "; len " + len);
             if (end == len) { break; }
-            //if (start == end) { break; }
-            //line.redPos = start <= redPos && redPos < end ? redPos - start : line.len;
-            //System.arraycopy(splitBuf, start, line.chars, 0, line.len);
         }
         return i + 1;
-        //return nLines > 0 ? nLines : 1;
     }
 
     int posToLine(int lines[], int pos) {
         int line = 0;
         while (pos > lines[line]) { ++line; }
         return line;
-        //outLC[1] = pos - (line == 0 ? 0 : lines[line-1]);
-
-        /*
-        int line = 0;
-        while (line < nLines && p >= lines[line].len) { p-= lines[line++].len; }
-        outLC[0] = line;
-        outLC[1] = p;
-        */
     }
                
     void editChanged(int changePos) {
         int changeLine = posToLine(editLines, changePos);
         int oldNLines = nEditLines;
         nEditLines = split(font, line, len, w, changeLine, editLines);
-        System.out.println("nEditLines " + nEditLines + "; changeLine " + changeLine);                           
+        //System.out.println("nEditLines " + nEditLines + "; changeLine " + changeLine);                           
 
         Graphics g = gg[EDIT];
         g.setColor(bgCol[EDIT]);
@@ -175,7 +150,6 @@ class CalcCanvas extends Canvas implements Runnable {
         for (int i = changeLine, y = 2+changeLine*lineHeight,
                  end = editLines[i]; 
              i < nEditLines; ++i, y+=lineHeight, start = end, end = editLines[i]) {
-            //paintLine(y, , editLines[i]);
             g.drawChars(line, start, end-start, 0, y, 0);
         }
         if (nEditLines != oldNLines) {
@@ -233,7 +207,6 @@ class CalcCanvas extends Canvas implements Runnable {
         }
     }
 
-    //private StringBuffer formatBuf = new StringBuffer();
     char formatBuf[] = new char[30];
     private int formatLines[] = new int[3];
     String format(double v) {
@@ -266,7 +239,6 @@ class CalcCanvas extends Canvas implements Runnable {
         try {
             newResult = expr.parseNoDecl(new String(line, 0, len));
             hasNewResult = true;
-            //newResult = 
         } catch (Error e) {
         }
         //System.out.println("result " + newResult);
@@ -286,12 +258,8 @@ class CalcCanvas extends Canvas implements Runnable {
     }
 
     protected void paint(Graphics g) {
-        //computeHeights();
         KeyState.paint(g);
-        /*
-        System.out.println("historyH " + historyH + " keypadH " + keypadH +
-                           " editH " + editH + " w " + w + " resultY " + resultY);
-        */
+        //System.out.println("historyH "+historyH+" keypadH "+keypadH+" editH "+editH+" w "+w+" resultY "+resultY);
         int editH = nEditLines * lineHeight + 2;
         int keypadH = KeyState.getH();
         //System.out.println("pos " + pos + "; nLines " + nEditLines + "; cX " + cursorX + "; cY " + cursorY);
@@ -305,18 +273,6 @@ class CalcCanvas extends Canvas implements Runnable {
             g.setColor(0);
             g.fillRect(cursorX, cursorY, cursorW, cursorH);
         }
-    }
-
-    boolean startsWithLetter(int p) {
-        for (int i = p; i >= 0; --i) {
-            if (isLetterAt(i)) {
-                return true;
-            }
-            if (!isDigitAt(i)) {
-                return false;
-            }
-        }
-        return false;
     }
     
     int prevFlexPoint(int pos) {
@@ -384,7 +340,6 @@ class CalcCanvas extends Canvas implements Runnable {
     }
 
     protected void keyPressed(int key) {
-        //boolean redrawEdit = false;
         int oldPos = pos;
         int keyPos = getKeyPos(key);
         if (keyPos >= 0) {
