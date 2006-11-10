@@ -186,18 +186,17 @@ class CalcCanvas extends Canvas implements Runnable {
         int histSize = history.size();
         int yLimit = height[HISTORY] - normalHeight;
         for (int p = 1; p < histSize && y <= yLimit; ++p, y+= normalHeight/2) {
-            String str = history.getBase(p);
-            str.getChars(0, str.length(), histBuf, 0);
-            histBufLen = str.length();
-            try {
-                double v = expr.parseNoDecl(str);
+            HistEntry entry = history.get(p);            
+            String base = entry.base;
+            String result = entry.hasResult ? format(entry.result) : "";
+            base.getChars(0, base.length(), histBuf, 0);
+            histBufLen = base.length();
+            if (result.length() > 0) {
                 histBuf[histBufLen++] = ' ';
                 histBuf[histBufLen++] = '=';
                 histBuf[histBufLen++] = ' ';
-                String f = format(v);
-                f.getChars(0, f.length(), histBuf, histBufLen);
-                histBufLen += f.length();
-            } catch (Error e) {
+                result.getChars(0, result.length(), histBuf, histBufLen);
+                histBufLen += result.length();
             }
             int nLines = split(normalFont, histBuf, histBufLen, w, 0, histLines);
             for (int i = 0, start = 0; i < nLines && y <= yLimit; ++i, y+=normalHeight) {
@@ -237,7 +236,7 @@ class CalcCanvas extends Canvas implements Runnable {
         double newResult = 0;
         boolean hasNewResult = false;
         try {
-            newResult = expr.parseNoDecl(new String(line, 0, len));
+            newResult = expr.parseNoDecl(line, len);
             hasNewResult = true;
         } catch (Error e) {
         }

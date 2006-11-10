@@ -153,16 +153,13 @@ class BuiltinFun extends Symbol {
 
 class DefinedFun extends Symbol {
     static final String args[] = {"x", "y", "z"}; 
-
+    String definition;
+    
     DefinedFun(String name, int arity, String iniDef) {
         super(name, arity);
-        //args = iniArgs;
         definition = iniDef;
     }
-
-    //String args[];
-    String definition;
-              
+          
     double eval(SymbolTable symbols, double params[]) {
         //System.out.println(name + " " + args + " " + params);
         /*
@@ -178,7 +175,7 @@ class DefinedFun extends Symbol {
         for (int i = 0; i < arity; ++i) {
             saves[i] = symbols.put(new Constant(args[i], params[i]));
         }
-        double ret = new Expr().parseNoDecl(definition);
+        double ret = new Expr().parse(definition);
         for (int i = 0; i < arity; ++i) {
             if (saves[i] == null) {
                 symbols.remove(args[i]);

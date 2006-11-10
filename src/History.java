@@ -1,12 +1,15 @@
 import java.util.Vector;
 class HistEntry {
     String base, edited;
+    double result;
+    boolean hasResult;
     int pos;
 
-    HistEntry(char line[], int len, int iniPos) {
+    HistEntry(char line[], int len, double res, boolean hasRes) {
         base = len == 0 ? "" : new String(line, 0, len);
-        edited = base;
-        pos = iniPos;
+        result = res;
+        hasResult = hasRes;
+        flush();
     }
 
     void flush() {
@@ -27,10 +30,14 @@ class History {
 
     History(CalcCanvas calc) {
         parent = calc;
-        history.addElement(new HistEntry(null, 0, -1));
+        history.addElement(new HistEntry(null, 0, 0, false));
     }
     
     int size() { return history.size(); }
+
+    HistEntry get(int p) { 
+        return (HistEntry) history.elementAt(p);
+    }
 
     String getBase(int p) {
         return ((HistEntry) history.elementAt(p)).base;
@@ -57,7 +64,7 @@ class History {
 
     void enter() {
         ((HistEntry)history.elementAt(historyPos)).flush();
-        HistEntry newEntry = new HistEntry(parent.line, parent.len, parent.pos);
+        HistEntry newEntry = new HistEntry(parent.line, parent.len, parent.result, parent.hasResult);
         history.insertElementAt(newEntry, 1);
         historyPos = 0;
         getFrom((HistEntry)history.elementAt(historyPos));
