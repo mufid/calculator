@@ -1,11 +1,20 @@
 import javax.microedition.lcdui.*;
 
 final class KeyState {
-    static Font font, bold;
+    static Font font;
     static int fontHeight;
     static int w, h, cellWidth, cellHeight, yPos, interSpace;
     static KeyState rootOp, trigs, hyps, logs, ints, vars, funcs, rootExp;
     static KeyState keypad, lastPainted;
+
+    private static final int
+        BACKGR  = 0xffff00, //0xe0e0e0,
+        BACKGR2 = 0x40ffff,
+        FOREGR  = 0x000000,
+        FOREGR2 = 0x0000ff,
+        LIGHTER = 0xffffff,
+        DARKER  = 0x808000,
+        DARKER2 = 0x208080;
 
     /*
     static String logicOp[] = {
@@ -21,13 +30,13 @@ final class KeyState {
         int available = sh - CalcCanvas.largeHeight*5;
         int size = CalcCanvas.normalHeight*5 < available ? Font.SIZE_MEDIUM : Font.SIZE_SMALL;
         font = Font.getFont(0, 0, size);
-        bold = Font.getFont(0, Font.STYLE_BOLD, size);
+        //bold = Font.getFont(0, Font.STYLE_BOLD, size);
         fontHeight = font.getHeight();
 
         int w1 = (sw + 1) / 3;
         int w2 = font.stringWidth("mmmm");
         cellWidth = Math.min(w1, w2);
-        cellHeight = fontHeight + 3;
+        cellHeight = fontHeight + 4;
 
         interSpace = (sw - cellWidth*3 + 3)/6;
 
@@ -160,20 +169,20 @@ final class KeyState {
             Graphics g = imgG[col];
             g.setColor(BACKGR);
             g.fillRect(0, 0, cellWidth, h);
+            String txt;
             int pos = col;
-            for (int y = 1; y < h; y += cellHeight, pos += 3) {
-                int bottom = y + cellHeight - 3;
+            for (int y = 2; y < h; y += cellHeight, pos += 3) {
+                int bottom = y + cellHeight - 4;
+                g.setColor(LIGHTER);
+                g.drawLine(0, y, cellWidth, y);
+                g.drawLine(0, y, 0, bottom);
+                g.setColor(DARKER);
+                g.drawLine(cellWidth - 1, y + 1, cellWidth - 1, bottom);
+                g.drawLine(1, bottom, cellWidth, bottom);
+
                 Object o = keys[pos];
                 if (o != null) {
-                    String txt;
-                    g.setColor(LIGHTER);
-                    g.drawLine(0, y, cellWidth, y);
-                    g.drawLine(0, y, 0, bottom);
                     if (o instanceof String) {
-                        g.setColor(DARKER);
-                        g.drawLine(cellWidth - 1, y + 1, cellWidth - 1, bottom);
-                        g.drawLine(1, bottom, cellWidth, bottom);
-
                         txt = (String)o;
                         g.setColor(FOREGR);
                         g.drawString(txt, cellWidth/2, y+1, Graphics.HCENTER|Graphics.TOP);
@@ -182,13 +191,10 @@ final class KeyState {
                         g.drawLine(cellWidth - 1, y + 1, cellWidth - 1, bottom);
                         g.drawLine(1, bottom, cellWidth, bottom);
                         g.setColor(BACKGR2);
-                        g.fillRect(1, y+1, cellWidth-2, cellHeight-4);
-
+                        g.fillRect(1, y+1, cellWidth-2, bottom-y-1);
                         txt = (String) ((KeyState)o).keys[pos];
-                        g.setColor(FOREGR2);
-                        g.setFont(bold);
+                        g.setColor(FOREGR);
                         g.drawString(txt, cellWidth/2, y+1, Graphics.HCENTER|Graphics.TOP);
-                        g.setFont(font);
                     }
                 }
             }
@@ -204,23 +210,4 @@ final class KeyState {
             c.repaint(0, yPos, w, h);
         }
     }
-
-    /*
-    void doRepaint(Canvas c) {
-        for (int i = 0; i < 3; ++i) {
-            if (lastPainted != keypad || wantRedraw[i]) {
-                c.repaint(interSpace*(i+i+1)+cellWidth*i, yPos, cellWidth, h);
-            }
-        }
-    }
-    */
-
-    static final int
-        BACKGR  = 0xffff00, //0xe0e0e0,
-        BACKGR2 = 0x00ffff,
-        FOREGR  = 0x000000,
-        FOREGR2 = 0x0000ff,
-        LIGHTER = 0xffffff,
-        DARKER  = 0x808000,
-        DARKER2 = 0x008080;
 }
