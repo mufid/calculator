@@ -18,7 +18,7 @@ class CalcCanvas extends Canvas implements Runnable {
 
     int cursorX, cursorY, cursorW = 2, cursorH;
 
-    Expr expr = new Expr();
+    Expr parser = new Expr();
     Constant ans = new Constant("ans", 0);
     double result;
     boolean hasResult = false;
@@ -77,7 +77,7 @@ class CalcCanvas extends Canvas implements Runnable {
         editChanged(0);
         updateCursor();
         repaint();
-        expr.symbols.put(ans);
+        parser.symbols.put(ans);
         thread = new Thread(this);
         thread.start();
     }
@@ -90,7 +90,7 @@ class CalcCanvas extends Canvas implements Runnable {
             }
             twiced = !twiced;
             if (!changed && needUpdateResult) {
-                needUpdateResult = false;
+                computeResult(false);
                 updateResult();
             }
             changed = false;
@@ -232,28 +232,55 @@ class CalcCanvas extends Canvas implements Runnable {
         return new String(formatBuf, 0, len);
     }
 
-    void updateResult() {
-        double newResult = 0;
-        boolean hasNewResult = false;
-        try {
-            newResult = expr.parseNoDecl(line, len);
-            hasNewResult = true;
-        } catch (Error e) {
-        }
-        //System.out.println("result " + newResult);
-        if (hasNewResult != hasResult || newResult != result) {
-            result = newResult;
-            hasResult = hasNewResult;
-            Graphics g = gg[RESULT];
-            g.setColor(bgCol[RESULT]);
-            g.fillRect(0, 0, w, height[RESULT]);
-            if (hasResult) {
-                g.setColor(fgCol[RESULT]);
-                g.drawString("= " + format(result), 0, 0, 0);
+    String definedName;
+    int arity;
+    void computeResult(boolean define) {
+        definedName = null;
+        hasResult = false;
+        arity = 0;
+
+        if (len > 0) {
+            String expr;
+            char c = line[0];
+            if (len > 3 && line[1] == ':' && line[2] == '=' && 
+                (('a' <= c && c <= 'c') || ('f' <= c && c <= 'h'))) {
+                expr = new String(line, 3, len - 3);
+                definedName = String.valueOf(c);
+            } else {
+                expr = new String(line, 0, len);
             }
-            int resultY = nEditLines * lineHeight + 2;
-            repaint(0, resultY, w, height[RESULT]);
-        }        
+        
+            try {
+                result = parser.parse(expr);
+                hasResult = true;
+                arity = parser.arity;
+            } catch (Error e) {
+            }
+
+            if (define && definedName != null) {
+                parser.symbols.put(arity == 0 ? (Symbol) new Constant(definedName, result) : (Symbol) new DefinedFun(definedName, arity, expr));
+            }
+        }
+    }
+
+    private static final String params[] = {"(x)", "(x,y)", "(x,y,z)"};
+    void updateResult() {
+        needUpdateResult = false;
+        computeResult(false);
+
+        Graphics g = gg[RESULT];
+        g.setColor(bgCol[RESULT]);
+        g.fillRect(0, 0, w, height[RESULT]);
+
+        if (hasResult) {
+            String strResult = (definedName != null && arity > 0) ? 
+                "Def " + definedName + params[arity-1] : format(result);
+            g.setColor(fgCol[RESULT]);
+            g.drawString("= " + strResult, 0, 0, 0);
+        }
+
+        int resultY = nEditLines * lineHeight + 2;
+        repaint(0, resultY, w, height[RESULT]);
     }
 
     protected void paint(Graphics g) {
@@ -390,11 +417,16 @@ class CalcCanvas extends Canvas implements Runnable {
                     break;
                     
                 case Canvas.FIRE:
-                    history.enter();
+                    computeResult(true);
+                    boolean hasValue = hasResult && arity == 0;
+                    if (hasValue) { 
+                        ans.value = result; 
+                    }
+                    history.enter(new String(line, 0, len), result, hasValue);
                     doChanged(0);
+                    updateResult();
                     updateHistory();
                     repaint();
-                    ans.value = hasResult ? result : 0;
                     break;
                 }
             } else {

@@ -21,7 +21,7 @@ final class Expr {
     StringBuffer tokenID = new StringBuffer();
     int pos = 0, tokenStart = -1;
     
-    int computedArity;
+    int arity;
 
     public static void main(String argv[]) {
         Expr parser = new Expr();
@@ -35,44 +35,32 @@ final class Expr {
     Expr() {
     }
 
-    /*
-    private void init(String s) {
-        n = s.length();
-        s.getChars(0, n, text, 0);
-        pos = 0;
-        tokenStart = -1;
-        tokenType = '$';
-    }
-    */
-
-    static int countParens(char str[], int size) {
+    static int countParens(String str) {
         int openParens = 0;
-        char c;
-        for (int i = 0; i < size; ++i) {
-            c = str[i];
-            if (c == '(') {
-                ++openParens;
-            } else if (c == ')') {
-                --openParens;
-            }
-        }
+        int p = 0;
+        while ((p = str.indexOf(p, '(')+1) != 0) { ++openParens; }
+        p = 0;
+        while ((p = str.indexOf(p, ')')+1) != 0) { --openParens; }
         return openParens;
     }
 
+    /*
     double parse(String str) {
         int len = str.length();
         char buf[] = new char[len];
         str.getChars(0, len, buf, 0);
         return parseNoDecl(buf, len);
     }
+    */
 
-    double parseNoDecl(char str[], int size) {
-        int openParens = countParens(str, size);
+    double parse(String str) {
+        int openParens = countParens(str);
         int p = 0;
         for (int i = openParens; i < 0; ++i) {
             text[p++] = '(';
         }
-        System.arraycopy(str, 0, text, p, size);
+        int size = str.length();
+        str.getChars(0, size, text, p);
         p += size;
         for (int i = 0; i < openParens; ++i) {
             text[p++] = ')';
@@ -82,6 +70,7 @@ final class Expr {
         pos = 0;
         tokenStart = -1;
         tokenType = '$';
+        arity = 0;
         return parseWholeExpression();
     }
 
@@ -102,13 +91,13 @@ final class Expr {
                 throw error; //new Error("Def: expected id, found " + text1);
             }
             //!!! init(text2);
-            computedArity = 0;
+            arity = 0;
             double val = parseWholeExpression();
-            if (computedArity == 0) {
+            if (arity == 0) {
                 symbols.put(new Constant(id, val));
                 return val;
             } else {
-                symbols.put(new DefinedFun(id, computedArity, text2));
+                symbols.put(new DefinedFun(id, arity, text2));
                 return Double.NaN;
                 //throw error;
             }
@@ -262,20 +251,20 @@ final class Expr {
             }
             scan();
             double[] params = null;
-            int arity = symbol.arity;
-            if (arity == 0) {
+            int symbolArity = symbol.arity;
+            if (symbolArity == 0) {
                 char c = id.charAt(0);
                 if (id.length() == 1 && 'x' <= c && c <= 'z') {
-                    computedArity = Math.max(computedArity, c - 'x' + 1);
+                    arity = Math.max(arity, c - 'x' + 1);
                 }
             } else {
                 if (tokenType != '(') {
                     throw error;
                 }
-                params = new double[arity];
-                for (int i = 0; i < arity; ++i) {
+                params = new double[symbolArity];
+                for (int i = 0; i < symbolArity; ++i) {
                     params[i] = parseExpression();
-                    if (tokenType != ((i == arity - 1) ? ')' : ',')) {
+                    if (tokenType != ((i == symbolArity - 1) ? ')' : ',')) {
                         throw error;
                     }
                 }
