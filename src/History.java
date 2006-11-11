@@ -5,8 +5,8 @@ class HistEntry {
     boolean hasResult;
     int pos;
 
-    HistEntry(char line[], int len, double res, boolean hasRes) {
-        base = len == 0 ? "" : new String(line, 0, len);
+    HistEntry(String str, double res, boolean hasRes) {
+        base = str == null ? "" : str;;
         result = res;
         hasResult = hasRes;
         flush();
@@ -30,7 +30,7 @@ class History {
 
     History(CalcCanvas calc) {
         parent = calc;
-        history.addElement(new HistEntry(null, 0, 0, false));
+        history.addElement(new HistEntry(null, 0, false));
     }
     
     int size() { return history.size(); }
@@ -62,9 +62,9 @@ class History {
         parent.len = str.length();
     }
 
-    void enter() {
+    void enter(String str, double result, boolean hasResult) {
         ((HistEntry)history.elementAt(historyPos)).flush();
-        HistEntry newEntry = new HistEntry(parent.line, parent.len, parent.result, parent.hasResult);
+        HistEntry newEntry = new HistEntry(str, result, hasResult);
         history.insertElementAt(newEntry, 1);
         historyPos = 0;
         getFrom((HistEntry)history.elementAt(historyPos));
