@@ -104,7 +104,9 @@ class CalcCanvas extends Canvas implements Runnable {
     }
 
     void clearHistory() {
-
+        history.clear();
+        updateHistory();
+        repaint();
     }
     
     int split(Font font, char buf[], int len, int w, 
