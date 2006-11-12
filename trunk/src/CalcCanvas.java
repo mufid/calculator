@@ -76,6 +76,7 @@ class CalcCanvas extends Canvas implements Runnable {
 
         editChanged(0);
         updateCursor();
+        updateHistory();
         repaint();
         parser.symbols.put(ans);
         thread = new Thread(this);
