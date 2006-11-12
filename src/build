@@ -16,12 +16,20 @@ ICON=a
 
 function genManifest {
 echo "MIDlet-1: $NAME, /$ICON, C"
-echo MIDlet-Info-URL: $URL
 echo MIDlet-Name: $NAME
 echo "MIDlet-Vendor: Mihai Preda"
 echo MIDlet-Version: $VERSION
 echo MicroEdition-Configuration: CLDC-$CLDC
 echo MicroEdition-Profile: MIDP-$MIDP
+echo MIDlet-Info-URL: $URL
+#MIDlet-Install-Notify
+#MIDlet-Delete-Notify
+#MIDlet-Delete-Confirm
+#MIDlet-Description
+#MIDlet-Icon
+#MIDlet-Data-Size
+#MIDlet-Permissions
+#MIDlet-Permissions-Opt
 }
 
 function genJad {

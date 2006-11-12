@@ -149,30 +149,30 @@ class History {
     private ByteArrayOutputStream bos = new ByteArrayOutputStream();
     void enter(String str, double result, boolean hasResult) {
         ((HistEntry)history.elementAt(historyPos)).flush();
-        HistEntry newEntry = new HistEntry(str, result, hasResult);
-
-        bos.reset();
-        DataOutputStream os = new DataOutputStream(bos);
-        try {
-            os.writeInt(++maxSeq);
-            newEntry.write(os);
-            ++posMaxSeq;
-            if (posMaxSeq == MAX_HIST) {
-                posMaxSeq = 0;
+        if (str.length() > 0) {
+            HistEntry newEntry = new HistEntry(str, result, hasResult);
+            bos.reset();
+            DataOutputStream os = new DataOutputStream(bos);
+            try {
+                os.writeInt(++maxSeq);
+                newEntry.write(os);
+                ++posMaxSeq;
+                if (posMaxSeq == MAX_HIST) {
+                    posMaxSeq = 0;
+                }
+                int recId = posMaxSeq + 2;
+                byte data[] = bos.toByteArray();
+                System.out.println("id " + recId + "; next " + rs.getNextRecordID());
+                if (rs.getNextRecordID() == recId) {
+                    rs.addRecord(data, 0, data.length);
+                } else {
+                    rs.setRecord(recId, data, 0, data.length);
+                }
+            } catch (Exception e) {
+                throw new Error(e.toString());
             }
-            int recId = posMaxSeq + 2;
-            byte data[] = bos.toByteArray();
-            System.out.println("id " + recId + "; next " + rs.getNextRecordID());
-            if (rs.getNextRecordID() == recId) {
-                rs.addRecord(data, 0, data.length);
-            } else {
-                rs.setRecord(recId, data, 0, data.length);
-            }
-        } catch (Exception e) {
-            throw new Error(e.toString());
+            history.insertElementAt(newEntry, 1);
         }
-
-        history.insertElementAt(newEntry, 1);
         historyPos = 0;
         getFrom((HistEntry)history.elementAt(historyPos));
     }
