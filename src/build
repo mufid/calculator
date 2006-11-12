@@ -2,22 +2,23 @@
 
 WTK=/home/preda/WTK2.2
 PREV=$WTK/bin/preverify
-#PROGUARD="java -jar /home/preda/proguard3.6/lib/proguard.jar @src/proguard.txt"
-#PROGUARD="java -jar /home/preda/proguard.jar @src/proguard.txt"
 PROGUARD="java -jar /home/preda/proguard3.7beta2/lib/proguard.jar @src/proguard.txt"
 
 NAME=JaviaCalc
 VERSION="0.0.1"
-SRCS="C CalcCanvas"
+URL="http://javia.org/"
+SRCS="C CalcCanvas Expr History KeyState MoreMath Symbol SymbolTable"
 
 CLASS=$WTK/lib/cldcapi11.jar:$WTK/lib/midpapi20.jar
 CLDC=1.1
 MIDP=2.0
+ICON=a
 
 function genManifest {
-echo "MIDlet-1: $NAME, /C.gif, C"
+echo "MIDlet-1: $NAME, /$ICON, C"
+echo MIDlet-Info-URL: $URL
 echo MIDlet-Name: $NAME
-echo "MIDlet-Vendor: Mihai Preda (javia.org)"
+echo "MIDlet-Vendor: Mihai Preda"
 echo MIDlet-Version: $VERSION
 echo MicroEdition-Configuration: CLDC-$CLDC
 echo MicroEdition-Profile: MIDP-$MIDP
@@ -37,35 +38,31 @@ rm -rf $DIRS
 mkdir -p $DIRS
 
 MANF=tmp/MANIFEST.MF
-#cp src/M.MF $MANF
 genManifest > $MANF
 
 set -e
-echo
+echo Preprocess
+for name in $SRCS ; do
+cpp -P -D VERSION="\"$VERSION\"" -D NAME="\"$NAME\"" -D URL="\"$URL\"" src/$name.java psrc/$name.java
+done
 
 echo Compilation
-#CMD="javac -bootclasspath $CLASS -d class src/*.java -source 1.4 -target 1.4 -g:none"
-CMD="gcj -C -bootclasspath $CLASS -d class src/*.java"
-# -source 1.4 -target 1.4 -g:none"
+CMD="javac -bootclasspath $CLASS -d class psrc/*.java -source 1.4 -target 1.4 -g:none"
+#CMD="gcj -C -bootclasspath $CLASS -d class psrc/*.java"
 echo $CMD
 $CMD
-jar cfm tmp/class.jar $MANF -C src C.gif -C class .
-#jar cfm tmp/class-EN.jar $MANF -C src M.gif -C class .
+jar cfm tmp/class.jar $MANF -C src $ICON -C class .
 if [ a$1 != "a-ng" ] ; then
     $PROGUARD -libraryjars $CLASS -injars tmp/class.jar -outjar tmp/$FULLNAME.jar
-#    $PROGUARD -libraryjars ${CLASS[$1]} -injars tmp$1/class$1-EN.jar -outjar tmp$1/$FULLNAME-EN.jar
 else
     cp tmp/class.jar tmp/$FULLNAME.jar
-#    cp tmp$1/class$1-EN.jar tmp$1/$FULLNAME-EN.jar
 fi
 
 echo Preverify
 mkdir -p bin
 $PREV -classpath $CLASS -target CLDC$CLDC -d bin tmp/$FULLNAME.jar
-#$PREV -classpath ${CLASS[$1]} -target CLDC${CLDC[$1]} -d bin tmp$1/$FULLNAME-EN.jar
 
 genJad $MANF bin/$FULLNAME.jad $FULLNAME.jar
-#genJad $MANF bin/$FULLNAME-EN.jad $FULLNAME-EN.jar
 echo
 }
 
