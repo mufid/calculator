@@ -12,7 +12,8 @@ class CalcCanvas extends Canvas implements Runnable {
         largeHeight  = largeFont.getHeight();
     }
 
-    static final String arityParens[] = { "", "()", "(,)", "(,,)"};
+    private static final String arityParens[] = {"", "()", "(,)", "(,,)"};
+    private static final String params[] = {"(x)", "(x,y)", "(x,y,z)"};
 
     History history;    
     int w, h;
@@ -84,20 +85,22 @@ class CalcCanvas extends Canvas implements Runnable {
         thread.start();
     }
 
-    boolean twiced;
+    private boolean twiced;
     public void run() {
         while (true) {
-            if (twiced) {
-                setCursor(!drawCursor);
+            synchronized (this) {
+                if (twiced) {
+                    setCursor(!drawCursor);
+                }
+                twiced = !twiced;
+                if (!changed && needUpdateResult) {
+                    computeResult(false);
+                    updateResult();
+                }
+                changed = false;
             }
-            twiced = !twiced;
-            if (!changed && needUpdateResult) {
-                computeResult(false);
-                updateResult();
-            }
-            changed = false;
             try {
-                Thread.sleep(200);
+                Thread.sleep(400);
             } catch (InterruptedException e) {
             }
         }
@@ -271,7 +274,6 @@ class CalcCanvas extends Canvas implements Runnable {
         }
     }
 
-    private static final String params[] = {"(x)", "(x,y)", "(x,y,z)"};
     void updateResult() {
         needUpdateResult = false;
         computeResult(false);
@@ -284,7 +286,7 @@ class CalcCanvas extends Canvas implements Runnable {
             String strResult = (definedName != null && arity > 0) ? 
                 "Def " + definedName + params[arity-1] : format(result);
             g.setColor(fgCol[RESULT]);
-            g.drawString("= " + strResult, 0, 0, 0);
+            g.drawString(strResult, 0, 2, 0);
         }
 
         int resultY = nEditLines * lineHeight + 2;
@@ -373,7 +375,7 @@ class CalcCanvas extends Canvas implements Runnable {
         changed = true;
     }
 
-    protected void keyPressed(int key) {
+    protected synchronized void keyPressed(int key) {
         int oldPos = pos;
         int keyPos = getKeyPos(key);
         if (keyPos >= 0) {
@@ -392,6 +394,8 @@ class CalcCanvas extends Canvas implements Runnable {
                 doChanged(oldPos);
             }
         } else {
+            boolean clearedKeypad = KeyState.keypad != null;
+            KeyState.keypad = null;
             int action = 0;
             try {
                 action = getGameAction(key);
@@ -415,12 +419,14 @@ class CalcCanvas extends Canvas implements Runnable {
                 case Canvas.UP:
                     if (history.move(-1)) {
                         doChanged(0);
+                        updateResult();
                     }
                     break;
                     
                 case Canvas.DOWN:
                     if (history.move(1)) {
                         doChanged(0);
+                        updateResult();
                     }
                     break;
                     
@@ -437,15 +443,10 @@ class CalcCanvas extends Canvas implements Runnable {
                     repaint();
                     break;
                 }
-            } else {
-                if (key == -8 || key == -11 || key == -12) { //delete
-                    if (KeyState.keypad == null) {
-                        delFromLine();
-                        doChanged(pos);
-                    } else {
-                        KeyState.keypad = null;
-                        //changed = true;
-                    }
+            } else if (key == -8 || key == -11 || key == -12) { //delete
+                if (!clearedKeypad) {
+                    delFromLine();
+                    doChanged(pos);
                 }
             }
         }
