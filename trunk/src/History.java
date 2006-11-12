@@ -131,6 +131,21 @@ class History {
         parent.len = str.length();
     }
 
+    void clear() {
+        history.setSize(1);
+        historyPos = 0;
+        posMaxSeq = -1;
+        maxSeq = 0;
+        try {
+            int n = rs.getNumRecords();
+            for (int i = 2; i <= n; ++i) {
+                rs.setRecord(i, null, 0, 0);
+            }
+        } catch (RecordStoreException e) {
+            throw new Error(e.toString());
+        }
+    }
+
     private ByteArrayOutputStream bos = new ByteArrayOutputStream();
     void enter(String str, double result, boolean hasResult) {
         ((HistEntry)history.elementAt(historyPos)).flush();

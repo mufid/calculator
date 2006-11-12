@@ -13,6 +13,7 @@ class CalcCanvas extends Canvas implements Runnable {
     }
 
     static final String arityParens[] = { "", "()", "(,)", "(,,)"};
+
     History history;    
     int w, h;
 
@@ -102,6 +103,10 @@ class CalcCanvas extends Canvas implements Runnable {
         }
     }
 
+    void clearHistory() {
+
+    }
+    
     int split(Font font, char buf[], int len, int w, 
               int changeLine, int lines[]) {
         int end = changeLine == 0 ? 0 : lines[changeLine - 1];
