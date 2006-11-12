@@ -2,7 +2,11 @@ import javax.microedition.midlet.*;
 import javax.microedition.lcdui.*;
 import java.io.IOException;
 
+//#define _STR(x) #x
+//#define STR(x) _STR(x)
+
 public final class C extends MIDlet implements CommandListener {
+    //static final String VERSION = STR(_VERSION_);
     private static final Command 
         //cmdSetup  = new Command("Setup", Command.SCREEN, 1),
         cmdOk    = new Command("Ok",    Command.OK, 1),
@@ -25,10 +29,13 @@ public final class C extends MIDlet implements CommandListener {
 "You may define new constants and functions: 'a:=2^3' defines a new constant 'a' with the value 8. " +
 "'f:=sqrt(x*x+y*y)' defines a new function f(x,y). The functions have up to 3 parameters named x, y, and z.";
 
-    static final String aboutStr = "JaviaCalc v0.1.0\n\u00a9 2006 Mihai Preda\nhttp://javia.org/calc/";
+    static final String aboutStr = NAME + " v"+VERSION + "\n\u00a9 2006 Mihai Preda\n" + URL;
     Form aboutForm = new Form("About"), helpForm = new Form("Help");
     
     public C() {
+        System.out.println(URL);
+        //_URL_;
+        //System.out.println(STR(http://foo.bar/));
         calcCanvas = new CalcCanvas();
         //addCommand(cmdSetup);
         calcCanvas.addCommand(cmdClearHistory);
