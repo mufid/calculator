@@ -24,7 +24,7 @@ class CalcCanvas extends Canvas implements Runnable {
     Constant ans = new Constant("ans", 0);
     double result;
     boolean hasResult = false;
-    boolean needUpdateResult, changed;
+    boolean needUpdateResult;
 
     Font font = largeFont;
     int lineHeight = font.getHeight() + 1;
@@ -85,20 +85,9 @@ class CalcCanvas extends Canvas implements Runnable {
         thread.start();
     }
 
-    private boolean twiced;
     public void run() {
         while (true) {
-            synchronized (this) {
-                if (twiced) {
-                    setCursor(!drawCursor);
-                }
-                twiced = !twiced;
-                if (!changed && needUpdateResult) {
-                    computeResult(false);
-                    updateResult();
-                }
-                changed = false;
-            }
+            setCursor(!drawCursor);
             try {
                 Thread.sleep(400);
             } catch (InterruptedException e) {
@@ -274,25 +263,6 @@ class CalcCanvas extends Canvas implements Runnable {
         }
     }
 
-    void updateResult() {
-        needUpdateResult = false;
-        computeResult(false);
-
-        Graphics g = gg[RESULT];
-        g.setColor(bgCol[RESULT]);
-        g.fillRect(0, 0, w, height[RESULT]);
-
-        if (hasResult) {
-            String strResult = (definedName != null && arity > 0) ? 
-                "Def " + definedName + params[arity-1] : format(result);
-            g.setColor(fgCol[RESULT]);
-            g.drawString(strResult, 0, 2, 0);
-        }
-
-        int resultY = nEditLines * lineHeight + 2;
-        repaint(0, resultY, w, height[RESULT]);
-    }
-
     protected void paint(Graphics g) {
         KeyState.paint(g);
         //System.out.println("historyH "+historyH+" keypadH "+keypadH+" editH "+editH+" w "+w+" resultY "+resultY);
@@ -302,13 +272,35 @@ class CalcCanvas extends Canvas implements Runnable {
         KeyState.paint(g);
         g.drawRegion(img[EDIT], 0, 0, w, editH, 0,
                      0, 0, 0);
-        g.drawImage(img[RESULT], 0, editH, 0);
         g.drawRegion(img[HISTORY], 0, 0, w, h-editH-height[RESULT]-keypadH, 0,
                      0, editH+height[RESULT], 0);
         if (drawCursor) {
             g.setColor(0);
             g.fillRect(cursorX, cursorY, cursorW, cursorH);
         }
+
+        if (needUpdateResult) {
+            int resultY = nEditLines * lineHeight + 2;
+            int ry = resultY+2, rh = height[RESULT]-3;
+            if (g.getClipY() == ry && g.getClipHeight() == rh) {
+                needUpdateResult = false;
+                computeResult(false);
+                Graphics rg = gg[RESULT];
+                rg.setColor(bgCol[RESULT]);
+                rg.fillRect(0, 0, w, height[RESULT]);
+                
+                if (hasResult) {
+                    String strResult = (definedName != null && arity > 0) ? 
+                        "Def " + definedName + params[arity-1] : format(result);
+                    rg.setColor(fgCol[RESULT]);
+                    rg.drawString(strResult, 0, 2, 0);
+                }
+            } else {
+                repaint(0, ry, w, rh);
+                return;
+            }
+        }
+        g.drawImage(img[RESULT], 0, editH, 0);
     }
     
     int prevFlexPoint(int pos) {
@@ -372,7 +364,6 @@ class CalcCanvas extends Canvas implements Runnable {
         editChanged(changePos);
         updateCursor();
         needUpdateResult = true;
-        changed = true;
     }
 
     protected synchronized void keyPressed(int key) {
@@ -419,14 +410,14 @@ class CalcCanvas extends Canvas implements Runnable {
                 case Canvas.UP:
                     if (history.move(-1)) {
                         doChanged(0);
-                        updateResult();
+                        needUpdateResult = true;
                     }
                     break;
                     
                 case Canvas.DOWN:
                     if (history.move(1)) {
                         doChanged(0);
-                        updateResult();
+                        needUpdateResult = true;
                     }
                     break;
                     
@@ -438,7 +429,7 @@ class CalcCanvas extends Canvas implements Runnable {
                     }
                     history.enter(new String(line, 0, len), result, hasValue);
                     doChanged(0);
-                    updateResult();
+                    needUpdateResult = true;
                     updateHistory();
                     repaint();
                     break;
