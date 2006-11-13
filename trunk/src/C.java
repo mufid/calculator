@@ -5,7 +5,7 @@ import java.io.IOException;
 //#define _STR(x) #x
 //#define STR(x) _STR(x)
 
-public final class C extends MIDlet implements CommandListener {
+public final class C extends MIDlet implements CommandListener, Runnable {
     //static final String VERSION = STR(_VERSION_);
     private static final Command 
         //cmdSetup  = new Command("Setup", Command.SCREEN, 1),
@@ -15,7 +15,7 @@ public final class C extends MIDlet implements CommandListener {
         cmdAbout = new Command("About", Command.HELP, 9),
         cmdExit  = new Command("Exit",  Command.EXIT, 10);
 
-    private Display display;
+    static Display display;
     CalcCanvas calcCanvas;
     static final String helpStr = 
 "To type an operator (+,-,*,/,^) press the '*' key. " +
@@ -31,7 +31,8 @@ public final class C extends MIDlet implements CommandListener {
 
     static final String aboutStr = NAME + " v"+VERSION + "\n\u00a9 2006 Mihai Preda\n" + URL;
     Form aboutForm = new Form("About"), helpForm = new Form("Help");
-    
+    Thread thread;
+
     public C() {
         System.out.println(URL);
         //_URL_;
@@ -53,6 +54,13 @@ public final class C extends MIDlet implements CommandListener {
         helpForm.append(helpStr);
         helpForm.addCommand(cmdOk);
         helpForm.setCommandListener(this);
+
+        thread = new Thread(this);
+        thread.start();
+    }
+
+    public void run() {
+        calcCanvas.threadRun();
     }
 
     public void commandAction(Command c, Displayable d) {

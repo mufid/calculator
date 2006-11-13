@@ -46,7 +46,6 @@ class CalcCanvas extends Canvas implements Runnable {
     int height[] = new int[N_ZONES];
     Image img[] = new Image[N_ZONES];
     Graphics gg[] = new Graphics[N_ZONES];
-    Thread thread;
 
     CalcCanvas() {
         history = new History(this);
@@ -85,17 +84,42 @@ class CalcCanvas extends Canvas implements Runnable {
         updateHistory();
         repaint();
         parser.symbols.put(ans);
-        thread = new Thread(this);
-        thread.start();
     }
 
-    public void run() {
+    void threadRun() {
         while (true) {
             setCursor(!drawCursor);
             try {
-                Thread.sleep(400);
+                Thread.sleep(10000);
             } catch (InterruptedException e) {
             }
+        }
+    }
+
+    public void run() {
+        System.out.println("serially");
+        if (needUpdateResult) {
+            needUpdateResult = false;
+            
+            int resultY = nEditLines * lineHeight + 2;
+            int ry = resultY+2, rh = height[RESULT]-3;
+            /*
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {}
+            */
+            computeResult(false);
+            Graphics rg = gg[RESULT];
+            rg.setColor(bgCol[RESULT]);
+            rg.fillRect(0, 0, w, height[RESULT]);
+                
+            if (hasResult) {
+                String strResult = (definedName != null && arity > 0) ? 
+                    "Def " + definedName + params[arity-1] : format(result);
+                rg.setColor(fgCol[RESULT]);
+                rg.drawString(strResult, 0, 2, 0);
+            }
+            repaint(0, ry, w, rh);
         }
     }
 
@@ -268,6 +292,7 @@ class CalcCanvas extends Canvas implements Runnable {
     }
 
     protected void paint(Graphics g) {
+        System.out.println("paint");
         KeyState.paint(g);
         //System.out.println("historyH "+historyH+" keypadH "+keypadH+" editH "+editH+" w "+w+" resultY "+resultY);
         int editH = nEditLines * lineHeight + 2;
@@ -282,29 +307,10 @@ class CalcCanvas extends Canvas implements Runnable {
             g.setColor(0);
             g.fillRect(cursorX, cursorY, cursorW, cursorH);
         }
-
-        if (needUpdateResult) {
-            int resultY = nEditLines * lineHeight + 2;
-            int ry = resultY+2, rh = height[RESULT]-3;
-            if (g.getClipY() == ry && g.getClipHeight() == rh) {
-                needUpdateResult = false;
-                computeResult(false);
-                Graphics rg = gg[RESULT];
-                rg.setColor(bgCol[RESULT]);
-                rg.fillRect(0, 0, w, height[RESULT]);
-                
-                if (hasResult) {
-                    String strResult = (definedName != null && arity > 0) ? 
-                        "Def " + definedName + params[arity-1] : format(result);
-                    rg.setColor(fgCol[RESULT]);
-                    rg.drawString(strResult, 0, 2, 0);
-                }
-            } else {
-                repaint(0, ry, w, rh);
-                return;
-            }
-        }
         g.drawImage(img[RESULT], 0, editH, 0);
+        if (needUpdateResult) {
+            C.display.callSerially(this);
+        }
     }
     
     int prevFlexPoint(int pos) {
@@ -371,6 +377,7 @@ class CalcCanvas extends Canvas implements Runnable {
     }
 
     protected synchronized void keyPressed(int key) {
+        System.out.println("key");
         int oldPos = pos;
         int keyPos = getKeyPos(key);
         if (keyPos >= 0) {

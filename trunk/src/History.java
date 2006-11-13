@@ -48,7 +48,7 @@ class HistEntry {
 }
 
 class History {
-    private static final int MAX_HIST = 64;
+    private static final int MAX_HIST = 32; //64;
     private CalcCanvas parent;
     private int historyPos;
     private Vector history; // = new Vector();
