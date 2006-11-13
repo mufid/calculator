@@ -15,13 +15,16 @@ class CalcCanvas extends Canvas implements Runnable {
     private static final String arityParens[] = {"", "()", "(,)", "(,,)"};
     private static final String params[] = {"(x)", "(x,y)", "(x,y,z)"};
 
-    History history;    
+    History history; 
+    Constant ans;
+    Expr parser = new Expr();
+
     int w, h;
 
     int cursorX, cursorY, cursorW = 2, cursorH;
 
-    Expr parser = new Expr();
-    Constant ans = new Constant("ans", 0);
+
+
     double result;
     boolean hasResult = false;
     boolean needUpdateResult;
@@ -47,6 +50,7 @@ class CalcCanvas extends Canvas implements Runnable {
 
     CalcCanvas() {
         history = new History(this);
+        ans = new Constant("ans", history.ans);
 
         setFullScreenMode(true);
         w = getWidth();
@@ -372,14 +376,22 @@ class CalcCanvas extends Canvas implements Runnable {
         if (keyPos >= 0) {
             String s = KeyState.handleKey(keyPos);
             if (s != null) {
+                if (pos == -1 && s.length() == 1 &&
+                    "+*/%^!".indexOf(s.charAt(0)) != -1) {
+                    insertIntoLine("ans");
+                }
                 insertIntoLine(s);
                 Symbol symbol = Expr.symbols.get(s);
                 if (symbol != null) { // && symbol.arity > 0) {
                     String parens = arityParens[symbol.arity];
-                    int len = parens.length();
-                    if (len > 0) {
-                        insertIntoLine(parens);
-                        pos -= len - 1;
+                    int parensLen = parens.length();
+                    if (parensLen > 0) {
+                        if (pos == len-1) {
+                            insertIntoLine(parens);
+                            pos -= parensLen - 1;
+                        } else {
+                            insertIntoLine("(");
+                        }
                     }
                 }
                 doChanged(oldPos);
