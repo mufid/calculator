@@ -55,6 +55,7 @@ class History {
     private RecordStore rs;
     int posMaxSeq = -1;
     int maxSeq = 0;
+    double ans = 0;
 
     History(CalcCanvas calc) {
         parent = calc;
@@ -94,11 +95,20 @@ class History {
         }
         history = new Vector(v.size() + 1);
         history.addElement(new HistEntry(null, 0, false));
+        int n = v.size();
         for (int i = posMaxSeq; i >= 0; --i) {
             history.addElement(v.elementAt(i));
         }
-        for (int i = v.size() -1; i > posMaxSeq; --i) {
+        for (int i = n-1; i > posMaxSeq; --i) {
             history.addElement(v.elementAt(i));
+        }
+        HistEntry entry;
+        for (int i = 1; i <= n; ++i) {
+            entry = get(i);
+            if (entry.hasResult) {
+                ans = entry.result;
+                break;
+            }
         }
     }
     
@@ -108,9 +118,11 @@ class History {
         return (HistEntry) history.elementAt(p);
     }
 
+    /*
     String getBase(int p) {
         return ((HistEntry) history.elementAt(p)).base;
     }
+    */
 
     boolean move(int delta) {
         int newPos = historyPos + delta;
