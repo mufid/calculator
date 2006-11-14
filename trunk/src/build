@@ -7,7 +7,7 @@ PROGUARD="java -jar /home/preda/proguard3.7beta2/lib/proguard.jar @src/proguard.
 NAME=JaviaCalc
 VERSION="0.0.1"
 URL="http://javia.org/"
-SRCS="C CalcCanvas Expr History KeyState MoreMath Symbol SymbolTable"
+SRCS="C CalcCanvas Expr History KeyState MoreMath Symbol"
 
 CLASS=$WTK/lib/cldcapi11.jar:$WTK/lib/midpapi20.jar
 CLDC=1.1
