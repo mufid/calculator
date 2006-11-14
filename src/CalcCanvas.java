@@ -15,9 +15,9 @@ class CalcCanvas extends Canvas implements Runnable {
     private static final String arityParens[] = {"", "()", "(,)", "(,,)"};
     private static final String params[] = {"(x)", "(x,y)", "(x,y,z)"};
 
+    Expr parser = new Expr();
     History history; 
     Constant ans;
-    Expr parser = new Expr();
 
     int w, h;
 
