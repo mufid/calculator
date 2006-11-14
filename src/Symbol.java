@@ -1,5 +1,23 @@
 import java.util.*;
 
+import java.util.Hashtable;
+
+final class SymbolTable {
+    private Hashtable ht = new Hashtable(50);
+
+    Symbol get(String name) {
+        return (Symbol) ht.get(name);
+    }
+    
+    Symbol put(Symbol s) {
+        return (Symbol) ht.put(s.name, s);
+    }
+
+    void remove(String name) {
+        ht.remove(name);
+    }
+}
+
 abstract class Symbol {
     Symbol(String iniName, int iniArity) {
         name = iniName;
@@ -161,16 +179,6 @@ class DefinedFun extends Symbol {
     }
           
     double eval(SymbolTable symbols, double params[]) {
-        //System.out.println(name + " " + args + " " + params);
-        /*
-        int n = args.length;
-        int nParams = params == null ? 0 : params.length;
-        if (nParams != n) {
-            throw new Error("Args for " + name + 
-                            ": expected " + n + ", got " + nParams);
-        }
-        */
-        
         Symbol saves[] = new Symbol[arity];
         for (int i = 0; i < arity; ++i) {
             saves[i] = symbols.put(new Constant(args[i], params[i]));
