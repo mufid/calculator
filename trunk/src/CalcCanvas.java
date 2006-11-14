@@ -105,7 +105,7 @@ class CalcCanvas extends Canvas implements Runnable {
             int ry = resultY+2, rh = height[RESULT]-3;
             /*
             try {
-                Thread.sleep(300);
+                Thread.sleep(400);
             } catch (InterruptedException e) {}
             */
             computeResult(false);
@@ -308,6 +308,11 @@ class CalcCanvas extends Canvas implements Runnable {
             g.fillRect(cursorX, cursorY, cursorW, cursorH);
         }
         g.drawImage(img[RESULT], 0, editH, 0);
+        /*
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {}
+        */
         if (needUpdateResult) {
             C.display.callSerially(this);
         }

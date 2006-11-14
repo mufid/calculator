@@ -38,20 +38,15 @@ final class Expr {
     static int countParens(String str) {
         int openParens = 0;
         int p = 0;
-        while ((p = str.indexOf(p, '(')+1) != 0) { ++openParens; }
+        while ((p = str.indexOf('(', p)+1) != 0) { 
+            ++openParens; 
+        }
         p = 0;
-        while ((p = str.indexOf(p, ')')+1) != 0) { --openParens; }
+        while ((p = str.indexOf(')', p)+1) != 0) { 
+            --openParens; 
+        }
         return openParens;
     }
-
-    /*
-    double parse(String str) {
-        int len = str.length();
-        char buf[] = new char[len];
-        str.getChars(0, len, buf, 0);
-        return parseNoDecl(buf, len);
-    }
-    */
 
     double parse(String str) {
         int openParens = countParens(str);
