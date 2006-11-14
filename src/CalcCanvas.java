@@ -24,9 +24,9 @@ class CalcCanvas extends Canvas implements Runnable {
     int cursorX, cursorY, cursorW = 2, cursorH;
 
 
-
-    double result;
-    boolean hasResult = false;
+    ExprResult result = new ExprResult();
+    //double result;
+    //boolean hasResult = false;
     boolean needUpdateResult;
 
     Font font = largeFont;
@@ -108,14 +108,13 @@ class CalcCanvas extends Canvas implements Runnable {
                 Thread.sleep(400);
             } catch (InterruptedException e) {}
             */
-            computeResult(false);
             Graphics rg = gg[RESULT];
             rg.setColor(bgCol[RESULT]);
             rg.fillRect(0, 0, w, height[RESULT]);
                 
-            if (hasResult) {
-                String strResult = (definedName != null && arity > 0) ? 
-                    "Def " + definedName + params[arity-1] : format(result);
+            if (parser.parse(String.valueOf(line, 0, len), result)) {
+                String strResult = (result.arity > 0) ? 
+                    result.name + params[result.arity-1] : format(result.value);
                 rg.setColor(fgCol[RESULT]);
                 rg.drawString(strResult, 0, 2, 0);
             }
@@ -260,36 +259,14 @@ class CalcCanvas extends Canvas implements Runnable {
         return new String(formatBuf, 0, len);
     }
 
-    String definedName;
-    int arity;
-    void computeResult(boolean define) {
-        definedName = null;
-        hasResult = false;
-        arity = 0;
-
-        if (len > 0) {
-            String expr;
-            char c = line[0];
-            if (len > 3 && line[1] == ':' && line[2] == '=' && 
-                (('a' <= c && c <= 'c') || ('f' <= c && c <= 'h'))) {
-                expr = new String(line, 3, len - 3);
-                definedName = String.valueOf(c);
-            } else {
-                expr = new String(line, 0, len);
-            }
-        
-            try {
-                result = parser.parse(expr);
-                hasResult = true;
-                arity = parser.arity;
-            } catch (Error e) {
-            }
-
-            if (define && definedName != null) {
-                parser.symbols.put(arity == 0 ? (Symbol) new Constant(definedName, result) : (Symbol) new DefinedFun(definedName, arity, expr));
-            }
+    /*
+    void computeResult(boolean mayDefine) {
+        boolean ok = parser.parse(new String(line, 0, len), result);
+        if (ok && mayDefine && exprResult.name != null) {
+            parser.define(result);
         }
     }
+    */
 
     protected void paint(Graphics g) {
         System.out.println("paint");
@@ -446,12 +423,17 @@ class CalcCanvas extends Canvas implements Runnable {
                     break;
                     
                 case Canvas.FIRE:
-                    computeResult(true);
-                    boolean hasValue = hasResult && arity == 0;
-                    if (hasValue) { 
-                        ans.value = result; 
+                    String str = String.valueOf(line, 0, len);
+                    if (parser.parse(str, result)) {
+                        if (result.name != null) {
+                            parser.define(result);
+                        }
                     }
-                    history.enter(new String(line, 0, len), result, hasValue);
+                    boolean hasValue = result.hasValue();
+                    if (hasValue) {
+                        ans.value = result.value;                             
+                    }                
+                    history.enter(str, result.value, hasValue);
                     doChanged(0);
                     needUpdateResult = true;
                     updateHistory();
