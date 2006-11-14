@@ -1,3 +1,21 @@
+final class ExprResult {
+    String name, definition;
+    int arity;
+    double value;
+    int errorPos; //-1 when no error
+
+    void reset() {
+        name = definition = null;
+        arity = 0;
+        value = 0;
+        errorPos = -1;
+    }
+
+    boolean hasValue() {
+        return errorPos == -1 && arity == 0;
+    }    
+}
+
 final class Expr {
     static SymbolTable symbols = new SymbolTable();
     static { 
@@ -6,29 +24,32 @@ final class Expr {
         symbols.put(new Constant("pi", Math.PI));
         symbols.put(new Constant("e",  Math.E));
         //symbols.put(new Constant("ans", 0));
-        symbols.put(new DefinedFun("hypot", 2, "sqrt(x*x+y*y)"));
+        //symbols.put(new DefinedFun("hypot", 2, "sqrt(x*x+y*y)"));
+        /*
         for (int i = 0; i < 3; ++i) {
             symbols.put(new Constant(DefinedFun.args[i], i)); //NaN
         }
+        */
     }
     private static final Error error = new Error();
+    private char text[] = new char[256];
+    private int n = 0;
 
-    char text[] = new char[256];
-    int n = 0;
-
-    char tokenType;
-    double tokenValue;
-    StringBuffer tokenID = new StringBuffer();
-    int pos = 0, tokenStart = -1;
+    private char tokenType;
+    private double tokenValue;
+    private StringBuffer tokenID = new StringBuffer();
+    private int pos = 0, tokenStart = -1, nAddedBefore = 0;
     
-    int arity;
+    private int arity;
+    private boolean isDefinition;
 
     public static void main(String argv[]) {
         Expr parser = new Expr();
+        ExprResult result = new ExprResult();
         int n = argv.length;
         for (int i = 0; i < n; ++i) {
-            double v = parser.parse(argv[i]);
-            System.out.println("   = " + v);
+            boolean ok = parser.parse(argv[i], result);
+            System.out.println("   = " + result.value);
         }
     }
 
@@ -48,12 +69,57 @@ final class Expr {
         return openParens;
     }
 
-    double parse(String str) {
+    void define(ExprResult def) {
+        symbols.put(def.arity == 0 ? 
+            (Symbol) new Constant(def.name, def.value) : 
+            (Symbol) new DefinedFun(def.name, def.arity, def.definition));
+    }
+
+    boolean splitDefinition(String str, ExprResult outResult) {
+        outResult.reset();
+        if (str.length() == 0) {
+            outResult.errorPos = 0;
+            return false;
+        }
+
+        if (str.length() > 3 && str.charAt(1) == ':' && str.charAt(2) == '=') {
+            char c = str.charAt(0);
+            if (!(('a' <= c && c <= 'c') || ('f' <= c && c <= 'h'))) {
+                outResult.errorPos = 0;
+                return false;
+            }
+            outResult.name = String.valueOf(c);
+            outResult.definition = str.substring(3);
+        } else {
+            outResult.definition = str;
+        }
+        return true;
+    }
+
+    boolean parse(String str, ExprResult outResult) {
+        if (!splitDefinition(str, outResult)) {
+            return false;
+        }
+        isDefinition = outResult.name != null;
+        try {
+            outResult.value = parseThrow(outResult.definition);
+        } catch (Error e) {
+            outResult.value = 0;
+            outResult.errorPos = tokenStart - nAddedBefore;
+            outResult.arity = 0;
+            return false;
+        }
+        outResult.arity = arity;
+        return true;
+    }
+    
+    double parseThrow(String str) {
         int openParens = countParens(str);
         int p = 0;
         for (int i = openParens; i < 0; ++i) {
             text[p++] = '(';
         }
+        nAddedBefore = p;
         int size = str.length();
         str.getChars(0, size, text, p);
         p += size;
@@ -68,40 +134,7 @@ final class Expr {
         arity = 0;
         return parseWholeExpression();
     }
-
-    /*
-    double parseDecl(String str) {
-        int equalPos = str.indexOf('=');
-        if (equalPos != -1) {
-            String text1 = str.substring(0, equalPos);
-            String text2 = str.substring(equalPos + 1);
-            //!!! init(text1);
-            scan();
-            if (tokenType != 'a') {
-                throw error; //new Error("Def: expected id, found " + text1);
-            }
-            String id = tokenID.toString();
-            scan();
-            if (tokenType != '$') {
-                throw error; //new Error("Def: expected id, found " + text1);
-            }
-            //!!! init(text2);
-            arity = 0;
-            double val = parseWholeExpression();
-            if (arity == 0) {
-                symbols.put(new Constant(id, val));
-                return val;
-            } else {
-                symbols.put(new DefinedFun(id, arity, text2));
-                return Double.NaN;
-                //throw error;
-            }
-        } else {
-            return parseNoDecl(str);
-        }
-    }
-    */
-
+    
     static final boolean isLetter(char c) {
         return ('a' <= c && c <= 'z') || c == '_' || c == '\u03c0';
     }
@@ -242,17 +275,20 @@ final class Expr {
             String id = tokenID.toString();
             Symbol symbol = symbols.get(id);
             if (symbol == null) {
-                throw error; //new Error();
+                char c = id.charAt(0);
+                if (isDefinition && id.length() == 1 && 'x' <= c && c <= 'z') {
+                    arity = Math.max(arity, c - 'x' + 1);
+                    scan();
+                    value = 0;
+                    break;
+                } else {
+                    throw error;
+                }
             }
             scan();
             double[] params = null;
             int symbolArity = symbol.arity;
-            if (symbolArity == 0) {
-                char c = id.charAt(0);
-                if (id.length() == 1 && 'x' <= c && c <= 'z') {
-                    arity = Math.max(arity, c - 'x' + 1);
-                }
-            } else {
+            if (symbolArity > 0) {
                 if (tokenType != '(') {
                     throw error;
                 }
@@ -269,7 +305,7 @@ final class Expr {
             break;
             
         default:
-            throw error; //new Error(); //tokenType);
+            throw error;
         }
         //scan();
         if (tokenType == '!') {

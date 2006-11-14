@@ -169,7 +169,7 @@ class History {
                 os.writeInt(++maxSeq);
                 newEntry.write(os);
                 ++posMaxSeq;
-                if (posMaxSeq == MAX_HIST) {
+                if (posMaxSeq >= MAX_HIST) {
                     posMaxSeq = 0;
                 }
                 int recId = posMaxSeq + 2;

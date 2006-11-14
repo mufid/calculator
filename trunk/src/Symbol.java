@@ -175,7 +175,7 @@ class DefinedFun extends Symbol {
         for (int i = 0; i < arity; ++i) {
             saves[i] = symbols.put(new Constant(args[i], params[i]));
         }
-        double ret = new Expr().parse(definition);
+        double ret = new Expr().parseThrow(definition);
         for (int i = 0; i < arity; ++i) {
             if (saves[i] == null) {
                 symbols.remove(args[i]);
