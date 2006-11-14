@@ -96,21 +96,25 @@ final class Expr {
         return true;
     }
 
+    boolean parseSplitted(ExprResult result) {
+        isDefinition = result.name != null;
+        try {
+            result.value = parseThrow(result.definition);
+        } catch (Error e) {
+            result.value = 0;
+            result.errorPos = tokenStart - nAddedBefore;
+            result.arity = 0;
+            return false;
+        }
+        result.arity = arity;
+        return true;
+    }
+
     boolean parse(String str, ExprResult outResult) {
         if (!splitDefinition(str, outResult)) {
             return false;
         }
-        isDefinition = outResult.name != null;
-        try {
-            outResult.value = parseThrow(outResult.definition);
-        } catch (Error e) {
-            outResult.value = 0;
-            outResult.errorPos = tokenStart - nAddedBefore;
-            outResult.arity = 0;
-            return false;
-        }
-        outResult.arity = arity;
-        return true;
+        return parseSplitted(outResult);
     }
     
     double parseThrow(String str) {
