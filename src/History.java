@@ -1,6 +1,5 @@
 import java.util.Vector;
 import java.io.*;
-import javax.microedition.rms.*;
 
 class HistEntry {
     String base, edited;
@@ -15,24 +14,24 @@ class HistEntry {
         flush();
     }
 
-    HistEntry(DataInput in) {
+    HistEntry(DataInputStream in) {
         try {
             result = in.readDouble();
             hasResult = in.readBoolean();
             base = in.readUTF();
         } catch (IOException e) {
-            throw new Error(e.toString());
+            //throw new Error(e.toString());
         }
         flush();
     }
 
-    void write(DataOutput out) {
+    void write(DataOutputStream out) {
         try {
             out.writeDouble(result);
             out.writeBoolean(hasResult);
             out.writeUTF(base);
         } catch (IOException e) {
-            throw new Error(e.toString());
+            //throw new Error(e.toString());
         }
     }
 
@@ -52,46 +51,31 @@ class History {
     private CalcCanvas parent;
     private int historyPos;
     private Vector history; // = new Vector();
-    private RecordStore rs;
+    private RMS rs = new RMS("calc");
+    
     int posMaxSeq = -1;
     int maxSeq = 0;
     double ans = 0;
+
 
     History(CalcCanvas calc) {
         parent = calc;
         historyPos = 0;
         
         Vector v = new Vector(MAX_HIST);
-
-        try {    
-            byte buf[] = new byte[300];
-            rs = RecordStore.openRecordStore("calc", true);
-            if (rs.getNextRecordID() == 1) {
-                //init rs
-                buf[0] = 0;
-                rs.addRecord(buf, 0, 1); //rec 1
-            }
-            
-            int recSize;
-            int recId = 2;
-            DataInputStream is;
-            int seq;
-            while (true) {
-                recSize = rs.getRecord(recId, buf, 0);
-                if (recSize == 0) { break; }
-                is = new DataInputStream(new ByteArrayInputStream(buf, 0, recSize));
+        DataInputStream is;
+        int recId = 2, seq = 0;
+        while ((is=rs.read(recId)) != null) {
+            try {
                 seq = is.readInt();
-                if (seq > maxSeq) {
-                    posMaxSeq = v.size();
-                    maxSeq = seq;
-                }
-                v.addElement(new HistEntry(is));
-                ++recId;
+            } catch (IOException e) {
             }
-        } catch (InvalidRecordIDException e) { //to get out of the while()
-        } catch (Exception e) { //IOException, RecordStoreException
-            System.out.println("unexpected RS " + e);
-            throw new Error(e.toString());
+            if (seq > maxSeq) {
+                posMaxSeq = v.size();
+                maxSeq = seq;
+            }
+            v.addElement(new HistEntry(is));
+            ++recId;
         }
         history = new Vector(v.size() + 1);
         history.addElement(new HistEntry(null, 0, false));
@@ -166,41 +150,26 @@ class History {
         historyPos = 0;
         posMaxSeq = -1;
         maxSeq = 0;
-        try {
-            int n = rs.getNumRecords();
-            for (int i = 2; i <= n; ++i) {
-                rs.setRecord(i, null, 0, 0);
-            }
-        } catch (RecordStoreException e) {
-            throw new Error(e.toString());
+        for (int i = 2; i <= MAX_HIST+1; ++i) {
+            rs.write(i);
         }
     }
 
-    private ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    private DataOutputStream os = new DataOutputStream(bos);
     void enter(String str, double result, boolean hasResult) {
         ((HistEntry)history.elementAt(historyPos)).flush();
         if (str.length() > 0) {
             HistEntry newEntry = new HistEntry(str, result, hasResult);
-            bos.reset();
             try {
-                os.writeInt(++maxSeq);
-                newEntry.write(os);
-                ++posMaxSeq;
-                if (posMaxSeq >= MAX_HIST) {
-                    posMaxSeq = 0;
-                }
-                int recId = posMaxSeq + 2;
-                byte data[] = bos.toByteArray();
-                //System.out.println("id " + recId + "; next " + rs.getNextRecordID());
-                if (rs.getNextRecordID() == recId) {
-                    rs.addRecord(data, 0, data.length);
-                } else {
-                    rs.setRecord(recId, data, 0, data.length);
-                }
-            } catch (Exception e) {
-                throw new Error(e.toString());
+                rs.os.writeInt(++maxSeq);
+            } catch (IOException e) {
             }
+            newEntry.write(rs.os);
+            ++posMaxSeq;
+            if (posMaxSeq >= MAX_HIST) {
+                posMaxSeq = 0;
+            }
+            int recId = posMaxSeq + 2;
+            rs.write(recId);
             history.insertElementAt(newEntry, 1);
         }
         historyPos = 0;
