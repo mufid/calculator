@@ -6,16 +6,19 @@ final class Result {
     double value;
     int errorPos; //-1 when no error
 
+    /*
     void read(DataInputStream is) {
         try {
             name = is.readUTF();
             arity = is.readShort();
-            value = is.readDouble();
             definition = is.readUTF();
+
+            value = 0;
             errorPos = -1;
         } catch (IOException e) {
         }
     }
+    */
 
     void reset() {
         name = definition = null;
@@ -31,10 +34,6 @@ final class Result {
 
 final class Expr {
     static SymbolTable symbols = new SymbolTable();
-    static { 
-        BuiltinFun.init(symbols);
-        //symbols.put(new DefinedFun("hypot", 2, "sqrt(x*x+y*y)"));
-    }
     private static final Error error = new Error();
     private char text[] = new char[256];
     private int n = 0;
@@ -74,8 +73,9 @@ final class Expr {
     }
 
     static void define(Result def) {
-        symbols.put(new DefinedFun(def.name, def.arity, 
-                                   def.arity==0 ? Double.toString(def.value) : def.definition));
+        symbols.persistPut(def.arity==0 ? 
+                    new DefinedFun(def.name, def.value) : 
+                    new DefinedFun(def.name, def.arity, def.definition));
     }
 
     boolean splitDefinition(String str, Result outResult) {
@@ -308,7 +308,7 @@ final class Expr {
                 }
                 scan();
             }
-            value = Symbol.evaluate(symbols, id, params);
+            value = symbols.evaluate(id, params);
             break;
             
         default:
