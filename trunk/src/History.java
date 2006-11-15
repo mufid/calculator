@@ -47,11 +47,12 @@ class HistEntry {
 }
 
 class History {
-    private static final int MAX_HIST = 32; //64;
+    static final int MAX_HIST = 4; //32;
+    static RMS rs = new RMS("calc");
+
     private CalcCanvas parent;
     private int historyPos;
     private Vector history; // = new Vector();
-    private RMS rs = new RMS("calc");
     
     int posMaxSeq = -1;
     int maxSeq = 0;
@@ -65,7 +66,7 @@ class History {
         Vector v = new Vector(MAX_HIST);
         DataInputStream is;
         int recId = 2, seq = 0;
-        while ((is=rs.read(recId)) != null) {
+        while (recId < MAX_HIST+2 && (is=rs.read(recId)) != null) {
             try {
                 seq = is.readInt();
             } catch (IOException e) {
@@ -150,7 +151,7 @@ class History {
         historyPos = 0;
         posMaxSeq = -1;
         maxSeq = 0;
-        for (int i = 2; i <= MAX_HIST+1; ++i) {
+        for (int i = 2; i < MAX_HIST+2; ++i) {
             rs.write(i);
         }
     }

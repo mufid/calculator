@@ -1,13 +1,23 @@
 import java.util.Hashtable;
 import java.util.Random;
-//import javax.microedition.rms.*;
-//import java.io.*;
+import java.io.*;
 
 final class SymbolTable {
+    private static final int RS_START = 2+History.MAX_HIST;
+    private RMS rs = History.rs;
+
     private Hashtable ht = new Hashtable(50);
     
     SymbolTable() {
-
+        int recId = RS_START;
+        DataInputStream is;
+        ExprResult entry = new ExprResult();
+        /*
+        while ((is = rs.read(recId)) != null) {
+            entry.read(is);
+            Expr.define(entry);
+        }
+        */
     }
 
 

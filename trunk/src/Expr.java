@@ -1,8 +1,21 @@
+import java.io.*;
+
 final class ExprResult {
     String name, definition;
     int arity;
     double value;
     int errorPos; //-1 when no error
+
+    void read(DataInputStream is) {
+        try {
+            name = is.readUTF();
+            arity = is.readShort();
+            value = is.readDouble();
+            definition = is.readUTF();
+            errorPos = -1;
+        } catch (IOException e) {
+        }
+    }
 
     void reset() {
         name = definition = null;
@@ -69,7 +82,7 @@ final class Expr {
         return openParens;
     }
 
-    void define(ExprResult def) {
+    static void define(ExprResult def) {
         symbols.put(def.arity == 0 ? 
             (Symbol) new Constant(def.name, def.value) : 
             (Symbol) new DefinedFun(def.name, def.arity, def.definition));
