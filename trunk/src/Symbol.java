@@ -11,7 +11,7 @@ final class SymbolTable {
     SymbolTable() {
         int recId = RS_START;
         DataInputStream is;
-        ExprResult entry = new ExprResult();
+        Result entry = new Result();
         /*
         while ((is = rs.read(recId)) != null) {
             entry.read(is);
@@ -35,14 +35,13 @@ final class SymbolTable {
 }
 
 abstract class Symbol {
+    String name;
+    int arity;
+
     Symbol(String iniName, int iniArity) {
         name = iniName;
         arity = iniArity;
     }
-    String name;
-    //boolean isFun   = false;
-    //boolean isValue = false;
-    int arity;
 
     abstract double eval(SymbolTable symbols, double params[]);
     static final double evaluate(SymbolTable symbols, String name, double params[]) {
@@ -54,6 +53,7 @@ abstract class Symbol {
     }
 }
 
+/*
 class Constant extends Symbol {
     Constant(String name, double iniValue) {
         super(name, 0);
@@ -62,28 +62,25 @@ class Constant extends Symbol {
 
     double value;
     double eval(SymbolTable symbols, double params[]) {
-        /*
-        if (params != null && params.length > 0) {
-            throw new Error("Args for " + name + ": expected 0, got " + params.length);
-        }
-        */
         return value;
     }
 }
+*/
 
 class BuiltinFun extends Symbol {
     static final int         
-        SIN  = 1, COS  = 2, TAN  = 3,
-        ASIN = 4, ACOS = 5, ATAN = 6,
-        SINH = 7, COSH = 8, TANH = 9,
+        SIN   = 1, COS   = 2, TAN   = 3,
+        ASIN  = 4, ACOS  = 5, ATAN  = 6,
+        SINH  = 7, COSH  = 8, TANH  = 9,
         ASINH = 10, ACOSH = 11, ATANH = 12,
-        EXP   = 20, LOG  = 21, LOG10 = 22, LOG2  = 23,
-        SQRT = 31, CBRT  = 32, POW   = 33,
-        INT   = 40, FRAC = 41, ABS = 42,
-        FLOOR = 43, CEIL = 44, SIGN = 45,
-        MIN   = 46, MAX  = 47, GCD  = 48,
-        COMB  = 49, PERM = 50, RND  = 51,
-        FACT  = 52;
+        EXP   = 13, LOG  = 14, LOG10  = 15, LOG2  = 16,
+        SQRT  = 17, CBRT = 18, POW  = 19,
+        INT   = 20, FRAC = 21, ABS  = 22,
+        FLOOR = 23, CEIL = 24, SIGN = 25,
+        MIN   = 26, MAX  = 27, GCD  = 28,
+        COMB  = 29, PERM = 30, RND  = 31,
+        PI    = 52, E = 53, 
+        ANS = 54;
 
     static final String names[] = {
         "sin",  "cos",  "tan",  "asin",  "acos",  "atan",
@@ -95,6 +92,8 @@ class BuiltinFun extends Symbol {
         "floor", "ceil", "sign",
         "min", "max", "gcd",
         "comb", "perm", "rnd",
+        "pi",   "\u03c0", "e",
+        "ans",
     };
         
     /* keep 'codes' in sync with 'names' above */
@@ -108,6 +107,8 @@ class BuiltinFun extends Symbol {
         FLOOR,CEIL, SIGN,
         MIN,  MAX,  GCD,
         COMB, PERM, RND,
+        PI,   PI,   E,
+        ANS,
     };
     /* keep in sync with codes above */
     static final int arities[] = {
@@ -119,6 +120,8 @@ class BuiltinFun extends Symbol {
         1, 1, 1,
         2, 2, 2,
         2, 2, 0,
+        0, 0, 0,
+        0,
     };
 
     static void init(SymbolTable ht) {
@@ -180,6 +183,9 @@ class BuiltinFun extends Symbol {
         case COMB: return MoreMath.comb(x, y);
         case PERM: return MoreMath.perm(x, y);
         case RND:  return random.nextDouble();
+        case PI:   return Math.PI;
+        case E:    return Math.E;
+        case ANS:  return History.ans;
         }
         throw new Error("unhandled code " + code);
     }
@@ -189,15 +195,24 @@ class DefinedFun extends Symbol {
     static final String args[] = {"x", "y", "z"}; 
     String definition;
     
+    DefinedFun(String name, double value) {
+        super(name, 0);
+        definition = Double.toString(value);
+    }
+
     DefinedFun(String name, int arity, String iniDef) {
         super(name, arity);
         definition = iniDef;
     }
           
     double eval(SymbolTable symbols, double params[]) {
+        if (arity == 0) {
+            return Double.parseDouble(definition);
+        }
+
         Symbol saves[] = new Symbol[arity];
         for (int i = 0; i < arity; ++i) {
-            saves[i] = symbols.put(new Constant(args[i], params[i]));
+            saves[i] = symbols.put(new DefinedFun(args[i], params[i]));
         }
         double ret = new Expr().parseThrow(definition);
         for (int i = 0; i < arity; ++i) {

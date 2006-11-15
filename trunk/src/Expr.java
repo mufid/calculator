@@ -1,6 +1,6 @@
 import java.io.*;
 
-final class ExprResult {
+final class Result {
     String name, definition;
     int arity;
     double value;
@@ -33,16 +33,7 @@ final class Expr {
     static SymbolTable symbols = new SymbolTable();
     static { 
         BuiltinFun.init(symbols);
-        symbols.put(new Constant("\u03c0", Math.PI));
-        symbols.put(new Constant("pi", Math.PI));
-        symbols.put(new Constant("e",  Math.E));
-        //symbols.put(new Constant("ans", 0));
         //symbols.put(new DefinedFun("hypot", 2, "sqrt(x*x+y*y)"));
-        /*
-        for (int i = 0; i < 3; ++i) {
-            symbols.put(new Constant(DefinedFun.args[i], i)); //NaN
-        }
-        */
     }
     private static final Error error = new Error();
     private char text[] = new char[256];
@@ -58,7 +49,7 @@ final class Expr {
 
     public static void main(String argv[]) {
         Expr parser = new Expr();
-        ExprResult result = new ExprResult();
+        Result result = new Result();
         int n = argv.length;
         for (int i = 0; i < n; ++i) {
             boolean ok = parser.parse(argv[i], result);
@@ -82,13 +73,12 @@ final class Expr {
         return openParens;
     }
 
-    static void define(ExprResult def) {
-        symbols.put(def.arity == 0 ? 
-            (Symbol) new Constant(def.name, def.value) : 
-            (Symbol) new DefinedFun(def.name, def.arity, def.definition));
+    static void define(Result def) {
+        symbols.put(new DefinedFun(def.name, def.arity, 
+                                   def.arity==0 ? Double.toString(def.value) : def.definition));
     }
 
-    boolean splitDefinition(String str, ExprResult outResult) {
+    boolean splitDefinition(String str, Result outResult) {
         outResult.reset();
         if (str.length() == 0) {
             outResult.errorPos = 0;
@@ -109,7 +99,7 @@ final class Expr {
         return true;
     }
 
-    boolean parseSplitted(ExprResult result) {
+    boolean parseSplitted(Result result) {
         isDefinition = result.name != null;
         try {
             result.value = parseThrow(result.definition);
@@ -123,7 +113,7 @@ final class Expr {
         return true;
     }
 
-    boolean parse(String str, ExprResult outResult) {
+    boolean parse(String str, Result outResult) {
         if (!splitDefinition(str, outResult)) {
             return false;
         }

@@ -17,14 +17,14 @@ class CalcCanvas extends Canvas implements Runnable {
 
     Expr parser = new Expr();
     History history; 
-    Constant ans;
+    //Constant ans;
 
     int w, h;
 
     int cursorX, cursorY, cursorW = 2, cursorH;
 
 
-    ExprResult result = new ExprResult();
+    Result result = new Result();
     //double result;
     //boolean hasResult = false;
     boolean needUpdateResult;
@@ -49,7 +49,7 @@ class CalcCanvas extends Canvas implements Runnable {
 
     CalcCanvas() {
         history = new History(this);
-        ans = new Constant("ans", history.ans);
+        //ans = new Constant("ans", history.ans);
 
         setFullScreenMode(true);
         w = getWidth();
@@ -83,7 +83,7 @@ class CalcCanvas extends Canvas implements Runnable {
         updateCursor();
         updateHistory();
         repaint();
-        parser.symbols.put(ans);
+        //parser.symbols.put(ans);
     }
 
     void threadRun() {
@@ -259,15 +259,6 @@ class CalcCanvas extends Canvas implements Runnable {
         return new String(formatBuf, 0, len);
     }
 
-    /*
-    void computeResult(boolean mayDefine) {
-        boolean ok = parser.parse(new String(line, 0, len), result);
-        if (ok && mayDefine && exprResult.name != null) {
-            parser.define(result);
-        }
-    }
-    */
-
     protected void paint(Graphics g) {
         System.out.println("paint");
         KeyState.paint(g);
@@ -429,11 +420,7 @@ class CalcCanvas extends Canvas implements Runnable {
                             parser.define(result);
                         }
                     }
-                    boolean hasValue = result.hasValue();
-                    if (hasValue) {
-                        ans.value = result.value;                             
-                    }                
-                    history.enter(str, result.value, hasValue);
+                    history.enter(str, result);
                     doChanged(0);
                     needUpdateResult = true;
                     updateHistory();
