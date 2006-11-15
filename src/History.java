@@ -49,6 +49,7 @@ class HistEntry {
 class History {
     static final int MAX_HIST = 4; //32;
     static RMS rs = new RMS("calc");
+    static double ans = 0;
 
     private CalcCanvas parent;
     private int historyPos;
@@ -56,8 +57,6 @@ class History {
     
     int posMaxSeq = -1;
     int maxSeq = 0;
-    double ans = 0;
-
 
     History(CalcCanvas calc) {
         parent = calc;
@@ -95,6 +94,8 @@ class History {
                 break;
             }
         }
+
+        /*
         String str;
         Expr parser = parent.parser;
         ExprResult result = new ExprResult();
@@ -113,6 +114,7 @@ class History {
                 }
             }
         }
+        */
     }
     
     int size() { return history.size(); }
@@ -156,10 +158,14 @@ class History {
         }
     }
 
-    void enter(String str, double result, boolean hasResult) {
+    void enter(String str, Result result) { //double result, boolean hasResult) {
+        boolean hasValue = result.hasValue();
+        if (hasValue) {
+            ans = result.value;
+        }
         ((HistEntry)history.elementAt(historyPos)).flush();
         if (str.length() > 0) {
-            HistEntry newEntry = new HistEntry(str, result, hasResult);
+            HistEntry newEntry = new HistEntry(str, result.value, hasValue);
             try {
                 rs.os.writeInt(++maxSeq);
             } catch (IOException e) {
