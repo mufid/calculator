@@ -1,9 +1,15 @@
-import java.util.*;
-
 import java.util.Hashtable;
+import java.util.Random;
+//import javax.microedition.rms.*;
+//import java.io.*;
 
 final class SymbolTable {
     private Hashtable ht = new Hashtable(50);
+    
+    SymbolTable() {
+
+    }
+
 
     Symbol get(String name) {
         return (Symbol) ht.get(name);
