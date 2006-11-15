@@ -177,12 +177,12 @@ class History {
     }
 
     private ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    private DataOutputStream os = new DataOutputStream(bos);
     void enter(String str, double result, boolean hasResult) {
         ((HistEntry)history.elementAt(historyPos)).flush();
         if (str.length() > 0) {
             HistEntry newEntry = new HistEntry(str, result, hasResult);
             bos.reset();
-            DataOutputStream os = new DataOutputStream(bos);
             try {
                 os.writeInt(++maxSeq);
                 newEntry.write(os);
@@ -192,7 +192,7 @@ class History {
                 }
                 int recId = posMaxSeq + 2;
                 byte data[] = bos.toByteArray();
-                System.out.println("id " + recId + "; next " + rs.getNextRecordID());
+                //System.out.println("id " + recId + "; next " + rs.getNextRecordID());
                 if (rs.getNextRecordID() == recId) {
                     rs.addRecord(data, 0, data.length);
                 } else {
