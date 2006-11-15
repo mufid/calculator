@@ -5,33 +5,74 @@ import java.io.*;
 final class SymbolTable {
     private static final int RS_START = 2+History.MAX_HIST;
     private RMS rs = History.rs;
-
-    private Hashtable ht = new Hashtable(50);
+    int nextRecId;
+    Hashtable ht = new Hashtable(50);
     
     SymbolTable() {
+        load();
+    }
+
+    double evaluate(String name, double params[]) {
+        Symbol symb = get(name);
+        if (symb == null) {
+            throw new Error("Unknown id '" + name + "'");
+        }
+        return symb.eval(this, params);
+    }
+
+    private void load() {
+        for (int i = BuiltinFun.names.length - 1; i >= 0; --i) {
+            putInt(new BuiltinFun(i));
+        }
+
         int recId = RS_START;
         DataInputStream is;
         Result entry = new Result();
-        /*
-        while ((is = rs.read(recId)) != null) {
-            entry.read(is);
-            Expr.define(entry);
+        try {
+            while ((is = rs.read(recId)) != null) {
+                putInt(new DefinedFun(is, recId));
+                ++recId;
+            }
+        } catch (IOException e) {
         }
-        */
+        nextRecId = recId;
     }
-
 
     Symbol get(String name) {
         return (Symbol) ht.get(name);
     }
     
-    Symbol put(Symbol s) {
+    void persistPut(DefinedFun s) {
+        Symbol old = get(s.name);
+        int recId;
+        if (old != null && old instanceof DefinedFun) {
+            recId = ((DefinedFun) old).recId;
+        } else {
+            recId = nextRecId;
+            ++nextRecId;
+        }
+        s.write(rs.os);
+        rs.write(recId);
+    }
+
+    void persistClear() {
+        for (int i = RS_START; i < nextRecId; ++i) {
+            rs.write(i);
+        }
+        nextRecId = RS_START;
+        ht.clear();
+        load();
+    }
+
+    Symbol putInt(Symbol s) {
         return (Symbol) ht.put(s.name, s);
     }
 
-    void remove(String name) {
+    /*
+    void removeInt(String name) {
         ht.remove(name);
     }
+    */
 }
 
 abstract class Symbol {
@@ -44,28 +85,7 @@ abstract class Symbol {
     }
 
     abstract double eval(SymbolTable symbols, double params[]);
-    static final double evaluate(SymbolTable symbols, String name, double params[]) {
-        Symbol symb = symbols.get(name);
-        if (symb == null) {
-            throw new Error("Unknown id '" + name + "'");
-        }
-        return symb.eval(symbols, params);
-    }
 }
-
-/*
-class Constant extends Symbol {
-    Constant(String name, double iniValue) {
-        super(name, 0);
-        value = iniValue;
-    }
-
-    double value;
-    double eval(SymbolTable symbols, double params[]) {
-        return value;
-    }
-}
-*/
 
 class BuiltinFun extends Symbol {
     static final int         
@@ -123,21 +143,27 @@ class BuiltinFun extends Symbol {
         0, 0, 0,
         0,
     };
-
+    
+    /*
     static void init(SymbolTable ht) {
         for (int i = names.length - 1; i >= 0; --i) {
             ht.put(new BuiltinFun(names[i], codes[i], arities[i]));
-        } 
+        }
     }
+    */
     
+    int code;
+    Random random = new Random();
+
     BuiltinFun(String name, int iniCode, int arity) {
         super(name, arity);
         code = iniCode;
     }
-        
-    int code;
-    Random random = new Random();
-    
+
+    BuiltinFun(int i) {
+        this(names[i], codes[i], arities[i]);
+    }
+            
     double eval(SymbolTable symbols, double params[]) {
         double x = 0, y = 0, z = 0;
         switch (arity) {
@@ -194,17 +220,32 @@ class BuiltinFun extends Symbol {
 class DefinedFun extends Symbol {
     static final String args[] = {"x", "y", "z"}; 
     String definition;
+    int recId;
     
-    DefinedFun(String name, double value) {
-        super(name, 0);
-        definition = Double.toString(value);
-    }
-
     DefinedFun(String name, int arity, String iniDef) {
         super(name, arity);
         definition = iniDef;
+        recId = 0;
     }
-          
+    
+    DefinedFun(String name, double value) {
+        this(name, 0, Double.toString(value)); 
+    }
+
+    DefinedFun(DataInputStream is, int recId) throws IOException {
+        this(is.readUTF(), is.readShort(), is.readUTF());
+        this.recId = recId;
+    }
+
+    void write(DataOutputStream os) {
+        try {
+            os.writeUTF(name);
+            os.writeShort(arity);
+            os.writeUTF(definition);
+        } catch (IOException e) {
+        }
+    }
+      
     double eval(SymbolTable symbols, double params[]) {
         if (arity == 0) {
             return Double.parseDouble(definition);
@@ -212,16 +253,18 @@ class DefinedFun extends Symbol {
 
         Symbol saves[] = new Symbol[arity];
         for (int i = 0; i < arity; ++i) {
-            saves[i] = symbols.put(new DefinedFun(args[i], params[i]));
+            saves[i] = symbols.putInt(new DefinedFun(args[i], params[i]));
         }
-        double ret = new Expr().parseThrow(definition);
-        for (int i = 0; i < arity; ++i) {
-            if (saves[i] == null) {
-                symbols.remove(args[i]);
-            } else {
-                symbols.put(saves[i]);
+        try {
+            return new Expr().parseThrow(definition);
+        } finally {
+            for (int i = 0; i < arity; ++i) {
+                if (saves[i] == null) {
+                    symbols.ht.remove(args[i]);
+                } else {
+                    symbols.putInt(saves[i]);
+                }
             }
         }
-        return ret;
     }
 }
