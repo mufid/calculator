@@ -94,6 +94,7 @@ final class Symbol {
         "floor", "ceil", "sign",
         "min", "max", "gcd",
         "comb", "perm", "rnd",
+        "C",    "P", 
         "pi",   "\u03c0", "e",
         "ans",
     };
@@ -109,6 +110,7 @@ final class Symbol {
         FLOOR,CEIL, SIGN,
         MIN,  MAX,  GCD,
         COMB, PERM, RND,
+        COMB, PERM,
         PI,   PI,   E,
         ANS,
     };
@@ -122,6 +124,7 @@ final class Symbol {
         1, 1, 1,
         2, 2, 2,
         2, 2, 0,
+        2, 2,
         0, 0, 0,
         0,
     };

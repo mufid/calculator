@@ -10,8 +10,11 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     private static final Command 
         //cmdSetup  = new Command("Setup", Command.SCREEN, 1),
         cmdOk    = new Command("Ok",    Command.OK, 1),
+        cmdYes   = new Command("Yes", Command.OK, 1),
+
+        cmdKeyDelete = new Command("Delete", Command.ITEM, 1),
         cmdClearHistory = new Command("Clear history", Command.SCREEN, 2),
-        cmdClearDefinitions   = new Command("Clear definitions", Command.SCREEN, 3),
+        //cmdClearDefinitions   = new Command("Clear definitions", Command.SCREEN, 3),
         cmdHelp  = new Command("Help",  Command.HELP, 8),
         cmdAbout = new Command("About", Command.HELP, 9),
         cmdExit  = new Command("Exit",  Command.EXIT, 10),
@@ -19,26 +22,35 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
     Alert confirmClearHistory = 
         new Alert("Clear history", 
-                  "This will erase the history of past operations. (The user-defined functions and constants are not erased)",
+                  "Do you want to erase the history of past operations? (The user-defined functions are preserved)",
                   null, AlertType.WARNING);
+    /*
     Alert confirmClearDefinitions =
         new Alert("Clear definitions", 
-                  "This will erase the user-defined functions and constants. (The history is not erased)",
+                  "Do you want to erase the user-defined functions and constants?",
                   null, AlertType.WARNING);
+    */
         
     static Display display;
     CalcCanvas calcCanvas;
     static final String helpStr = 
-"To type an operator (+,-,*,/,^) press the '*' key. " +
-"This displays a menu of all the operators, and you choose the one you want by pressing the corresponding key. " +
-"E.g. to obtain +, press the '*' key twice. To obtain -, press '*' followed by '0'.\n" +
-"When you want to use a function (sin(), cos(), ln()) or a constant (pi, e) press the '#' key to display the functions menu, " +
-"and then press more keys to choose from the menu. " +
-"In the menu some entries are displayed in a different color - they open a new sub-menu containing related elements. " +
-"E.g. to type the decimal dot, press '#' twice. To type 'sin', press '#' and twice '1'.\n" +
-"Use UP and DOWN to navigate the history of past expressions, LEFT and RIGHT to navigate inside the expression.\n" +
-"You may define new constants and functions: 'a:=2^3' defines a new constant 'a' with the value 8. " +
-"'f:=sqrt(x*x+y*y)' defines a new function f(x,y). The functions have up to 3 parameters named x, y, and z.";
+"Press * or # to display the menu, " +
+"next press one more key (1-9,*0#) to select. " +
+"The left menu (*) contains the decimal dot, functions, constants. " +
+"The right menu (#) contains operators (+,-,*,/) and parentheses. " +
+"The entries marked in blue open additional sub-menus. " +
+"E.g. to obtain the decimal dot, press twice *; " +
+"to obtain the plus operator, press twice #.\n\n" +
+
+"Use UP and DOWN to navigate the history.\n\n" +
+
+"Use := to define new functions and constants. " +
+"E.g. a:=pi/2 is a constant; f:=sqrt(x^2+y^2) is a function with two parameters x,y. " +
+"The functions may have up to three parameters named x,y,z.\n\n" +
+
+"The variable 'ans' contains the value of the most recent expression. " + 
+"'ans' is automatically added in front of an expression that starts with an operator. " +
+"E.g. typing '+2' becomes 'ans+2'.";
 
     static final String aboutStr = NAME + " v"+VERSION + "\n\u00a9 2006 Mihai Preda\n" + URL;
     Form aboutForm = new Form("About"), helpForm = new Form("Help");
@@ -50,17 +62,20 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         //System.out.println(STR(http://foo.bar/));
         calcCanvas = new CalcCanvas();
         
-        confirmClearHistory.addCommand(cmdOk);
+        confirmClearHistory.addCommand(cmdYes);
         confirmClearHistory.addCommand(cmdCancel);
         confirmClearHistory.setCommandListener(this);
 
-        confirmClearDefinitions.addCommand(cmdOk);
+        /*
+        confirmClearDefinitions.addCommand(cmdYes);
         confirmClearDefinitions.addCommand(cmdCancel);
         confirmClearDefinitions.setCommandListener(this);     
+        */
         
         //addCommand(cmdSetup);
+        calcCanvas.addCommand(cmdKeyDelete);
         calcCanvas.addCommand(cmdClearHistory);
-        calcCanvas.addCommand(cmdClearDefinitions);
+        //calcCanvas.addCommand(cmdClearDefinitions);
         calcCanvas.addCommand(cmdHelp);
         calcCanvas.addCommand(cmdAbout);
         calcCanvas.addCommand(cmdExit);
@@ -86,24 +101,30 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
     public void commandAction(Command c, Displayable d) {
         //if (c == cmdSetup) {}
-        if (c == cmdClearHistory) {
+        if (c == cmdKeyDelete) {
+            calcCanvas.keyPressed(CalcCanvas.KEY_CLEAR); //KEY_CLEAR
+        } else if (c == cmdClearHistory) {
             display.setCurrent(confirmClearHistory);
-        } else if (c == cmdClearDefinitions) {
+        } 
+        /*else if (c == cmdClearDefinitions) {
             display.setCurrent(confirmClearDefinitions);
-        } else if (c == cmdHelp) {
+            } */
+        else if (c == cmdHelp) {
             display.setCurrent(helpForm);
         } else if (c == cmdAbout) {
             display.setCurrent(aboutForm);
         } else if (c == cmdExit) {
             notifyDestroyed();
-        } else if (c == cmdOk) {
+        } else if (c == cmdYes) {
             if (d == confirmClearHistory) {
                 calcCanvas.clearHistory();
-            } else if (d == confirmClearDefinitions) {
-                calcCanvas.clearDefinitions();
             }
+            /* else if (d == confirmClearDefinitions) {
+               calcCanvas.clearDefinitions();
+               }
+            */
             display.setCurrent(calcCanvas);
-        } else if (c == cmdCancel) {
+        } else { //cmdCancel, cmdOk
             display.setCurrent(calcCanvas);
         }
     }

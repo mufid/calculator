@@ -59,30 +59,31 @@ final class KeyState {
 
         rootOp = new KeyState(new Object[] {
             "(",  ",",  ")",
-            "^",  "!",  null, 
-            "*",  "/",  "%",
-            "+",  "-",  null,
+            null, "!",  "^", 
+            "%",  "/",  "*",
+            null, "-",  "+",
         });
 
         ints = new KeyState(new Object[] {
-            "int",  "frac", "abs",
-            "floor","ceil", "sign",
-            "min",  "max",  "gcd",
-            "comb", "perm", "rnd",
+            "min",   "max",  "gcd",
+            "floor", "ceil", "sign",
+            "int",   "frac", "abs",
+            "C",     "P",    "rnd",
         });
 
         vars = new KeyState(new Object[] {
-            "f", "g", "h",
-            "x", "y", "z",
-            "a", "b", "c",
-            "phi", null, null,
+            "f", "g",  "h",            
+            "m", ":=", "d",
+            "a", "b",  "c",
+            "x", "y",  "z",
         });
 
+        //"\u03c0" == pi
         rootExp = new KeyState(new Object[] {
-            trigs,    logs,  ints,
-            "\u03c0", "e",  "sqrt",
-            vars,     ":=", "ans",
-            null,     "E",   ".",
+            vars,  "ans",  "E",
+            "pi",  "e",    null,
+            trigs, logs,   ints,
+            ".",   "sqrt", null,
         });
     }
 
@@ -104,9 +105,9 @@ final class KeyState {
     static String handleKey(int pos) {
         if (keypad == null) {
             switch (pos) {
-            case 9: keypad = rootOp; return null;
+            case 9: keypad = rootExp; return null;
             case 10: return "0";
-            case 11: keypad = rootExp; return null;
+            case 11: keypad = rootOp; return null;
             default: return (0 <= pos && pos <= 8) ? base[pos] : null;
             }
         }

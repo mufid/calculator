@@ -2,6 +2,7 @@ import javax.microedition.lcdui.*;
 import java.util.*;
 
 class CalcCanvas extends Canvas implements Runnable {
+    static final int KEY_CLEAR=-8, KEY_END=-11, KEY_POWER=-12;
     static final Font 
         normalFont = Font.getFont(0, 0, Font.SIZE_MEDIUM), 
         largeFont  = Font.getFont(0, 0, Font.SIZE_LARGE), 
@@ -122,12 +123,14 @@ class CalcCanvas extends Canvas implements Runnable {
         updateHistory();
         repaint();
     }
-
+    
+    /*
     void clearDefinitions() {
         parser.symbols.persistClear();        
         needUpdateResult = true;
         //todo: repaint edit
     }
+    */
     
     int split(Font font, char buf[], int len, int w, 
               int changeLine, int lines[]) {
@@ -428,7 +431,7 @@ class CalcCanvas extends Canvas implements Runnable {
                     repaint();
                     break;
                 }
-            } else if (key == -8 || key == -11 || key == -12) { //delete
+            } else if (key == KEY_CLEAR || key == KEY_END || key == KEY_POWER) { //delete
                 if (!clearedKeypad) {
                     delFromLine();
                     doChanged(pos);
