@@ -122,6 +122,12 @@ class CalcCanvas extends Canvas implements Runnable {
         updateHistory();
         repaint();
     }
+
+    void clearDefinitions() {
+        parser.symbols.persistClear();        
+        needUpdateResult = true;
+        //todo: repaint edit
+    }
     
     int split(Font font, char buf[], int len, int w, 
               int changeLine, int lines[]) {

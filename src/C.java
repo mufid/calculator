@@ -10,11 +10,22 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     private static final Command 
         //cmdSetup  = new Command("Setup", Command.SCREEN, 1),
         cmdOk    = new Command("Ok",    Command.OK, 1),
-        cmdClearHistory = new Command("Erase History", Command.SCREEN, 2),
+        cmdClearHistory = new Command("Clear history", Command.SCREEN, 2),
+        cmdClearDefinitions   = new Command("Clear definitions", Command.SCREEN, 3),
         cmdHelp  = new Command("Help",  Command.HELP, 8),
         cmdAbout = new Command("About", Command.HELP, 9),
-        cmdExit  = new Command("Exit",  Command.EXIT, 10);
+        cmdExit  = new Command("Exit",  Command.EXIT, 10),
+        cmdCancel = new Command("Cancel", Command.CANCEL, 2);
 
+    Alert confirmClearHistory = 
+        new Alert("Clear history", 
+                  "This will erase the history of past operations. (The user-defined functions and constants are not erased)",
+                  null, AlertType.WARNING);
+    Alert confirmClearDefinitions =
+        new Alert("Clear definitions", 
+                  "This will erase the user-defined functions and constants. (The history is not erased)",
+                  null, AlertType.WARNING);
+        
     static Display display;
     CalcCanvas calcCanvas;
     static final String helpStr = 
@@ -38,8 +49,18 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         //_URL_;
         //System.out.println(STR(http://foo.bar/));
         calcCanvas = new CalcCanvas();
+        
+        confirmClearHistory.addCommand(cmdOk);
+        confirmClearHistory.addCommand(cmdCancel);
+        confirmClearHistory.setCommandListener(this);
+
+        confirmClearDefinitions.addCommand(cmdOk);
+        confirmClearDefinitions.addCommand(cmdCancel);
+        confirmClearDefinitions.setCommandListener(this);     
+        
         //addCommand(cmdSetup);
         calcCanvas.addCommand(cmdClearHistory);
+        calcCanvas.addCommand(cmdClearDefinitions);
         calcCanvas.addCommand(cmdHelp);
         calcCanvas.addCommand(cmdAbout);
         calcCanvas.addCommand(cmdExit);
@@ -66,7 +87,9 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     public void commandAction(Command c, Displayable d) {
         //if (c == cmdSetup) {}
         if (c == cmdClearHistory) {
-            calcCanvas.clearHistory();
+            display.setCurrent(confirmClearHistory);
+        } else if (c == cmdClearDefinitions) {
+            display.setCurrent(confirmClearDefinitions);
         } else if (c == cmdHelp) {
             display.setCurrent(helpForm);
         } else if (c == cmdAbout) {
@@ -74,6 +97,13 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         } else if (c == cmdExit) {
             notifyDestroyed();
         } else if (c == cmdOk) {
+            if (d == confirmClearHistory) {
+                calcCanvas.clearHistory();
+            } else if (d == confirmClearDefinitions) {
+                calcCanvas.clearDefinitions();
+            }
+            display.setCurrent(calcCanvas);
+        } else if (c == cmdCancel) {
             display.setCurrent(calcCanvas);
         }
     }

@@ -94,27 +94,6 @@ class History {
                 break;
             }
         }
-
-        /*
-        String str;
-        Expr parser = parent.parser;
-        ExprResult result = new ExprResult();
-        for (int i = n; i >= 1; --i) {
-            entry = get(i);
-            str = entry.base;
-            if (parser.splitDefinition(str, result) && result.name != null) {
-                if (entry.hasResult) {
-                    parser.symbols.put(new Constant(result.name, entry.result));
-                    System.out.println("var: " + result.name + " " + entry.result);
-                } else {
-                    parser.parseSplitted(result);
-                    parser.symbols.put(new DefinedFun(result.name, result.arity, result.definition));
-                    //parser.define(result);
-                    System.out.println("fun: " + result.name + " " + result.arity + " " + result.definition);
-                }
-            }
-        }
-        */
     }
     
     int size() { return history.size(); }
@@ -122,12 +101,6 @@ class History {
     HistEntry get(int p) { 
         return (HistEntry) history.elementAt(p);
     }
-
-    /*
-    String getBase(int p) {
-        return ((HistEntry) history.elementAt(p)).base;
-    }
-    */
 
     boolean move(int delta) {
         int newPos = historyPos + delta;
@@ -158,7 +131,7 @@ class History {
         }
     }
 
-    void enter(String str, Result result) { //double result, boolean hasResult) {
+    void enter(String str, Result result) {
         boolean hasValue = result.hasValue();
         if (hasValue) {
             ans = result.value;
