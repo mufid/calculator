@@ -6,20 +6,6 @@ final class Result {
     double value;
     int errorPos; //-1 when no error
 
-    /*
-    void read(DataInputStream is) {
-        try {
-            name = is.readUTF();
-            arity = is.readShort();
-            definition = is.readUTF();
-
-            value = 0;
-            errorPos = -1;
-        } catch (IOException e) {
-        }
-    }
-    */
-
     void reset() {
         name = definition = null;
         arity = 0;
@@ -74,8 +60,8 @@ final class Expr {
 
     static void define(Result def) {
         symbols.persistPut(def.arity==0 ? 
-                    new DefinedFun(def.name, def.value) : 
-                    new DefinedFun(def.name, def.arity, def.definition));
+                    new Symbol(def.name, def.value) : 
+                    new Symbol(def.name, def.arity, def.definition));
     }
 
     boolean splitDefinition(String str, Result outResult) {

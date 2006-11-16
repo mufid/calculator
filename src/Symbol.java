@@ -21,8 +21,8 @@ final class SymbolTable {
     }
 
     private void load() {
-        for (int i = BuiltinFun.names.length - 1; i >= 0; --i) {
-            putInt(new BuiltinFun(i));
+        for (int i = Symbol.names.length - 1; i >= 0; --i) {
+            putInt(new Symbol(i));
         }
 
         int recId = RS_START;
@@ -30,7 +30,7 @@ final class SymbolTable {
         Result entry = new Result();
         try {
             while ((is = rs.read(recId)) != null) {
-                putInt(new DefinedFun(is, recId));
+                putInt(new Symbol(is, recId));
                 ++recId;
             }
         } catch (IOException e) {
@@ -42,11 +42,11 @@ final class SymbolTable {
         return (Symbol) ht.get(name);
     }
     
-    void persistPut(DefinedFun s) {
+    void persistPut(Symbol s) {
         Symbol old = get(s.name);
         int recId;
-        if (old != null && old instanceof DefinedFun) {
-            recId = ((DefinedFun) old).recId;
+        if (old != null && old.recId != 0) {
+            recId = old.recId;
         } else {
             recId = nextRecId;
             ++nextRecId;
@@ -67,27 +67,9 @@ final class SymbolTable {
     Symbol putInt(Symbol s) {
         return (Symbol) ht.put(s.name, s);
     }
-
-    /*
-    void removeInt(String name) {
-        ht.remove(name);
-    }
-    */
 }
 
-abstract class Symbol {
-    String name;
-    int arity;
-
-    Symbol(String iniName, int iniArity) {
-        name = iniName;
-        arity = iniArity;
-    }
-
-    abstract double eval(SymbolTable symbols, double params[]);
-}
-
-class BuiltinFun extends Symbol {
+final class Symbol {
     static final int         
         SIN   = 1, COS   = 2, TAN   = 3,
         ASIN  = 4, ACOS  = 5, ATAN  = 6,
@@ -143,28 +125,47 @@ class BuiltinFun extends Symbol {
         0, 0, 0,
         0,
     };
-    
-    /*
-    static void init(SymbolTable ht) {
-        for (int i = names.length - 1; i >= 0; --i) {
-            ht.put(new BuiltinFun(names[i], codes[i], arities[i]));
-        }
-    }
-    */
-    
-    int code;
-    Random random = new Random();
+    static final Random random = new Random();
+    static final String args[] = {"x", "y", "z"}; 
 
-    BuiltinFun(String name, int iniCode, int arity) {
-        super(name, arity);
+    String name;
+    int arity;
+    int code;
+    String definition;
+    int recId;
+
+    Symbol(String iniName, int iniArity) {
+        name = iniName;
+        arity = iniArity;
+        code = 0;
+        definition = null;
+        recId = 0;
+    }
+
+    private Symbol(String name, int arity, int iniCode) {
+        this(name, arity);
         code = iniCode;
     }
 
-    BuiltinFun(int i) {
-        this(names[i], codes[i], arities[i]);
+    Symbol(int i) {
+        this(names[i], arities[i], codes[i]);
     }
-            
-    double eval(SymbolTable symbols, double params[]) {
+    
+    Symbol(String name, int arity, String iniDef) {
+        this(name, arity);
+        definition = iniDef;
+    }
+    
+    Symbol(String name, double value) {
+        this(name, 0, Double.toString(value)); 
+    }
+
+    Symbol(DataInputStream is, int recId) throws IOException {
+        this(is.readUTF(), is.readShort(), is.readUTF());
+        this.recId = recId;
+    }
+    
+    double evalBuiltin(double params[]) {
         double x = 0, y = 0, z = 0;
         switch (arity) {
         case 3: z = params[2];
@@ -215,45 +216,19 @@ class BuiltinFun extends Symbol {
         }
         throw new Error("unhandled code " + code);
     }
-}
 
-class DefinedFun extends Symbol {
-    static final String args[] = {"x", "y", "z"}; 
-    String definition;
-    int recId;
-    
-    DefinedFun(String name, int arity, String iniDef) {
-        super(name, arity);
-        definition = iniDef;
-        recId = 0;
-    }
-    
-    DefinedFun(String name, double value) {
-        this(name, 0, Double.toString(value)); 
-    }
-
-    DefinedFun(DataInputStream is, int recId) throws IOException {
-        this(is.readUTF(), is.readShort(), is.readUTF());
-        this.recId = recId;
-    }
-
-    void write(DataOutputStream os) {
-        try {
-            os.writeUTF(name);
-            os.writeShort(arity);
-            os.writeUTF(definition);
-        } catch (IOException e) {
-        }
-    }
-      
     double eval(SymbolTable symbols, double params[]) {
+        if (code != 0) {
+            return evalBuiltin(params);
+        }
+
         if (arity == 0) {
             return Double.parseDouble(definition);
         }
 
         Symbol saves[] = new Symbol[arity];
         for (int i = 0; i < arity; ++i) {
-            saves[i] = symbols.putInt(new DefinedFun(args[i], params[i]));
+            saves[i] = symbols.putInt(new Symbol(args[i], params[i]));
         }
         try {
             return new Expr().parseThrow(definition);
@@ -265,6 +240,15 @@ class DefinedFun extends Symbol {
                     symbols.putInt(saves[i]);
                 }
             }
+        }
+    }
+
+    void write(DataOutputStream os) {
+        try {
+            os.writeUTF(name);
+            os.writeShort(arity);
+            os.writeUTF(definition);
+        } catch (IOException e) {
         }
     }
 }

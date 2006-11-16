@@ -50,6 +50,7 @@ genManifest > $MANF
 
 set -e
 echo Preprocess
+rm psrc/*.java
 for name in $SRCS ; do
 cpp -P -D VERSION="\"$VERSION\"" -D NAME="\"$NAME\"" -D URL="\"$URL\"" src/$name.java psrc/$name.java
 done

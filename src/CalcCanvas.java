@@ -17,7 +17,6 @@ class CalcCanvas extends Canvas implements Runnable {
 
     Expr parser = new Expr();
     History history; 
-    //Constant ans;
 
     int w, h;
 
@@ -25,8 +24,6 @@ class CalcCanvas extends Canvas implements Runnable {
 
 
     Result result = new Result();
-    //double result;
-    //boolean hasResult = false;
     boolean needUpdateResult;
 
     Font font = largeFont;
@@ -49,7 +46,6 @@ class CalcCanvas extends Canvas implements Runnable {
 
     CalcCanvas() {
         history = new History(this);
-        //ans = new Constant("ans", history.ans);
 
         setFullScreenMode(true);
         w = getWidth();
@@ -83,7 +79,6 @@ class CalcCanvas extends Canvas implements Runnable {
         updateCursor();
         updateHistory();
         repaint();
-        //parser.symbols.put(ans);
     }
 
     void threadRun() {
