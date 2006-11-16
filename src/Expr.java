@@ -129,7 +129,7 @@ final class Expr {
     }
     
     static final boolean isLetter(char c) {
-        return ('a' <= c && c <= 'z') || c == '_' || c == '\u03c0';
+        return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')  || c == '\u03c0';
     }
 
     private void scan() {
