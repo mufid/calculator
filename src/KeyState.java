@@ -41,10 +41,9 @@ final class KeyState {
 
         //space between columns
         stepW = (sw + 1)/3;
-        singleSpace = (stepW - cellWidth)/2; //(sw - cellWidth*3 + 2)/6;
+        singleSpace = (stepW - cellWidth)/2;
         doubleSpace = stepW - cellWidth;
         singleCell  = singleSpace + cellWidth;
-        //doubleSpace = (sw+1)/3;
 
         h = cellHeight * 4;
         yPos = sh - h;
@@ -158,11 +157,14 @@ final class KeyState {
 
     void doPaint(Graphics g) {
         g.setColor(BACKGR);
+        g.fillRect(0, yPos, w, h);
+        /*
         g.fillRect(0, yPos, singleSpace, h);
         g.fillRect(singleCell, yPos, doubleSpace, h);
         g.fillRect(singleCell + stepW, yPos, doubleSpace, h);
         int x = singleCell + stepW + stepW;
         g.fillRect(x, yPos, w-x, h);
+        */
         for (int i = 0; i < 3; ++i) {
             paintColumn(g, i);
         }
@@ -204,7 +206,8 @@ final class KeyState {
             }
             wantRedraw[col] = false;
         }
-        destG.drawImage(img[col], singleSpace + col * stepW, yPos, 0);
+        int x = col==0?singleSpace:col==1?singleSpace+stepW:w-singleCell;
+        destG.drawImage(img[col], x, yPos, 0);
     }
 
     static void repaint(Canvas c) {
