@@ -139,43 +139,40 @@ final class Expr {
         if (pos < n) { 
             char c = text[pos];
             if ((c >= '0' && c <= '9') || c == '.') {
-                boolean ok = false;
                 tokenType = '0';
                 int start = pos;
                 while (c >= '0' && c <= '9') {
-                    ok = true;
                     c = text[++pos];
                 }
                 if (c == '.') {
                     c = text[++pos];
                     while (c >= '0' && c <= '9') {
-                        ok = true;
                         c = text[++pos];
                     }
-                }
-                if (!ok) {
-                    tokenStart = pos;
-                    tokenType = 'x';
-                    return;
                 }
                 if (c == 'E') {
                     c = text[++pos];
                     if (c == '-') {
                         c = text[++pos];
                     }
-                    if (!('0' <= c && c <= '9')) {
-                        tokenStart = pos;
-                        tokenType = 'x';
-                        return;
-                    }
                     while (c >= '0' && c <= '9') {
                         c = text[++pos];
                     }
                 }
-                try {
-                    tokenValue = Double.parseDouble(new String(text, start, pos - start));
+                
+                int end = pos;
+                if (text[end-1] == 'E') { 
+                    --end; 
+                }
+                if (text[start] == '.' && 
+                           (end == start+1  ||
+                            end >= start+2 && text[start+1] == 'E')) {
+                    tokenValue = 0;
+                } else try {
+                    tokenValue = Double.parseDouble(String.valueOf(text, start, pos - start));
                 } catch (NumberFormatException e) {
-
+                    System.out.println("number: " + String.valueOf(text, start, pos - start));
+                    tokenType = 'e';
                 }
             } else {
                 if (isLetter(c)) {

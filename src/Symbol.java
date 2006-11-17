@@ -53,6 +53,7 @@ final class SymbolTable {
         }
         s.write(rs.os);
         rs.write(recId);
+        putInt(s);
     }
 
     /*
