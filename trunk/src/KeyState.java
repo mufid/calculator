@@ -71,10 +71,10 @@ final class KeyState {
         });
 
         vars = new KeyState(new Object[] {
-            "f", "g",  "h",            
-            "m", ":=", "d",
-            "a", "b",  "c",
-            "x", "y",  "z",
+            "a",  "b",  "c",
+            "f",  "g",  "h",
+            ":=", "d",  "m",
+            "x",  "y",  "z",
         });
 
         //"\u03c0" == pi
