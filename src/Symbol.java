@@ -55,6 +55,7 @@ final class SymbolTable {
         rs.write(recId);
     }
 
+    /*
     void persistClear() {
         for (int i = RS_START; i < nextRecId; ++i) {
             rs.write(i);
@@ -63,6 +64,7 @@ final class SymbolTable {
         ht.clear();
         load();
     }
+    */
 
     Symbol putInt(Symbol s) {
         return (Symbol) ht.put(s.name, s);

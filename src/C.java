@@ -9,21 +9,23 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     //static final String VERSION = STR(_VERSION_);
     private static final Command 
         //cmdSetup  = new Command("Setup", Command.SCREEN, 1),
-        cmdOk    = new Command("Ok",    Command.OK, 1),
-        cmdYes   = new Command("Yes", Command.OK, 1),
-
         cmdKeyDelete = new Command("Delete", Command.ITEM, 1),
-        cmdClearHistory = new Command("Clear history", Command.SCREEN, 2),
+        //cmdClearHistory = new Command("Clear history", Command.SCREEN, 2),
         //cmdClearDefinitions   = new Command("Clear definitions", Command.SCREEN, 3),
         cmdHelp  = new Command("Help",  Command.HELP, 8),
         cmdAbout = new Command("About", Command.HELP, 9),
         cmdExit  = new Command("Exit",  Command.EXIT, 10),
+
+        cmdOk    = new Command("Ok",    Command.OK, 1),
+        cmdYes   = new Command("Yes", Command.OK, 1),
         cmdCancel = new Command("Cancel", Command.CANCEL, 2);
 
+    /*
     Alert confirmClearHistory = 
         new Alert("Clear history", 
                   "Do you want to erase the history of past operations? (The user-defined functions are preserved)",
                   null, AlertType.WARNING);
+    */
     /*
     Alert confirmClearDefinitions =
         new Alert("Clear definitions", 
@@ -61,11 +63,13 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         //_URL_;
         //System.out.println(STR(http://foo.bar/));
         calcCanvas = new CalcCanvas();
-        
+
+        /*
         confirmClearHistory.addCommand(cmdYes);
         confirmClearHistory.addCommand(cmdCancel);
         confirmClearHistory.setCommandListener(this);
-
+        */
+        
         /*
         confirmClearDefinitions.addCommand(cmdYes);
         confirmClearDefinitions.addCommand(cmdCancel);
@@ -74,7 +78,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         
         //addCommand(cmdSetup);
         calcCanvas.addCommand(cmdKeyDelete);
-        calcCanvas.addCommand(cmdClearHistory);
+        //calcCanvas.addCommand(cmdClearHistory);
         //calcCanvas.addCommand(cmdClearDefinitions);
         calcCanvas.addCommand(cmdHelp);
         calcCanvas.addCommand(cmdAbout);
@@ -101,29 +105,35 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
     public void commandAction(Command c, Displayable d) {
         //if (c == cmdSetup) {}
+        /*
+        else if (c == cmdClearHistory) {
+            display.setCurrent(confirmClearHistory);
+        } else if (c == cmdClearDefinitions) {
+            display.setCurrent(confirmClearDefinitions);
+        } 
+        */
+
+                /*
+        else if (c == cmdYes) {
+            if (d == confirmClearHistory) {
+                calcCanvas.clearHistory();
+            } else if (d == confirmClearDefinitions) {
+            calcCanvas.clearDefinitions();
+            }
+            
+            display.setCurrent(calcCanvas);
+        }
+        */
+
+
         if (c == cmdKeyDelete) {
             calcCanvas.keyPressed(CalcCanvas.KEY_CLEAR); //KEY_CLEAR
-        } else if (c == cmdClearHistory) {
-            display.setCurrent(confirmClearHistory);
-        } 
-        /*else if (c == cmdClearDefinitions) {
-            display.setCurrent(confirmClearDefinitions);
-            } */
-        else if (c == cmdHelp) {
+        } else if (c == cmdHelp) {
             display.setCurrent(helpForm);
         } else if (c == cmdAbout) {
             display.setCurrent(aboutForm);
         } else if (c == cmdExit) {
             notifyDestroyed();
-        } else if (c == cmdYes) {
-            if (d == confirmClearHistory) {
-                calcCanvas.clearHistory();
-            }
-            /* else if (d == confirmClearDefinitions) {
-               calcCanvas.clearDefinitions();
-               }
-            */
-            display.setCurrent(calcCanvas);
         } else { //cmdCancel, cmdOk
             display.setCurrent(calcCanvas);
         }

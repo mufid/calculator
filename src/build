@@ -73,6 +73,8 @@ $PREV -classpath $CLASS -target CLDC$CLDC -d bin tmp/$FULLNAME.jar
 
 genJad $MANF bin/$FULLNAME.jad $FULLNAME.jar
 echo
+
+#scp bin/$FULLNAME.jar javia.org:www/javia/foo
 }
 
 gen $*
