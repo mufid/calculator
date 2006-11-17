@@ -9,7 +9,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     //static final String VERSION = STR(_VERSION_);
     private static final Command 
         //cmdSetup  = new Command("Setup", Command.SCREEN, 1),
-        cmdKeyDelete = new Command("Delete", Command.ITEM, 1),
+        cmdKeyDelete = new Command("Delete", Command.BACK, 1),
         //cmdClearHistory = new Command("Clear history", Command.SCREEN, 2),
         //cmdClearDefinitions   = new Command("Clear definitions", Command.SCREEN, 3),
         cmdHelp  = new Command("Help",  Command.HELP, 8),
@@ -113,7 +113,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         } 
         */
 
-                /*
+        /*
         else if (c == cmdYes) {
             if (d == confirmClearHistory) {
                 calcCanvas.clearHistory();
