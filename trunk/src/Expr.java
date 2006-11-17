@@ -64,21 +64,25 @@ final class Expr {
                     new Symbol(def.name, def.arity, def.definition));
     }
 
-    boolean splitDefinition(String str, Result outResult) {
+    static boolean splitDefinition(String str, Result outResult) {
         outResult.reset();
         if (str.length() == 0) {
             outResult.errorPos = 0;
             return false;
         }
-
         if (str.length() > 3 && str.charAt(1) == ':' && str.charAt(2) == '=') {
             char c = str.charAt(0);
-            if (!(('a' <= c && c <= 'c') || ('f' <= c && c <= 'h'))) {
-                outResult.errorPos = 0;
-                return false;
+            if ('a' <= c || c < 'x') {
+                String name = String.valueOf(c);
+                Symbol s = symbols.get(name);
+                if (s == null || s.code == 0) {
+                    outResult.name = name;
+                    outResult.definition = str.substring(3);
+                    return true;
+                }
             }
-            outResult.name = String.valueOf(c);
-            outResult.definition = str.substring(3);
+            outResult.errorPos = 0;
+            return false;
         } else {
             outResult.definition = str;
         }
@@ -264,18 +268,17 @@ final class Expr {
         case 'a':
             String id = tokenID.toString();
             Symbol symbol = symbols.get(id);
+            scan();
             if (symbol == null) {
                 char c = id.charAt(0);
                 if (isDefinition && id.length() == 1 && 'x' <= c && c <= 'z') {
                     arity = Math.max(arity, c - 'x' + 1);
-                    scan();
                     value = 0;
                     break;
                 } else {
                     throw error;
                 }
             }
-            scan();
             double[] params = null;
             int symbolArity = symbol.arity;
             if (symbolArity > 0) {
