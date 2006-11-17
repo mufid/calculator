@@ -4,7 +4,7 @@ final class KeyState {
     static Font font;
     static int fontHeight;
     static int w, h, cellWidth, cellHeight, yPos;
-    static int stepW, singleSpace, doubleSpace, singleCell;
+    static int stepW, singleSpace; // doubleSpace, singleCell;
     static KeyState rootOp, trigs, hyps, logs, ints, vars, funcs, rootExp;
     static KeyState keypad, lastPainted;
 
@@ -34,16 +34,16 @@ final class KeyState {
         //bold = Font.getFont(0, Font.STYLE_BOLD, size);
         fontHeight = font.getHeight();
 
-        int w1 = (sw + 1) / 3;
+        stepW = (sw + 1)/3;
         int w2 = font.stringWidth("mmmm");
-        cellWidth = Math.min(w1, w2);
+        cellWidth = Math.min(stepW, w2);
         cellHeight = fontHeight + 4;
 
-        //space between columns
-        stepW = (sw + 1)/3;
         singleSpace = (stepW - cellWidth)/2;
+        /*
         doubleSpace = stepW - cellWidth;
         singleCell  = singleSpace + cellWidth;
+        */
 
         h = cellHeight * 4;
         yPos = sh - h;
@@ -93,17 +93,12 @@ final class KeyState {
     }
 
     Object keys[];
-    Image img[] = new Image[3];
-    Graphics imgG[] = new Graphics[3];
-    boolean wantRedraw[] = {true, true, true};
+    Image img = null; //[] = new Image[3];
+    Graphics g; //[] = new Graphics[3];
+    //boolean wantRedraw;
 
     KeyState(Object keys[]) {
         this.keys = keys;
-        for (int i = 0; i < 3; ++i) {
-            img[i] = Image.createImage(cellWidth, cellHeight * 4);
-            imgG[i] = img[i].getGraphics();
-            imgG[i].setFont(font);
-        }
     }
 
     private static final String base[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
@@ -147,67 +142,53 @@ final class KeyState {
         return keypad == null ? 0 : h;
     }
 
-    static void paint(Graphics g) {
+    static void paint(Graphics destG) {
         if (keypad != null) {
-            keypad.doPaint(g);
+            keypad.doPaint(destG);
         }
         lastPainted = keypad;
         //System.out.println("painted");
     }
 
-    void doPaint(Graphics g) {
-        g.setColor(BACKGR);
-        g.fillRect(0, yPos, w, h);
-        /*
-        g.fillRect(0, yPos, singleSpace, h);
-        g.fillRect(singleCell, yPos, doubleSpace, h);
-        g.fillRect(singleCell + stepW, yPos, doubleSpace, h);
-        int x = singleCell + stepW + stepW;
-        g.fillRect(x, yPos, w-x, h);
-        */
-        for (int i = 0; i < 3; ++i) {
-            paintColumn(g, i);
-        }
-    }
-
-    void paintColumn(Graphics destG, int col) {
-        if (wantRedraw[col]) {
-            Graphics g = imgG[col];
+    void doPaint(Graphics destG) {
+        if (img == null) {
+            img = Image.createImage(w, h);
+            g = img.getGraphics();
+            g.setFont(font);
             g.setColor(BACKGR);
-            g.fillRect(0, 0, cellWidth, h);
+            g.fillRect(0, 0, w, h);
             String txt;
-            int pos = col;
-            for (int y = 2; y < h; y += cellHeight, pos += 3) {
-                int bottom = y + cellHeight - 4;
-                g.setColor(LIGHTER);
-                g.drawLine(0, y, cellWidth, y);
-                g.drawLine(0, y, 0, bottom);
-                g.setColor(DARKER);
-                g.drawLine(cellWidth - 1, y + 1, cellWidth - 1, bottom);
-                g.drawLine(1, bottom, cellWidth, bottom);
-
-                Object o = keys[pos];
-                if (o != null) {
-                    if (o instanceof String) {
-                        txt = (String)o;
-                        g.setColor(FOREGR);
-                        g.drawString(txt, cellWidth/2, y+1, Graphics.HCENTER|Graphics.TOP);
-                    } else {
-                        g.setColor(DARKER2);
-                        g.drawLine(cellWidth - 1, y + 1, cellWidth - 1, bottom);
-                        g.drawLine(1, bottom, cellWidth, bottom);
-                        g.setColor(BACKGR2);
-                        g.fillRect(1, y+1, cellWidth-2, bottom-y-1);
-                        txt = (String) ((KeyState)o).keys[pos];
-                        g.setColor(FOREGR);
-                        g.drawString(txt, cellWidth/2, y+1, Graphics.HCENTER|Graphics.TOP);
+            for (int x=singleSpace, col=0; col < 3; ++col, x+=stepW) {
+                for (int pos=col, y=2; y < h; y += cellHeight, pos += 3) {
+                    int bottom = y + cellHeight - 4;
+                    g.setColor(LIGHTER);
+                    g.drawLine(x, y, x+cellWidth, y);
+                    g.drawLine(x, y, x, bottom);
+                    g.setColor(DARKER);
+                    g.drawLine(x+cellWidth-1, y + 1, x+cellWidth-1, bottom);
+                    g.drawLine(x+1, bottom, x+cellWidth, bottom);
+                    
+                    Object o = keys[pos];
+                    if (o != null) {
+                        if (o instanceof String) {
+                            txt = (String)o;
+                            g.setColor(FOREGR);
+                            g.drawString(txt, x+cellWidth/2, y+1, Graphics.HCENTER|Graphics.TOP);
+                        } else {
+                            g.setColor(DARKER2);
+                            g.drawLine(x+cellWidth-1, y + 1, x+cellWidth-1, bottom);
+                            g.drawLine(x+1, bottom, x+cellWidth, bottom);
+                            g.setColor(BACKGR2);
+                            g.fillRect(x+1, y+1, cellWidth-2, bottom-y-1);
+                            txt = (String) ((KeyState)o).keys[pos];
+                            g.setColor(FOREGR);
+                            g.drawString(txt, x+cellWidth/2, y+1, Graphics.HCENTER|Graphics.TOP);
+                        }
                     }
                 }
-            }
-            wantRedraw[col] = false;
+            }                      
         }
-        int x = col==0?singleSpace:col==1?singleSpace+stepW:w-singleCell;
-        destG.drawImage(img[col], x, yPos, 0);
+        destG.drawImage(img, 0, yPos, 0);
     }
 
     static void repaint(Canvas c) {
