@@ -46,12 +46,13 @@ class CalcCanvas extends Canvas implements Runnable {
     Graphics gg[] = new Graphics[N_ZONES];
 
     CalcCanvas() {
-        history = new History(this);
-
-        setFullScreenMode(true);
+        if (getHeight() <= 128) {
+            setFullScreenMode(true);
+        }
         w = getWidth();
         h = getHeight();
 
+        history = new History(this);
         KeyState.init(w, h);
 
         maxEditLines = (h - KeyState.h)/lineHeight;
@@ -118,11 +119,13 @@ class CalcCanvas extends Canvas implements Runnable {
         }
     }
 
+    /*
     void clearHistory() {
         history.clear();
         updateHistory();
         repaint();
     }
+    */
     
     /*
     void clearDefinitions() {

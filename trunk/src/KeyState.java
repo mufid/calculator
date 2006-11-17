@@ -42,26 +42,26 @@ final class KeyState {
 
         h = cellHeight * 4;
         yPos = sh - h;
-        
-        trigs = new KeyState(new Object[] {
-            "sin",   "cos",   "tan", 
-            "asin",  "acos",  "atan", 
-            "sinh",  "cosh",  "tanh",
-            "asinh", "acosh", "atanh",
-        });
-                
-        logs = new KeyState(new Object[] {
-            "lg",  "ln",   "lb",
-            null,  "cbrt", null,
-            null,  null,   null,
-            null,  null,   null
-        });
 
         rootOp = new KeyState(new Object[] {
             "(",  ",",  ")",
             null, "!",  "^", 
             "%",  "/",  "*",
             null, "-",  "+",
+        });
+        
+        trigs = new KeyState(new Object[] {
+            "sinh",  "cosh",  "tanh",
+            "asinh", "acosh", "atanh",
+            "sin",   "cos",   "tan", 
+            "asin",  "acos",  "atan", 
+        });
+                
+        logs = new KeyState(new Object[] {
+            null,  null,   null,
+            null,  null,   null,
+            "lg",  "ln",   "lb",
+            "cbrt", null,  null,
         });
 
         ints = new KeyState(new Object[] {

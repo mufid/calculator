@@ -121,6 +121,7 @@ class History {
         parent.len = str.length();
     }
 
+    /*
     void clear() {
         history.setSize(1);
         historyPos = 0;
@@ -130,6 +131,7 @@ class History {
             rs.write(i);
         }
     }
+    */
 
     void enter(String str, Result result) {
         boolean hasValue = result.hasValue();
