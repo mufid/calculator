@@ -21,7 +21,7 @@ class CalcCanvas extends Canvas implements Runnable {
 
     int w, h;
 
-    int cursorX, cursorY, cursorW = 2, cursorH;
+    int cursorX, cursorY, cursorW = 1, cursorH;
 
 
     Result result = new Result();
@@ -215,12 +215,15 @@ class CalcCanvas extends Canvas implements Runnable {
         repaint(cursorX, cursorY, cursorW, cursorH);
     }
 
-    void updateCursor() {
+    synchronized void updateCursor() {
         setCursor(drawCursor);
-        int cursorL = posToLine(editLines, pos+1);;
+        int cursorL = posToLine(editLines, pos+1);
         cursorY = cursorL * lineHeight + 1;
         int start = cursorL==0?0:editLines[cursorL-1];
-        cursorX = font.charsWidth(line, start, pos - start +1);
+        cursorX = font.charsWidth(line, start, (pos+1)- start);
+        if (cursorX > 0) {
+            --cursorX;
+        }
         //System.out.println("cursor: l " + cursorL + " c " + (pos-start+1) + " x " + cursorX + " y " + cursorY);
         setCursor(true);
     }

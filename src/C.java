@@ -95,8 +95,10 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         helpForm.addCommand(cmdOk);
         helpForm.setCommandListener(this);
 
+        /*
         thread = new Thread(this);
         thread.start();
+        */
     }
 
     public void run() {
