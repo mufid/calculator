@@ -192,7 +192,7 @@ class CalcCanvas extends Canvas implements Runnable {
     }
 
     boolean drawCursor = true;
-    void setCursor(boolean setOn) {
+    synchronized void setCursor(boolean setOn) {
         drawCursor = setOn;
         repaint(cursorX, cursorY, cursorW, cursorH);
     }
@@ -301,8 +301,8 @@ class CalcCanvas extends Canvas implements Runnable {
         if (p >= 0 && line[p] == '(') {
             --p;
         }
-        if (p >= 0 && isLetterAt(p)) {
-            while (p >= 0 && isLetterAt(p)) --p;
+        if (p >= 0 && Expr.isLetter(line[p])) {
+            do { --p; } while (p >= 0 && Expr.isLetter(line[p]));
             return p;
         }
         return pos - 1;
@@ -313,23 +313,27 @@ class CalcCanvas extends Canvas implements Runnable {
             return pos;
         }
         ++pos;
-        if (isLetterAt(pos)) {
+        if (Expr.isLetter(line[pos])) {
             do {
                 ++pos;
-            } while (pos < len && isLetterAt(pos));
+            } while (pos < len && Expr.isLetter(line[pos]));
             if (pos < len && line[pos] == '(') ++pos;
             return pos - 1;
         }
         return pos;
     }
-    
+
+    /*
     final boolean isDigitAt(int p) {
         return Character.isDigit(line[p]);
     }
+    */
 
+    /*
     final boolean isLetterAt(int p) {
         return Expr.isLetter(line[p]);
     }
+    */
 
     void delFromLine() {
         int prev = prevFlexPoint(pos);
@@ -356,7 +360,7 @@ class CalcCanvas extends Canvas implements Runnable {
         needUpdateResult = true;
     }
 
-    protected synchronized void keyPressed(int key) {
+    protected void keyPressed(int key) {
         System.out.println("key");
         int oldPos = pos;
         int keyPos = getKeyPos(key);

@@ -3,7 +3,8 @@ import javax.microedition.lcdui.*;
 final class KeyState {
     static Font font;
     static int fontHeight;
-    static int w, h, cellWidth, cellHeight, yPos, interSpace;
+    static int w, h, cellWidth, cellHeight, yPos;
+    static int stepW, singleSpace, doubleSpace, singleCell;
     static KeyState rootOp, trigs, hyps, logs, ints, vars, funcs, rootExp;
     static KeyState keypad, lastPainted;
 
@@ -38,7 +39,12 @@ final class KeyState {
         cellWidth = Math.min(w1, w2);
         cellHeight = fontHeight + 4;
 
-        interSpace = (sw - cellWidth*3 + 3)/6;
+        //space between columns
+        stepW = (sw + 1)/3;
+        singleSpace = (stepW - cellWidth)/2; //(sw - cellWidth*3 + 2)/6;
+        doubleSpace = stepW - cellWidth;
+        singleCell  = singleSpace + cellWidth;
+        //doubleSpace = (sw+1)/3;
 
         h = cellHeight * 4;
         yPos = sh - h;
@@ -116,11 +122,6 @@ final class KeyState {
     
     private String intHandleKey(int keyPos) {
         Object o = keys[keyPos];
-        /*
-        if (o == null) {
-            return null;
-        }
-        */
         if (o instanceof String) {
             if (o != null) {
                 keypad = null;
@@ -132,6 +133,7 @@ final class KeyState {
         }
     }
 
+    /*
     void set(int pos, Object obj) {
         if (keys[pos] == obj ||
             (obj != null && obj.equals(keys[pos]))) {
@@ -140,6 +142,7 @@ final class KeyState {
         keys[pos] = obj;
         wantRedraw[pos%3] = true;
     }
+    */
 
     static int getH() {
         return keypad == null ? 0 : h;
@@ -154,12 +157,12 @@ final class KeyState {
     }
 
     void doPaint(Graphics g) {
-        int doubleSpace = interSpace + interSpace;
         g.setColor(BACKGR);
-        g.fillRect(0, yPos, interSpace, h);
-        g.fillRect(interSpace + cellWidth, yPos, doubleSpace, h);
-        g.fillRect(3*interSpace + 2*cellWidth, yPos, doubleSpace, h);
-        g.fillRect(w - interSpace, yPos, interSpace, h);
+        g.fillRect(0, yPos, singleSpace, h);
+        g.fillRect(singleCell, yPos, doubleSpace, h);
+        g.fillRect(singleCell + stepW, yPos, doubleSpace, h);
+        int x = singleCell + stepW + stepW;
+        g.fillRect(x, yPos, w-x, h);
         for (int i = 0; i < 3; ++i) {
             paintColumn(g, i);
         }
@@ -199,11 +202,9 @@ final class KeyState {
                     }
                 }
             }
+            wantRedraw[col] = false;
         }
-
-        int x = interSpace * (col + col + 1) + cellWidth * col;
-        destG.drawImage(img[col], x, yPos, 0);
-        wantRedraw[col] = false;
+        destG.drawImage(img[col], singleSpace + col * stepW, yPos, 0);
     }
 
     static void repaint(Canvas c) {
