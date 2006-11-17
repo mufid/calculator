@@ -153,6 +153,9 @@ class History {
             int recId = posMaxSeq + 2;
             rs.write(recId);
             history.insertElementAt(newEntry, 1);
+            if (history.size() > MAX_HIST+1) {
+                history.setSize(MAX_HIST+1);
+            }
         }
         historyPos = 0;
         getFrom((HistEntry)history.elementAt(historyPos));

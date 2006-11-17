@@ -114,6 +114,10 @@ class CalcCanvas extends Canvas implements Runnable {
                     result.name + params[result.arity-1] : format(result.value);
                 rg.setColor(fgCol[RESULT]);
                 rg.drawString(strResult, 0, 2, 0);
+            } else {
+                if (result.errorPos < len) {
+                    markError(result.errorPos);
+                }
             }
             repaint(0, ry, w, rh);
         }
@@ -189,6 +193,20 @@ class CalcCanvas extends Canvas implements Runnable {
         if (nEditLines != oldNLines) {
             repaint();
         }
+    }
+    
+    void markError(int errorPos) {
+        //int errorPos = result.errorPos;
+        //if (errorPos != -1) {
+        int errLine = posToLine(editLines, errorPos);
+        int startOfLine = errLine==0 ? 0 : editLines[errLine-1];
+        int posInLine = errorPos - startOfLine;
+        int w = font.charsWidth(line, startOfLine, posInLine);
+        gg[EDIT].setColor(0xff0000);
+        int y = 2+errLine*lineHeight;
+        gg[EDIT].drawChar(line[errorPos], w, y, 0);
+        repaint(w, y, font.charWidth(line[errorPos]), lineHeight);
+        //} 
     }
 
     boolean drawCursor = true;
