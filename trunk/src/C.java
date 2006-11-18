@@ -38,11 +38,11 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     static final String helpStr = 
 "Press * or # to display the menu, " +
 "next press one more key (1-9,*0#) to select. " +
-"The left menu (*) contains the decimal dot, functions, constants. " +
-"The right menu (#) contains operators (+,-,*,/) and parentheses. " +
+"The left menu * contains the decimal dot, functions and constants. " +
+"The right menu # contains operators like +,-,*,/. " +
 "The entries marked in blue open additional sub-menus. " +
 "E.g. to obtain the decimal dot, press twice *; " +
-"to obtain the plus operator, press twice #.\n\n" +
+"to obtain +, press twice #.\n\n" +
 
 "Use UP and DOWN to navigate the history.\n\n" +
 
@@ -54,7 +54,6 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 "'ans' is automatically added in front of an expression that starts with an operator. " +
 "E.g. typing '+2' becomes 'ans+2'.";
 
-    static final String aboutStr = NAME + " v"+VERSION + "\n\u00a9 2006 Mihai Preda\n" + URL;
     Form aboutForm = new Form("About"), helpForm = new Form("Help");
     Thread thread;
 
@@ -88,9 +87,12 @@ public final class C extends MIDlet implements CommandListener, Runnable {
             aboutForm.append(Image.createImage("/a"));
         } catch (IOException e) {
         }
-        aboutForm.append(aboutStr);
+        //static final String aboutStr = NAME + " v"+VERSION + "\n\u00a9 2006 Mihai Preda\n" + URL;
+        aboutForm.append(NAME + " " + VERSION + "\n");
+        aboutForm.append("\u00a9 Mihai Preda\n" + URL);
         aboutForm.addCommand(cmdOk);
         aboutForm.setCommandListener(this);
+
         helpForm.append(helpStr);
         helpForm.addCommand(cmdOk);
         helpForm.setCommandListener(this);

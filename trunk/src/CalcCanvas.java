@@ -60,7 +60,7 @@ class CalcCanvas extends Canvas implements Runnable {
 
         maxEditLines = (h - KeyState.h)/lineHeight;
         System.out.println("max edit lines " + maxEditLines);
-        editLines = new int[maxEditLines];
+        editLines = new int[maxEditLines+1];
         
         height[RESULT]  = lineHeight + 2;
         height[EDIT]    = maxEditLines * lineHeight + 2;
@@ -277,7 +277,7 @@ class CalcCanvas extends Canvas implements Runnable {
 
     void updateCursor() {
         setCursor(drawCursor);
-        int start;;
+        int start;
         if (pos == -1) {
             cursorRow = 0;
             start     = 0;
