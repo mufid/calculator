@@ -1,3 +1,5 @@
+#define START_LINE(lines, n) (((n)==0)?0:lines[n-1])
+
 import javax.microedition.lcdui.*;
 import java.util.*;
 
@@ -21,6 +23,7 @@ class CalcCanvas extends Canvas implements Runnable {
 
     int w, h;
 
+    int cursorRow, cursorCol;
     int cursorX, cursorY, cursorW = 1, cursorH;
 
 
@@ -77,7 +80,7 @@ class CalcCanvas extends Canvas implements Runnable {
         cursorY = 10;
         cursorH = lineHeight;
 
-        editChanged(0);
+        editChanged(-1);
         updateCursor();
         updateHistory();
         repaint();
@@ -87,7 +90,7 @@ class CalcCanvas extends Canvas implements Runnable {
         while (true) {
             setCursor(!drawCursor);
             try {
-                Thread.sleep(10000);
+                Thread.sleep(400);
             } catch (InterruptedException e) {
             }
         }
@@ -98,8 +101,6 @@ class CalcCanvas extends Canvas implements Runnable {
         if (needUpdateResult) {
             needUpdateResult = false;
             
-            int resultY = nEditLines * lineHeight + 2;
-            int ry = resultY+2, rh = height[RESULT]-3;
             /*
             try {
                 Thread.sleep(400);
@@ -119,6 +120,10 @@ class CalcCanvas extends Canvas implements Runnable {
                     markError(result.errorPos);
                 }
             }
+            int resultY = nEditLines * lineHeight + 2;
+            int ry = resultY+2;
+            int avail = h - ry - KeyState.getH();
+            int rh = Math.min(height[RESULT]-3, avail);
             repaint(0, ry, w, rh);
         }
     }
@@ -139,15 +144,55 @@ class CalcCanvas extends Canvas implements Runnable {
     }
     */
     
+    int fitWidth(Font font, int targetWidth, char buf[], int start, int end) {
+        int mW = font.charWidth('m');
+        int n;
+        while ((n = Math.min(targetWidth/mW, end - start)) >= 2) {
+            targetWidth -= font.charsWidth(buf, start, n);
+            start += n;
+        }
+        while (start < end && (targetWidth -= font.charWidth(buf[start])) >= 0) {
+            ++start;
+        }
+        return start;
+    }
+    /*
+        int baseW;
+        if (end <= start || targetWidth < (baseW = font.charWidth(buf[start]))) {
+            return start;
+        }
+        ++start;
+        targetWidth -= baseW;
+        int n = Math.min(targetWidth / baseW, end - start);
+        int width = font.charsWidth(buf, start, n);
+        baseW = width / n;
+        if (width <= targetWidth) {
+            if (n == end - start) { 
+                return end; 
+            }
+            start += n;
+            targetWidth -= width;
+            n = Math.min(targetWidth * n / width, end - start);
+        } else {
+            end = start + n - 1;
+            n = end - (width - targetWidth)/baseW - start;
+        }
+    }
+    */
+
     int split(Font font, char buf[], int len, int w, 
               int changeLine, int lines[]) {
-        int end = changeLine == 0 ? 0 : lines[changeLine - 1];
-        int width;
-        int mW = font.charWidth('m');
-        int i, n;
-        int sizeLeft = len - end;
-        int cw;
-        for (i = changeLine; i<lines.length; ++i) {
+        //int width;
+        //int mW = font.charWidth('m');
+        //int i, n;
+        //int sizeLeft = len - end;
+        //int cw;
+        int end = START_LINE(lines, changeLine);
+        int i;
+        for (i = changeLine; i < lines.length && end < len; ++i) {
+            lines[i] = end = fitWidth(font, w, buf, end, len);
+            
+            /*
             int left = w;
             while ((n = Math.min(left/mW, sizeLeft)) > 0) {
                 //System.out.println("n " + n + "; left " + left);
@@ -161,15 +206,20 @@ class CalcCanvas extends Canvas implements Runnable {
                 left-= cw;
             }
             lines[i] = end;
+            */
             //System.out.println("line " + i + "; end " + end + "; len " + len);
-            if (end == len) { break; }
+            //if (end == len) { break; }
         }
-        return i + 1;
+        if (i == 0) {
+            lines[0] = 0;
+            return 1;
+        }
+        return i;
     }
 
     int posToLine(int lines[], int pos) {
         int line = 0;
-        while (pos > lines[line]) { ++line; }
+        while (pos >= lines[line]) { ++line; }
         return line;
     }
                
@@ -177,6 +227,16 @@ class CalcCanvas extends Canvas implements Runnable {
         int changeLine = posToLine(editLines, changePos);
         int oldNLines = nEditLines;
         nEditLines = split(font, line, len, w, changeLine, editLines);
+        //System.out.println("pos " + pos + " oldNLines " + oldNLines + " nEditLines " + nEditLines);
+        if (nEditLines > maxEditLines) {
+            nEditLines = maxEditLines;
+            //len = editLines[nEditLines - 1];
+            //pos = len - 1;
+            int end = editLines[nEditLines - 1];
+            while (pos >= end) {
+                pos = prevFlexPoint(pos);
+            }
+        }
         //System.out.println("nEditLines " + nEditLines + "; changeLine " + changeLine);                           
 
         Graphics g = gg[EDIT];
@@ -210,21 +270,29 @@ class CalcCanvas extends Canvas implements Runnable {
     }
 
     boolean drawCursor = true;
-    synchronized void setCursor(boolean setOn) {
+    void setCursor(boolean setOn) {
         drawCursor = setOn;
         repaint(cursorX, cursorY, cursorW, cursorH);
     }
 
-    synchronized void updateCursor() {
+    void updateCursor() {
         setCursor(drawCursor);
-        int cursorL = posToLine(editLines, pos+1);
-        cursorY = cursorL * lineHeight + 1;
-        int start = cursorL==0?0:editLines[cursorL-1];
-        cursorX = font.charsWidth(line, start, (pos+1)- start);
+        int start;;
+        if (pos == -1) {
+            cursorRow = 0;
+            start     = 0;
+            cursorCol = 0;
+        } else {
+            cursorRow = posToLine(editLines, pos); //pos+1
+            start     = START_LINE(editLines, cursorRow);
+            cursorCol = (pos+1) - start;
+        }
+        cursorY = cursorRow * lineHeight + 1;
+        cursorX = font.charsWidth(line, start, cursorCol);
         if (cursorX > 0) {
             --cursorX;
         }
-        //System.out.println("cursor: l " + cursorL + " c " + (pos-start+1) + " x " + cursorX + " y " + cursorY);
+        System.out.println("pos " + pos + " row " + cursorRow + " col " + cursorCol + " x " + cursorX + " y " + cursorY);
         setCursor(true);
     }
 
@@ -288,7 +356,7 @@ class CalcCanvas extends Canvas implements Runnable {
     }
 
     protected void paint(Graphics g) {
-        System.out.println("paint");
+        //System.out.println("paint");
         KeyState.paint(g);
         //System.out.println("historyH "+historyH+" keypadH "+keypadH+" editH "+editH+" w "+w+" resultY "+resultY);
         int editH = nEditLines * lineHeight + 2;
@@ -303,7 +371,13 @@ class CalcCanvas extends Canvas implements Runnable {
             g.setColor(0);
             g.fillRect(cursorX, cursorY, cursorW, cursorH);
         }
-        g.drawImage(img[RESULT], 0, editH, 0);
+        int avail = h - editH - KeyState.getH();
+        if (avail < height[RESULT]) {
+            g.drawRegion(img[RESULT], 0, 0, w, avail, 0,
+                         0, editH, 0);
+        } else {
+            g.drawImage(img[RESULT], 0, editH, 0);
+        }
         /*
         try {
             Thread.sleep(300);
@@ -365,10 +439,12 @@ class CalcCanvas extends Canvas implements Runnable {
 
     void insertIntoLine(String s) {
         int strLen = s.length();
-        System.arraycopy(line, pos+1, line, pos + strLen + 1, len-(pos+1));
-        s.getChars(0, strLen, line, pos+1);
-        pos += strLen;
-        len += strLen;
+        if (len + strLen <= 255) {            
+            System.arraycopy(line, pos+1, line, pos + strLen + 1, len-(pos+1));
+            s.getChars(0, strLen, line, pos+1);
+            pos += strLen;
+            len += strLen;
+        }
     }
 
     protected void keyRepeated(int key) {
@@ -432,17 +508,44 @@ class CalcCanvas extends Canvas implements Runnable {
                     break;
                     
                 case Canvas.UP:
-                    if (history.move(-1)) {
-                        doChanged(0);
-                        needUpdateResult = true;
+                    if (cursorRow == 0) {
+                        if (history.move(-1)) {
+                            doChanged(-1);
+                            needUpdateResult = true;
+                        }
+                    } else {
+                        int width = font.charsWidth(line, editLines[cursorRow-1], cursorCol);
+                        int startPrev = START_LINE(editLines, cursorRow-1);
+                        int targetPos = fitWidth(font, width, line, startPrev, len)-1;
+                        System.out.println("width " + width + " target " + targetPos);
+                        int aheadPos;
+                        while (true) {
+                            aheadPos = prevFlexPoint(pos);
+                            if (aheadPos < targetPos || pos == -1) { break; }
+                            pos = aheadPos;
+                        }
+                        updateCursor();
                     }
                     break;
                     
                 case Canvas.DOWN:
-                    if (history.move(1)) {
-                        doChanged(0);
-                        needUpdateResult = true;
-                    }
+                    if (cursorRow == nEditLines-1) {
+                        if (history.move(1)) {
+                            doChanged(-1);
+                            needUpdateResult = true;
+                        }
+                    } else {
+                        int width = font.charsWidth(line, START_LINE(editLines, cursorRow), cursorCol);
+                        int startNext = editLines[cursorRow];
+                        int targetPos = pos == -1 ? editLines[0] : fitWidth(font, width, line, startNext, len)-1;
+                        int aheadPos;
+                        while (true) {
+                            aheadPos = nextFlexPoint(pos);
+                            if (aheadPos > targetPos || pos == len-1) { break; }
+                            pos = aheadPos;
+                        }
+                        updateCursor();
+                    } 
                     break;
                     
                 case Canvas.FIRE:
@@ -453,7 +556,7 @@ class CalcCanvas extends Canvas implements Runnable {
                         }
                     }
                     history.enter(str, result);
-                    doChanged(0);
+                    doChanged(-1);
                     needUpdateResult = true;
                     updateHistory();
                     repaint();
