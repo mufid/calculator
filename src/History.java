@@ -47,7 +47,7 @@ class HistEntry {
 }
 
 class History {
-    static final int MAX_HIST = 4; //32;
+    static final int MAX_HIST = 12; //32;
     static RMS rs = new RMS("calc");
     static double ans = 0;
 
