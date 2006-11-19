@@ -59,7 +59,7 @@ class CalcCanvas extends Canvas implements Runnable {
         history = new History(this);
         KeyState.init(w, h);
 
-        maxEditLines = (h - KeyState.h)/lineHeight;
+        maxEditLines = 2; //(h - KeyState.h)/lineHeight;
         System.out.println("max edit lines " + maxEditLines);
         editLines = new int[maxEditLines + 1];
         
@@ -364,17 +364,21 @@ class CalcCanvas extends Canvas implements Runnable {
         //System.out.println("a");
         g.drawRegion(img[EDIT], 0, 0, w, editH, 0,
                      0, 0, 0);
-        g.drawRegion(img[HISTORY], 0, 0, w, h-editH-height[RESULT]-keypadH, 0,
-                     0, editH+height[RESULT], 0);
+        int histAvail = h-editH-height[RESULT]-keypadH;
+        if (histAvail > 0) {
+            g.drawRegion(img[HISTORY], 0, 0, w, histAvail, 0,
+                         0, editH+height[RESULT], 0);
+        }
         //System.out.println("b");
         if (drawCursor) {
+            //System.out.println("cursor on");
             g.setColor(0);
             g.fillRect(cursorX, cursorY, cursorW, cursorH);
         }
         //System.out.println("c");
-        int avail = h - editH - KeyState.getH();
-        if (avail < height[RESULT]) {
-            g.drawRegion(img[RESULT], 0, 0, w, avail, 0,
+        int resultAvail = h - editH - keypadH;
+        if (resultAvail < height[RESULT]) {
+            g.drawRegion(img[RESULT], 0, 0, w, resultAvail, 0,
                          0, editH, 0);
         } else {
             g.drawImage(img[RESULT], 0, editH, 0);
@@ -476,7 +480,7 @@ class CalcCanvas extends Canvas implements Runnable {
             String s = KeyState.handleKey(keyPos);
             if (s != null) {
                 if (pos == -1 && s.length() == 1 &&
-                    "+*/%^!".indexOf(s.charAt(0)) != -1) {
+                    "+-*/%^!".indexOf(s.charAt(0)) != -1) {
                     insertIntoLine("ans");
                 }
                 insertIntoLine(s);

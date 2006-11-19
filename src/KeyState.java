@@ -41,17 +41,10 @@ final class KeyState {
 
         h = cellHeight * 4;
         yPos = sh - h;
-
-        rootOp = new KeyState(new Object[] {
-            "(",  ",",  ")",
-            null, "!",  "^", 
-            "%",  "/",  "*",
-            null, "-",  "+",
-        });
         
         trigs = new KeyState(new Object[] {
-            "sinh",  "cosh",  "tanh",
             "asinh", "acosh", "atanh",
+            "sinh",  "cosh",  "tanh",
             "sin",   "cos",   "tan", 
             "asin",  "acos",  "atan", 
         });
@@ -71,19 +64,27 @@ final class KeyState {
         });
 
         vars = new KeyState(new Object[] {
-            "a",  "b",  "c",
-            "f",  "g",  "h",
-            ":=", "d",  "m",
             "x",  "y",  "z",
+            "h",  "m",  "n",
+            "g",  "c",  "d",
+            "f",  "a",  "b",
+        });
+
+        rootOp = new KeyState(new Object[] {
+            "(",  ",",  ")",
+            null, "!",  "^", 
+            "%",  "/",  "*",
+            null, "-",  "+",
+        });
+
+        rootExp = new KeyState(new Object[] {
+            "sqrt",  "ans",  "E",
+            "pi",    "e",    null,
+            trigs,   logs,   ints,
+            ".",     vars,   ":=",
         });
 
         //"\u03c0" == pi
-        rootExp = new KeyState(new Object[] {
-            vars,  "ans",  "E",
-            "pi",  "e",    null,
-            trigs, logs,   ints,
-            ".",   "sqrt", null,
-        });
     }
 
     Object keys[];
