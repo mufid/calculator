@@ -95,7 +95,8 @@ final class Expr {
             result.value = parseThrow(result.definition);
         } catch (Error e) {
             result.value = 0;
-            result.errorPos = tokenStart - nAddedBefore;
+            result.errorPos = tokenStart - nAddedBefore + 
+                result.name==null ? 0 : (result.name.length() + 2);
             result.arity = 0;
             return false;
         }
