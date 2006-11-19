@@ -35,6 +35,7 @@ class CalcCanvas extends Canvas implements Runnable {
 
     char line[] = new char[256];
     int len = 0, pos = -1;
+    int lastInsertLen = 0;
     int editLines[];
     int nEditLines;
     int maxEditLines;
@@ -60,7 +61,7 @@ class CalcCanvas extends Canvas implements Runnable {
 
         maxEditLines = (h - KeyState.h)/lineHeight;
         System.out.println("max edit lines " + maxEditLines);
-        editLines = new int[maxEditLines+1];
+        editLines = new int[maxEditLines + 1];
         
         height[RESULT]  = lineHeight + 2;
         height[EDIT]    = maxEditLines * lineHeight + 2;
@@ -229,13 +230,10 @@ class CalcCanvas extends Canvas implements Runnable {
         nEditLines = split(font, line, len, w, changeLine, editLines);
         //System.out.println("pos " + pos + " oldNLines " + oldNLines + " nEditLines " + nEditLines);
         if (nEditLines > maxEditLines) {
+            pos = changePos;
+            delFromLine(pos, lastInsertLen);
             nEditLines = maxEditLines;
-            //len = editLines[nEditLines - 1];
-            //pos = len - 1;
-            int end = editLines[nEditLines - 1];
-            while (pos >= end) {
-                pos = prevFlexPoint(pos);
-            }
+            return;
         }
         //System.out.println("nEditLines " + nEditLines + "; changeLine " + changeLine);                           
 
@@ -247,7 +245,8 @@ class CalcCanvas extends Canvas implements Runnable {
         int start = changeLine==0 ? 0 : editLines[changeLine-1];
         for (int i = changeLine, y = 2+changeLine*lineHeight,
                  end = editLines[i]; 
-             i < nEditLines; ++i, y+=lineHeight, start = end, end = editLines[i]) {
+             i < nEditLines; ++i, y+=lineHeight, start = end) {
+            end = editLines[i];
             g.drawChars(line, start, end-start, 0, y, 0);
         }
         if (nEditLines != oldNLines) {
@@ -357,20 +356,22 @@ class CalcCanvas extends Canvas implements Runnable {
 
     protected void paint(Graphics g) {
         //System.out.println("paint");
-        KeyState.paint(g);
-        //System.out.println("historyH "+historyH+" keypadH "+keypadH+" editH "+editH+" w "+w+" resultY "+resultY);
         int editH = nEditLines * lineHeight + 2;
         int keypadH = KeyState.getH();
-        //System.out.println("pos " + pos + "; nLines " + nEditLines + "; cX " + cursorX + "; cY " + cursorY);
         KeyState.paint(g);
+        //System.out.println("historyH "+historyH+" keypadH "+keypadH+" editH "+editH+" w "+w+" resultY "+resultY);
+        //System.out.println("pos " + pos + "; nLines " + nEditLines + "; cX " + cursorX + "; cY " + cursorY);
+        //System.out.println("a");
         g.drawRegion(img[EDIT], 0, 0, w, editH, 0,
                      0, 0, 0);
         g.drawRegion(img[HISTORY], 0, 0, w, h-editH-height[RESULT]-keypadH, 0,
                      0, editH+height[RESULT], 0);
+        //System.out.println("b");
         if (drawCursor) {
             g.setColor(0);
             g.fillRect(cursorX, cursorY, cursorW, cursorH);
         }
+        //System.out.println("c");
         int avail = h - editH - KeyState.getH();
         if (avail < height[RESULT]) {
             g.drawRegion(img[RESULT], 0, 0, w, avail, 0,
@@ -430,10 +431,19 @@ class CalcCanvas extends Canvas implements Runnable {
     }
     */
 
+    void delFromLine(int p, int size) {
+        int p2 = p + size + 1;
+        System.arraycopy(line, p2, line, p + 1, len - p2);
+        len -= size;
+    }
+
     void delFromLine() {
         int prev = prevFlexPoint(pos);
+        delFromLine(prev, pos-prev);
+        /*
         System.arraycopy(line, pos+1, line, prev+1, len-(pos+1));
         len -= pos-prev;
+        */
         pos = prev;
     }
 
@@ -461,6 +471,7 @@ class CalcCanvas extends Canvas implements Runnable {
         System.out.println("key");
         int oldPos = pos;
         int keyPos = getKeyPos(key);
+        lastInsertLen = 0;
         if (keyPos >= 0) {
             String s = KeyState.handleKey(keyPos);
             if (s != null) {
@@ -469,6 +480,7 @@ class CalcCanvas extends Canvas implements Runnable {
                     insertIntoLine("ans");
                 }
                 insertIntoLine(s);
+                lastInsertLen += s.length();
                 Symbol symbol = Expr.symbols.get(s);
                 if (symbol != null) { // && symbol.arity > 0) {
                     String parens = arityParens[symbol.arity];
@@ -477,8 +489,10 @@ class CalcCanvas extends Canvas implements Runnable {
                         if (pos == len-1) {
                             insertIntoLine(parens);
                             pos -= parensLen - 1;
+                            lastInsertLen += parensLen;
                         } else {
                             insertIntoLine("(");
+                            ++lastInsertLen;
                         }
                     }
                 }
