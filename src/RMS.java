@@ -5,7 +5,7 @@ class RMS {
     private RecordStore rs;
     private byte buf[] = new byte[300];
     private ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    DataOutputStream os = new DataOutputStream(bos);
+    DataOutputStream out = new DataOutputStream(bos);
     
     RMS(String name) {
         try {

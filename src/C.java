@@ -129,7 +129,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
 
         if (c == cmdKeyDelete) {
-            calcCanvas.keyPressed(CalcCanvas.KEY_CLEAR); //KEY_CLEAR
+            calcCanvas.keyPressed(CalcCanvas.KEY_CLEAR);
         } else if (c == cmdHelp) {
             display.setCurrent(helpForm);
         } else if (c == cmdAbout) {
@@ -150,5 +150,6 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     }
 
     protected void destroyApp(boolean uncond) {
+        calcCanvas.saveOnExit();
     }
 }

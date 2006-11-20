@@ -3,7 +3,7 @@ import java.util.Random;
 import java.io.*;
 
 final class SymbolTable {
-    private static final int RS_START = 2+History.MAX_HIST;
+    private static final int RS_START = History.RS_START + History.MAX_HIST;
     private RMS rs = History.rs;
     int nextRecId;
     Hashtable ht = new Hashtable(50);
@@ -51,7 +51,7 @@ final class SymbolTable {
             recId = nextRecId;
             ++nextRecId;
         }
-        s.write(rs.os);
+        s.write(rs.out);
         rs.write(recId);
         putInt(s);
     }

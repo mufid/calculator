@@ -96,7 +96,8 @@ final class Expr {
         } catch (Error e) {
             result.value = 0;
             result.errorPos = tokenStart - nAddedBefore + 
-                result.name==null ? 0 : (result.name.length() + 2);
+                (result.name == null ? 0 : (result.name.length() + 2));
+            //System.out.println("errorPos " + result.errorPos);
             result.arity = 0;
             return false;
         }

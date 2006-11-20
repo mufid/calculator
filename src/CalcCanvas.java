@@ -2,6 +2,7 @@
 
 import javax.microedition.lcdui.*;
 import java.util.*;
+import java.io.*;
 
 class CalcCanvas extends Canvas implements Runnable {
     static final int KEY_CLEAR=-8, KEY_END=-11, KEY_POWER=-12;
@@ -28,7 +29,7 @@ class CalcCanvas extends Canvas implements Runnable {
 
 
     Result result = new Result();
-    boolean needUpdateResult;
+    boolean needUpdateResult = true;
 
     Font font = largeFont;
     int lineHeight = font.getHeight() + 1;
@@ -56,7 +57,20 @@ class CalcCanvas extends Canvas implements Runnable {
         w = getWidth();
         h = getHeight();
 
-        history = new History(this);
+        history = new History(parser);
+
+        DataInputStream is = History.rs.read(2);
+        updateFromHistEntry(is == null ? new HistEntry("1+1", 0, false) : new HistEntry(is));
+        //System.out.println(pos);
+        if (is == null) {
+            //first run, init history  
+            history.enter("0.5!*2)^2");
+            history.enter("sqrt(3^2+4^2");
+            history.enter("sin(pi/2)");
+            //history.enter("3!");
+            //history.enter("e^ln(2");
+        }
+        
         KeyState.init(w, h);
 
         maxEditLines = 2; //(h - KeyState.h)/lineHeight;
@@ -527,7 +541,9 @@ class CalcCanvas extends Canvas implements Runnable {
                     
                 case Canvas.UP:
                     if (cursorRow == 0) {
+                        history.getCurrent().update(String.valueOf(line, 0, len), pos);
                         if (history.move(-1)) {
+                            updateFromHistEntry(history.getCurrent());
                             doChanged(-1);
                             needUpdateResult = true;
                         }
@@ -548,7 +564,9 @@ class CalcCanvas extends Canvas implements Runnable {
                     
                 case Canvas.DOWN:
                     if (cursorRow == nEditLines-1) {
+                        history.getCurrent().update(String.valueOf(line, 0, len), pos);
                         if (history.move(1)) {
+                            updateFromHistEntry(history.getCurrent());
                             doChanged(-1);
                             needUpdateResult = true;
                         }
@@ -568,19 +586,15 @@ class CalcCanvas extends Canvas implements Runnable {
                     
                 case Canvas.FIRE:
                     String str = String.valueOf(line, 0, len);
-                    if (parser.parse(str, result)) {
-                        if (result.name != null) {
-                            parser.define(result);
-                        }
-                    }
-                    history.enter(str, result);
+                    history.enter(str);
+                    updateFromHistEntry(history.getCurrent());
                     doChanged(-1);
                     needUpdateResult = true;
                     updateHistory();
                     repaint();
                     break;
                 }
-            } else if (key == KEY_CLEAR || key == KEY_END || key == KEY_POWER) { //delete
+            } else { //if (key == KEY_CLEAR || key == KEY_END || key == KEY_POWER) { //delete
                 if (!clearedKeypad) {
                     delFromLine();
                     doChanged(pos);
@@ -588,6 +602,13 @@ class CalcCanvas extends Canvas implements Runnable {
             }
         }
         KeyState.repaint(this);
+    }
+
+    void updateFromHistEntry(HistEntry entry) {
+        pos = entry.pos;
+        String str = entry.edited;
+        len = str.length();
+        str.getChars(0, len, line, 0);
     }
 
     static int getKeyPos(int key) {
@@ -600,5 +621,12 @@ class CalcCanvas extends Canvas implements Runnable {
         case '#': return 11;
         }
         return -1;
+    }
+
+    void saveOnExit() {
+        String str = String.valueOf(line, 0, len);
+        HistEntry entry = new HistEntry(str, 0, false);
+        entry.write(history.rs.out);
+        history.rs.write(2);        
     }
 }
