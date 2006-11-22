@@ -3,8 +3,7 @@ import java.util.Random;
 import java.io.*;
 
 final class SymbolTable {
-    private static final int RS_START = History.RS_START + History.MAX_HIST;
-    private RMS rs = History.rs;
+    //private RMS rs = C.rs;
     int nextRecId;
     Hashtable ht = new Hashtable(50);
     
@@ -25,11 +24,11 @@ final class SymbolTable {
             putInt(new Symbol(i));
         }
 
-        int recId = RS_START;
+        int recId = C.RS_SYMB_START;
         DataInputStream is;
         Result entry = new Result();
         try {
-            while ((is = rs.read(recId)) != null) {
+            while ((is = C.rs.read(recId)) != null) {
                 putInt(new Symbol(is, recId));
                 ++recId;
             }
@@ -51,17 +50,17 @@ final class SymbolTable {
             recId = nextRecId;
             ++nextRecId;
         }
-        s.write(rs.out);
-        rs.write(recId);
+        s.write(C.rs.out);
+        C.rs.write(recId);
         putInt(s);
     }
 
     /*
     void persistClear() {
-        for (int i = RS_START; i < nextRecId; ++i) {
+        for (int i = C.RS_SYMB_START; i < nextRecId; ++i) {
             rs.write(i);
         }
-        nextRecId = RS_START;
+        nextRecId = C.RS_SYMB_START;
         ht.clear();
         load();
     }
@@ -171,6 +170,20 @@ final class Symbol {
         this.recId = recId;
     }
     
+    private double trigEval(int code, double x) {
+        //radians
+        switch (code) {
+        case SIN:   return MoreMath.isPiMultiple(x) ? 0 : Math.sin(x);
+        case COS:   return MoreMath.isPiMultiple(x + MoreMath.PI_2) ? 0 : Math.cos(x);
+        case TAN:   return Math.tan(x);
+
+        case ASIN:  return MoreMath.asin(x);
+        case ACOS:  return MoreMath.acos(x);
+        case ATAN:  return MoreMath.atan(x);
+        }
+        return 0;
+    }
+    
     double evalBuiltin(double params[]) {
         double x = 0, y = 0, z = 0;
         switch (arity) {
@@ -178,15 +191,20 @@ final class Symbol {
         case 2: y = params[1];
         case 1: x = params[0];
         }
+        
+        if (SIN <= code && code <= ATAN) {
+            if (C.angleInRadians) {
+                return trigEval(code, x);
+            } else { //angle in degrees
+                if (code <= TAN) {//sin,cos,tan
+                    return trigEval(code, Math.toRadians(x));
+                } else { //asin etc
+                    return Math.toDegrees(trigEval(code, x));
+                }
+            }
+        }
+
         switch (code) {
-        case SIN:   return MoreMath.isPiMultiple(x) ? .0 : Math.sin(x);
-        case COS:   return MoreMath.isPiMultiple(x + MoreMath.PI_2) ? .0 : Math.cos(x);
-        case TAN:   return Math.tan(x);
-
-        case ASIN:  return MoreMath.asin(x);
-        case ACOS:  return MoreMath.acos(x);
-        case ATAN:  return MoreMath.atan(x);
-
         case SINH:  return MoreMath.sinh(x);
         case COSH:  return MoreMath.cosh(x);
         case TANH:  return MoreMath.tanh(x);
