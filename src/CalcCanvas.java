@@ -343,29 +343,62 @@ class CalcCanvas extends Canvas implements Runnable {
     }
 
     char formatBuf[] = new char[30];
-    private int formatLines[] = new int[3];
-    String format(double v) {
+    int ePos;
+    private int formatAux(double v) {
         String s = Double.toString(v);
-        int ePos = s.lastIndexOf('E');
-        String tail = null;
-        int tailW = 0;
-        if (ePos != -1) {
-            tail = s.substring(ePos);
-            tailW = font.stringWidth(tail);
-            s = s.substring(0, ePos);
-        }
+        ePos = s.lastIndexOf('E');
         int len = s.length();
-        s.getChars(0, len, formatBuf, 0);
-        if (len > 2 && formatBuf[len-1] == '0' && formatBuf[len-2] == '.') {
-            len -= 2;
+        int exp;
+        if (ePos == -1 || v <= 1 || (exp = Integer.parseInt(s.substring(ePos + 1))) > 10) {
+            s.getChars(0, len, formatBuf, 0);
+            return len;
         }
-        split(font, formatBuf, len, w - tailW, 0, formatLines);
-        len = formatLines[0];
-        if (tail != null) {
-            tail.getChars(0, tail.length(), formatBuf, len);
-            len += tail.length();
+        formatBuf[0] = s.charAt(0);
+        //s[1]=='.'
+        //int p = Math.min(len, 2+exp);
+        len = ePos;
+        ePos = -1;
+        if (exp + 2 < len) {
+            int p = exp + 2;
+            s.getChars(2, p, formatBuf, 1);            
+            formatBuf[p-1] = '.';
+            s.getChars(p, len, formatBuf, p);
+            return len;
+        } else {
+            s.getChars(2, len, formatBuf, 1);
+            for (int i = len - 2; i < exp; ++i) {
+                formatBuf[i] = '0';
+            }
+            return exp+1;
         }
-        return new String(formatBuf, 0, len);
+        //return exp+1; //s.valueOf(formatBuf, 0, exp+1);
+    }
+
+    String format(double v) {
+        int len = formatAux(v);
+        System.out.println("len " + len + "; ePos " + ePos);
+        /*
+        if (font.stringWidth(s) <= w) {
+            return s;
+        }
+        */
+        if (ePos == -1) {
+            ePos = len;
+            /*
+            int n = fitWidth(font, w, formatBuf, 0, len);
+            return String.valueOf(formatBuf, 0, n);
+            */
+        }
+        int baseLen = ePos;
+        if (baseLen >= 2 && formatBuf[baseLen-1] == '0' && formatBuf[baseLen-2] == '.') {
+            baseLen -= 2;
+        }
+
+        int tailW   = font.charsWidth(formatBuf, ePos, len - ePos);
+        System.out.println("foo bar");
+        int n = fitWidth(font, w - tailW, formatBuf, 0, baseLen);
+        System.out.println("n " + n + "; ePos " + ePos + "; len " + len); 
+        return String.valueOf(formatBuf, 0, n) + String.valueOf(formatBuf, ePos, len - ePos);
     }
 
     protected void paint(Graphics g) {
