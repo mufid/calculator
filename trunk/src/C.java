@@ -47,10 +47,16 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     static final int RS_SYMB_START = RS_HIST_START + RS_MAX_HIST;
     static RMS rs;
     static boolean angleInRadians = true;
+    static Config cfg;
 
     public C() {
         rs = new RMS("calc");
-        loadConfig();
+        cfg = new Config(rs, RS_CONFIG);
+        System.out.println("config size " + cfg.size());
+        if (cfg.size() == 0) {
+            cfg.set("angleUnit", "rad");
+        }
+        angleInRadians = cfg.get("angleUnit").equals("rad");
         calcCanvas = new CalcCanvas();
         
         //addCommand(cmdSetup);
@@ -100,6 +106,8 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         } else if (c == List.SELECT_COMMAND) {
             angleInRadians = ((List) d).getSelectedIndex() == 0;
             display.setCurrent(calcCanvas);
+            cfg.set("angleUnit", angleInRadians?"rad":"deg");
+            cfg.save();
         } else { //cmdCancel, cmdOk
             display.setCurrent(calcCanvas);
         }
@@ -113,14 +121,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     protected void pauseApp() {
     }
 
-    private void loadConfig() {
-    }
-
-    private void saveConfig() {
-    }
-
     protected void destroyApp(boolean uncond) {
         calcCanvas.saveOnExit();
-        saveConfig();
     }
 }
