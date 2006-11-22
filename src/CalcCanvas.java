@@ -59,7 +59,7 @@ class CalcCanvas extends Canvas implements Runnable {
 
         history = new History(parser);
 
-        DataInputStream is = History.rs.read(2);
+        DataInputStream is = C.rs.read(2);
         updateFromHistEntry(is == null ? new HistEntry("1+1", 0, false) : new HistEntry(is));
         //System.out.println(pos);
         if (is == null) {
@@ -354,8 +354,6 @@ class CalcCanvas extends Canvas implements Runnable {
             return len;
         }
         formatBuf[0] = s.charAt(0);
-        //s[1]=='.'
-        //int p = Math.min(len, 2+exp);
         len = ePos;
         ePos = -1;
         if (exp + 2 < len) {
@@ -371,23 +369,12 @@ class CalcCanvas extends Canvas implements Runnable {
             }
             return exp+1;
         }
-        //return exp+1; //s.valueOf(formatBuf, 0, exp+1);
     }
 
     String format(double v) {
         int len = formatAux(v);
-        System.out.println("len " + len + "; ePos " + ePos);
-        /*
-        if (font.stringWidth(s) <= w) {
-            return s;
-        }
-        */
         if (ePos == -1) {
             ePos = len;
-            /*
-            int n = fitWidth(font, w, formatBuf, 0, len);
-            return String.valueOf(formatBuf, 0, n);
-            */
         }
         int baseLen = ePos;
         if (baseLen >= 2 && formatBuf[baseLen-1] == '0' && formatBuf[baseLen-2] == '.') {
@@ -395,9 +382,7 @@ class CalcCanvas extends Canvas implements Runnable {
         }
 
         int tailW   = font.charsWidth(formatBuf, ePos, len - ePos);
-        System.out.println("foo bar");
         int n = fitWidth(font, w - tailW, formatBuf, 0, baseLen);
-        System.out.println("n " + n + "; ePos " + ePos + "; len " + len); 
         return String.valueOf(formatBuf, 0, n) + String.valueOf(formatBuf, ePos, len - ePos);
     }
 
@@ -659,7 +644,7 @@ class CalcCanvas extends Canvas implements Runnable {
     void saveOnExit() {
         String str = String.valueOf(line, 0, len);
         HistEntry entry = new HistEntry(str, 0, false);
-        entry.write(history.rs.out);
-        history.rs.write(2);        
+        entry.write(C.rs.out);
+        C.rs.write(2);        
     }
 }

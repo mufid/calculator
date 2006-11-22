@@ -2,16 +2,13 @@ import javax.microedition.midlet.*;
 import javax.microedition.lcdui.*;
 import java.io.IOException;
 
-//#define _STR(x) #x
-//#define STR(x) _STR(x)
-
 public final class C extends MIDlet implements CommandListener, Runnable {
-    //static final String VERSION = STR(_VERSION_);
+    //static C midlet;
+    
     private static final Command 
         //cmdSetup  = new Command("Setup", Command.SCREEN, 1),
         cmdKeyDelete = new Command("Delete", Command.BACK, 1),
-        //cmdClearHistory = new Command("Clear history", Command.SCREEN, 2),
-        //cmdClearDefinitions   = new Command("Clear definitions", Command.SCREEN, 3),
+        cmdAngle = new Command("Angle unit", Command.SCREEN, 2),
         cmdHelp  = new Command("Help",  Command.HELP, 8),
         cmdAbout = new Command("About", Command.HELP, 9),
         cmdExit  = new Command("Exit",  Command.EXIT, 10),
@@ -19,20 +16,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         cmdOk    = new Command("Ok",    Command.OK, 1),
         cmdYes   = new Command("Yes", Command.OK, 1),
         cmdCancel = new Command("Cancel", Command.CANCEL, 2);
-
-    /*
-    Alert confirmClearHistory = 
-        new Alert("Clear history", 
-                  "Do you want to erase the history of past operations? (The user-defined functions are preserved)",
-                  null, AlertType.WARNING);
-    */
-    /*
-    Alert confirmClearDefinitions =
-        new Alert("Clear definitions", 
-                  "Do you want to erase the user-defined functions and constants?",
-                  null, AlertType.WARNING);
-    */
-        
+    
     static Display display;
     CalcCanvas calcCanvas;
     static final String helpStr = 
@@ -54,31 +38,24 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 "'ans' is automatically added in front of an expression that starts with an operator. " +
 "E.g. typing '+2' becomes 'ans+2'.";
 
+    List angleList = new List("Angle Unit", List.IMPLICIT, new String[]{"radians", "degrees"}, null);
     Form aboutForm = new Form("About"), helpForm = new Form("Help");
     Thread thread;
 
-    public C() {
-        System.out.println(URL);
-        //_URL_;
-        //System.out.println(STR(http://foo.bar/));
-        calcCanvas = new CalcCanvas();
+    static final int RS_CONFIG = 1;
+    static final int RS_HIST_START = 3, RS_MAX_HIST = 12; //32;
+    static final int RS_SYMB_START = RS_HIST_START + RS_MAX_HIST;
+    static RMS rs;
+    static boolean angleInRadians = true;
 
-        /*
-        confirmClearHistory.addCommand(cmdYes);
-        confirmClearHistory.addCommand(cmdCancel);
-        confirmClearHistory.setCommandListener(this);
-        */
-        
-        /*
-        confirmClearDefinitions.addCommand(cmdYes);
-        confirmClearDefinitions.addCommand(cmdCancel);
-        confirmClearDefinitions.setCommandListener(this);     
-        */
+    public C() {
+        rs = new RMS("calc");
+        loadConfig();
+        calcCanvas = new CalcCanvas();
         
         //addCommand(cmdSetup);
         calcCanvas.addCommand(cmdKeyDelete);
-        //calcCanvas.addCommand(cmdClearHistory);
-        //calcCanvas.addCommand(cmdClearDefinitions);
+        calcCanvas.addCommand(cmdAngle);
         calcCanvas.addCommand(cmdHelp);
         calcCanvas.addCommand(cmdAbout);
         calcCanvas.addCommand(cmdExit);
@@ -87,7 +64,10 @@ public final class C extends MIDlet implements CommandListener, Runnable {
             aboutForm.append(Image.createImage("/a"));
         } catch (IOException e) {
         }
-        //static final String aboutStr = NAME + " v"+VERSION + "\n\u00a9 2006 Mihai Preda\n" + URL;
+        
+        //angleList.setSelectCommand(List.SELECT_COMMAND);
+        angleList.setCommandListener(this);
+
         aboutForm.append(NAME + " " + VERSION + "\n");
         aboutForm.append("\u00a9 Mihai Preda\n" + URL);
         aboutForm.addCommand(cmdOk);
@@ -106,36 +86,20 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     }
 
     public void commandAction(Command c, Displayable d) {
-        //if (c == cmdSetup) {}
-        /*
-        else if (c == cmdClearHistory) {
-            display.setCurrent(confirmClearHistory);
-        } else if (c == cmdClearDefinitions) {
-            display.setCurrent(confirmClearDefinitions);
-        } 
-        */
-
-        /*
-        else if (c == cmdYes) {
-            if (d == confirmClearHistory) {
-                calcCanvas.clearHistory();
-            } else if (d == confirmClearDefinitions) {
-            calcCanvas.clearDefinitions();
-            }
-            
-            display.setCurrent(calcCanvas);
-        }
-        */
-
-
         if (c == cmdKeyDelete) {
             calcCanvas.keyPressed(CalcCanvas.KEY_CLEAR);
+        } else if (c == cmdAngle) {
+            angleList.setSelectedIndex(angleInRadians?0:1, true);
+            display.setCurrent(angleList);
         } else if (c == cmdHelp) {
             display.setCurrent(helpForm);
         } else if (c == cmdAbout) {
             display.setCurrent(aboutForm);
         } else if (c == cmdExit) {
             notifyDestroyed();
+        } else if (c == List.SELECT_COMMAND) {
+            angleInRadians = ((List) d).getSelectedIndex() == 0;
+            display.setCurrent(calcCanvas);
         } else { //cmdCancel, cmdOk
             display.setCurrent(calcCanvas);
         }
@@ -149,7 +113,14 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     protected void pauseApp() {
     }
 
+    private void loadConfig() {
+    }
+
+    private void saveConfig() {
+    }
+
     protected void destroyApp(boolean uncond) {
         calcCanvas.saveOnExit();
+        saveConfig();
     }
 }

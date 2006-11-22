@@ -47,8 +47,7 @@ class HistEntry {
 }
 
 class History {
-    static final int RS_START = 3, MAX_HIST = 12; //32;
-    static RMS rs = new RMS("calc");
+    //static RMS rs = C.rs;
     static double ans = 0;
 
     private Expr parser;
@@ -62,10 +61,10 @@ class History {
         parser = iniParser;
         historyPos = 0;
         
-        Vector v = new Vector(MAX_HIST);
+        Vector v = new Vector(C.RS_MAX_HIST);
         DataInputStream is;
-        int recId = RS_START, seq = 0;
-        while (recId < MAX_HIST+RS_START && (is=rs.read(recId)) != null) {
+        int recId = C.RS_HIST_START, seq = 0;
+        while (recId < C.RS_MAX_HIST+C.RS_HIST_START && (is=C.rs.read(recId)) != null) {
             try {
                 seq = is.readInt();
             } catch (IOException e) {
@@ -137,8 +136,8 @@ class History {
         historyPos = 0;
         posMaxSeq = -1;
         maxSeq = 0;
-        for (int i = RS_START; i < MAX_HIST+RS_START; ++i) {
-            rs.write(i);
+        for (int i = RS_HIST_START; i < C.RS_MAX_HIST+RS_HIST_START; ++i) {
+            C.rs.write(i);
         }
     }
     */
@@ -158,19 +157,19 @@ class History {
         if (str.length() > 0) {
             HistEntry newEntry = new HistEntry(str, result.value, hasValue);
             try {
-                rs.out.writeInt(++maxSeq);
+                C.rs.out.writeInt(++maxSeq);
             } catch (IOException e) {
             }
-            newEntry.write(rs.out);
+            newEntry.write(C.rs.out);
             ++posMaxSeq;
-            if (posMaxSeq >= MAX_HIST) {
+            if (posMaxSeq >= C.RS_MAX_HIST) {
                 posMaxSeq = 0;
             }
-            int recId = posMaxSeq + RS_START;
-            rs.write(recId);
+            int recId = posMaxSeq + C.RS_HIST_START;
+            C.rs.write(recId);
             history.insertElementAt(newEntry, 1);
-            if (history.size() > MAX_HIST+1) {
-                history.setSize(MAX_HIST+1);
+            if (history.size() > C.RS_MAX_HIST+1) {
+                history.setSize(C.RS_MAX_HIST+1);
             }
         }
         historyPos = 0;
