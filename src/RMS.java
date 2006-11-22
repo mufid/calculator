@@ -23,6 +23,7 @@ class RMS {
     
     DataInputStream read(int recId) {
         try {
+            insureRecord(recId);
             int recSize = rs.getRecord(recId, buf, 0);
             if (recSize > 0) {
                 return new DataInputStream(new ByteArrayInputStream(buf, 0, recSize));
@@ -35,11 +36,15 @@ class RMS {
         return null;
     }
 
+    private void insureRecord(int recId) throws RecordStoreException {
+        for (int i = rs.getNextRecordID(); i <= recId; ++i) {
+            rs.addRecord(null, 0, 0);
+        }
+    }
+
     void write(int recId) {
         try {
-            for (int i = rs.getNextRecordID(); i <= recId; ++i) {
-                rs.addRecord(null, 0, 0);
-            }
+            insureRecord(recId);
             int size = bos.size();
             rs.setRecord(recId, size==0 ? null : bos.toByteArray(), 0, size);
         } catch (Exception e) {
