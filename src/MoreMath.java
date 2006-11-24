@@ -463,7 +463,7 @@ class MoreMath {
     };
 
     static final double factorial(double x) {
-        if (x <= -1) {
+        if (x < 0) { // x <= -1 ?
             return Double.NaN;
         }
         if (x <= 170) {
@@ -486,7 +486,8 @@ class MoreMath {
     }
 
     static final double comb(double n, double k) {
-        //if (k > n) { return Double.NaN; }
+        if (n < 0 || k < 0) { return Double.NaN; }
+        if (n < k) { return 0; }
         if (Math.floor(n) == n && Math.floor(k) == k) {
             k = Math.min(k, n-k);
             if (n <= 170 && 12 < k && k <= 170) {
@@ -504,6 +505,8 @@ class MoreMath {
     }
 
     static final double perm(double n, double k) {
+        if (n < 0 || k < 0) { return Double.NaN; }
+        if (n < k) { return 0; }
         if (Math.floor(n) == n && Math.floor(k) == k) {
             if (n <= 170 && 10 < k && k <= 170) {
                 return factorial(n)/factorial(n-k);
