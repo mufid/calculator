@@ -6,16 +6,6 @@ import java.io.*;
 
 class CalcCanvas extends Canvas /* implements Runnable */ {
     static final int KEY_CLEAR=-8, KEY_END=-11, KEY_POWER=-12;
-    static final Font 
-        normalFont = Font.getFont(0, 0, Font.SIZE_MEDIUM), 
-        largeFont  = Font.getFont(0, 0, Font.SIZE_LARGE), 
-        largeBold  = Font.getFont(0, Font.STYLE_BOLD, Font.SIZE_LARGE);
-    static final int normalHeight, largeHeight;
-    static {
-        normalHeight = normalFont.getHeight();
-        largeHeight  = largeFont.getHeight();
-    }
-
     private static final String arityParens[] = {"", "()", "(,)", "(,,)"};
     private static final String params[] = {"(x)", "(x,y)", "(x,y,z)"};
 
@@ -29,10 +19,9 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
 
 
     Result result = new Result();
-    //boolean needUpdateResult = true;
 
-    Font font = largeFont;
-    int lineHeight = font.getHeight() + 1;
+    Font font, historyFont;
+    int lineHeight;
 
     char line[] = new char[256];
     int len = 0, pos = -1;
@@ -48,7 +37,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     static final int borderCol[] = { 0xffffff, 0x0,      0xaaaaee};
     
     int X[] = new int[N_ZONES], Y[] = new int[N_ZONES];
-    //int w;
+    int clientW, historyH;
 
 
     int height[] = new int[N_ZONES];
@@ -57,9 +46,14 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
 
 
     CalcCanvas() {
-        if (getHeight() <= 128) {
+        boolean isSmallScreen = getHeight() <= 128;
+        if (isSmallScreen) {
             setFullScreenMode(true);
         }
+        font        = Font.getFont(0, 0, isSmallScreen ? Font.SIZE_MEDIUM : Font.SIZE_LARGE);
+        historyFont = Font.getFont(0, 0, isSmallScreen ? Font.SIZE_SMALL  : Font.SIZE_MEDIUM);
+        lineHeight  = font.getHeight(); //+1
+        
         screenW = getWidth();
         screenH = getHeight();
 
@@ -78,7 +72,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         
         KeyState.init(screenW, screenH);
 
-        maxEditLines = 2; //(h - KeyState.h)/lineHeight;
+        maxEditLines = (screenH - KeyState.h) / lineHeight;
         System.out.println("max edit lines " + maxEditLines);
         editLines = new int[maxEditLines + 1];
         
@@ -94,7 +88,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             g.fillRect(0, 0, screenW, height[i]);
             g.setFont(font);
         }
-        gg[HISTORY].setFont(normalFont);
+        gg[HISTORY].setFont(historyFont);
 
         cursorX = 20;
         cursorY = 10;
@@ -259,11 +253,12 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         g.setColor(bgCol[HISTORY]);
         g.fillRect(0, 0, screenW, height[HISTORY]);
         g.setColor(fgCol[HISTORY]);
-        
-        int y = normalHeight / 2;
+        int histLineHeight = historyFont.getHeight();
+
+        int y = histLineHeight / 2;
         int histSize = history.size();
-        int yLimit = height[HISTORY] - normalHeight;
-        for (int p = 1; p < histSize && y <= yLimit; ++p, y+= normalHeight/2) {
+        int yLimit = height[HISTORY] - histLineHeight;
+        for (int p = 1; p < histSize && y <= yLimit; ++p, y+= histLineHeight/2) {
             HistEntry entry = history.get(p);            
             String base = entry.base;
             String result = entry.hasResult ? format(entry.result) : "";
@@ -276,8 +271,8 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 result.getChars(0, result.length(), histBuf, histBufLen);
                 histBufLen += result.length();
             }
-            int nLines = split(normalFont, histBuf, histBufLen, screenW, 0, histLines);
-            for (int i = 0, start = 0; i < nLines && y <= yLimit; ++i, y+=normalHeight) {
+            int nLines = split(historyFont, histBuf, histBufLen, screenW, 0, histLines);
+            for (int i = 0, start = 0; i < nLines && y <= yLimit; ++i, y+= histLineHeight) {
                 g.drawChars(histBuf, start, histLines[i]-start, 0, y, 0);
                 start = histLines[i];
             }
