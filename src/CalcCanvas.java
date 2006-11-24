@@ -61,7 +61,6 @@ class CalcCanvas extends Canvas implements Runnable {
 
         DataInputStream is = C.rs.read(2);
         updateFromHistEntry(is == null ? new HistEntry("1+1", 0, false) : new HistEntry(is));
-        //System.out.println(pos);
         if (is == null) {
             //first run, init history  
             history.enter("0.5!*2)^2");
@@ -116,11 +115,6 @@ class CalcCanvas extends Canvas implements Runnable {
         if (needUpdateResult) {
             needUpdateResult = false;
             
-            /*
-            try {
-                Thread.sleep(400);
-            } catch (InterruptedException e) {}
-            */
             Graphics rg = gg[RESULT];
             rg.setColor(bgCol[RESULT]);
             rg.fillRect(0, 0, w, height[RESULT]);
@@ -142,22 +136,6 @@ class CalcCanvas extends Canvas implements Runnable {
             repaint(0, ry, w, rh);
         }
     }
-
-    /*
-    void clearHistory() {
-        history.clear();
-        updateHistory();
-        repaint();
-    }
-    */
-    
-    /*
-    void clearDefinitions() {
-        parser.symbols.persistClear();        
-        needUpdateResult = true;
-        //todo: repaint edit
-    }
-    */
     
     int fitWidth(Font font, int targetWidth, char buf[], int start, int end) {
         int mW = font.charWidth('m');
@@ -171,59 +149,13 @@ class CalcCanvas extends Canvas implements Runnable {
         }
         return start;
     }
-    /*
-        int baseW;
-        if (end <= start || targetWidth < (baseW = font.charWidth(buf[start]))) {
-            return start;
-        }
-        ++start;
-        targetWidth -= baseW;
-        int n = Math.min(targetWidth / baseW, end - start);
-        int width = font.charsWidth(buf, start, n);
-        baseW = width / n;
-        if (width <= targetWidth) {
-            if (n == end - start) { 
-                return end; 
-            }
-            start += n;
-            targetWidth -= width;
-            n = Math.min(targetWidth * n / width, end - start);
-        } else {
-            end = start + n - 1;
-            n = end - (width - targetWidth)/baseW - start;
-        }
-    }
-    */
 
     int split(Font font, char buf[], int len, int w, 
               int changeLine, int lines[]) {
-        //int width;
-        //int mW = font.charWidth('m');
-        //int i, n;
-        //int sizeLeft = len - end;
-        //int cw;
         int end = START_LINE(lines, changeLine);
         int i;
         for (i = changeLine; i < lines.length && end < len; ++i) {
-            lines[i] = end = fitWidth(font, w, buf, end, len);
-            
-            /*
-            int left = w;
-            while ((n = Math.min(left/mW, sizeLeft)) > 0) {
-                //System.out.println("n " + n + "; left " + left);
-                left-= font.charsWidth(buf, end, n);
-                end += n;
-                sizeLeft -= n;
-            }
-            while (sizeLeft > 0 && left > (cw = font.charWidth(buf[end]))) {
-                ++end;
-                --sizeLeft;
-                left-= cw;
-            }
-            lines[i] = end;
-            */
-            //System.out.println("line " + i + "; end " + end + "; len " + len);
-            //if (end == len) { break; }
+            lines[i] = end = fitWidth(font, w, buf, end, len);            
         }
         if (i == 0) {
             lines[0] = 0;
