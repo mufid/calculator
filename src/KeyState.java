@@ -28,8 +28,9 @@ final class KeyState {
 
     static void init(int sw, int sh) {
         w = sw;
-        int available = sh - CalcCanvas.largeHeight*5;
-        int size = CalcCanvas.normalHeight*5 < available ? Font.SIZE_MEDIUM : Font.SIZE_SMALL;
+        //int available = sh - CalcCanvas.largeHeight*5;
+        //int size = CalcCanvas.normalHeight*5 < available ? Font.SIZE_MEDIUM : Font.SIZE_SMALL;
+        int size = sh <= 160 ? Font.SIZE_MEDIUM : Font.SIZE_SMALL;
         font = Font.getFont(0, 0, size);
         fontHeight = font.getHeight();
 
