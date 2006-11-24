@@ -8,15 +8,11 @@ final class KeyState {
     static KeyState rootOp, trigs, hyps, logs, ints, vars, funcs, rootExp;
     static KeyState keypad, lastPainted;
 
-    private static final int
-        BACKGR  = 0xffff00, //0xe0e0e0,
-        BACKGR2 = 0x40ffff,
-        FOREGR  = 0x000000,
-        FOREGR2 = 0x0000ff,
-        LIGHTER = 0xffffff,
-        DARKER  = 0x808000,
-        DARKER2 = 0x208080;
-
+    private static final int 
+        BACKGR[] = {CalcCanvas.BACKGR, 0xffff44, 0x44ffff},
+        DARKER[] = {0x444444,  0x444400, 0x004444};
+    private static final int FOREGR  = 0x000000, LIGHTER = 0xffffff;
+    
     /*
     static String logicOp[] = {
         "?:",  "=",  "!=", 
@@ -30,7 +26,8 @@ final class KeyState {
         w = sw;
         //int available = sh - CalcCanvas.largeHeight*5;
         //int size = CalcCanvas.normalHeight*5 < available ? Font.SIZE_MEDIUM : Font.SIZE_SMALL;
-        int size = sh <= 160 ? Font.SIZE_MEDIUM : Font.SIZE_SMALL;
+        int size = sh <= 160 ? Font.SIZE_SMALL : Font.SIZE_MEDIUM;
+        //System.out.println("font size " + size);
         font = Font.getFont(0, 0, size);
         fontHeight = font.getHeight();
 
@@ -40,7 +37,7 @@ final class KeyState {
         cellHeight = fontHeight + 4;
         singleSpace = (stepW - cellWidth)/2;
 
-        h = cellHeight * 4;
+        h = cellHeight * 4 + 1;
         yPos = sh - h;
         
         trigs = new KeyState(new Object[] {
@@ -150,29 +147,40 @@ final class KeyState {
             img = Image.createImage(w, h);
             g = img.getGraphics();
             g.setFont(font);
-            g.setColor(BACKGR);
-            g.fillRect(0, 0, w, h);
+            g.setColor(BACKGR[0]);
+            //g.drawRect(0, 0, space-1, 0);
+            //g.drawRect(w-space, 0, space-1, 0);
+            g.drawLine(0, 0, w, 0);
+            g.fillRect(0, 1, w, h-1);
+            g.setColor(CalcCanvas.borderCol[CalcCanvas.HISTORY]);
+            int space = CalcCanvas.spaceSide;
+            g.drawLine(space, 0, w-(space<<1), 0);
             String txt = null;
+            Object o;
+            int colIndex;
             for (int x=singleSpace, col=0; col < 3; ++col, x+=stepW) {
-                for (int pos=col, y=2; y < h; y += cellHeight, pos += 3) {
+                for (int pos=col, y=3; y < h; y += cellHeight, pos += 3) {
+                    //txt = null;
+                    colIndex = 0;
+                    if ((o = keys[pos]) != null) {
+                        if (o instanceof String) {
+                            txt = (String)o;
+                            colIndex = 1;
+                        } else {
+                            txt = (String) ((KeyState)o).keys[pos];
+                            colIndex = 2;
+                        }
+                    }
+
                     int bottom = y + cellHeight - 4;
                     g.setColor(LIGHTER);
                     g.drawLine(x, y, x+cellWidth-1, y);
                     g.drawLine(x, y, x, bottom);
-                    g.setColor(DARKER);
-                    Object o = keys[pos];
-                    if (o != null) {
-                        if (o instanceof String) {
-                            txt = (String)o;
-                        } else {
-                            txt = (String) ((KeyState)o).keys[pos];
-                            g.setColor(BACKGR2);
-                            g.fillRect(x+1, y+1, cellWidth-2, bottom-y-1);
-                            g.setColor(DARKER2);
-                        }
-                    }
+                    g.setColor(DARKER[colIndex]);
                     g.drawLine(x+cellWidth-1, y + 1, x+cellWidth-1, bottom);
                     g.drawLine(x+1, bottom, x+cellWidth-1, bottom);
+                    g.setColor(BACKGR[colIndex]);
+                    g.fillRect(x+1, y+1, cellWidth-2, bottom-y-1);
                     if (o != null) {
                         g.setColor(FOREGR);
                         g.drawString(txt, x+cellWidth/2, y+1, Graphics.HCENTER|Graphics.TOP);

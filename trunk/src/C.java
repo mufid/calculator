@@ -13,7 +13,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         cmdAbout = new Command("About", Command.HELP, 9),
         cmdExit  = new Command("Exit",  Command.EXIT, 10),
 
-        cmdOk    = new Command("Ok",    Command.OK, 1),
+        cmdOk    = new Command("Ok",    Command.BACK, 1),
         cmdYes   = new Command("Yes", Command.OK, 1),
         cmdCancel = new Command("Cancel", Command.CANCEL, 2);
     
