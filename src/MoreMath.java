@@ -488,10 +488,15 @@ class MoreMath {
     static final double comb(double n, double k) {
         //if (k > n) { return Double.NaN; }
         if (Math.floor(n) == n && Math.floor(k) == k) {
-            if (n <= 170 && k <= 170) {
+            k = Math.min(k, n-k);
+            if (n <= 170 && 12 < k && k <= 170) {
                 return factorial(n)/factorial(k)/factorial(n-k);
             } else {
-                return Math.floor(exp(lgamma(n) - lgamma(k) - lgamma(n-k)) + .5);
+                double r = 1, diff = n-k;
+                for (double i = k; i > .5 && r < Double.POSITIVE_INFINITY; --i) {
+                    r *= (diff+i)/i;
+                }
+                return r;
             }
         } else {
             return exp(lgamma(n) - lgamma(k) - lgamma(n-k));
@@ -500,10 +505,14 @@ class MoreMath {
 
     static final double perm(double n, double k) {
         if (Math.floor(n) == n && Math.floor(k) == k) {
-            if (n <= 170 && k <= 170) {
+            if (n <= 170 && 10 < k && k <= 170) {
                 return factorial(n)/factorial(n-k);
             } else {
-                return Math.floor(exp(lgamma(n) - lgamma(n-k)) + .5);
+                double r = 1, limit = n-k+.5;
+                for (double i = n; i > limit && r < Double.POSITIVE_INFINITY; --i) {
+                    r *= i;
+                }
+                return r;
             }
         } else {
             return exp(lgamma(n) - lgamma(n-k));
