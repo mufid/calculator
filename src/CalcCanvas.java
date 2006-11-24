@@ -22,7 +22,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     Expr parser = new Expr();
     History history; 
 
-    int w, h;
+    int screenW, screenH;
 
     int cursorRow, cursorCol;
     int cursorX, cursorY, cursorW = 1, cursorH;
@@ -43,19 +43,25 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     int editH;
 
     static final int RESULT = 0, EDIT = 1, HISTORY = 2, N_ZONES = 3;
-    static final int bgCol[] = { 0x0,      0xffffff, 0xe0e0ff};
-    static final int fgCol[] = { 0xffffff, 0x0     , 0x0};
+    static final int bgCol[]     = { 0x0,      0xffffff, 0xddddff};
+    static final int fgCol[]     = { 0xffffff, 0x0     , 0x0};
+    static final int borderCol[] = { 0xffffff, 0x0,      0xaaaaee};
+    
+    int X[] = new int[N_ZONES], Y[] = new int[N_ZONES];
+    //int w;
+
 
     int height[] = new int[N_ZONES];
     Image img[] = new Image[N_ZONES];
     Graphics gg[] = new Graphics[N_ZONES];
 
+
     CalcCanvas() {
         if (getHeight() <= 128) {
             setFullScreenMode(true);
         }
-        w = getWidth();
-        h = getHeight();
+        screenW = getWidth();
+        screenH = getHeight();
 
         history = new History(parser);
 
@@ -70,7 +76,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             //history.enter("e^ln(2");
         }
         
-        KeyState.init(w, h);
+        KeyState.init(screenW, screenH);
 
         maxEditLines = 2; //(h - KeyState.h)/lineHeight;
         System.out.println("max edit lines " + maxEditLines);
@@ -78,14 +84,14 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         
         height[RESULT]  = lineHeight + 2;
         height[EDIT]    = maxEditLines * lineHeight + 2;
-        height[HISTORY] = h - height[RESULT] - lineHeight - 2;
+        height[HISTORY] = screenH - height[RESULT] - lineHeight - 2;
 
         for (int i = 0; i < N_ZONES; ++i) {
-            img[i] = Image.createImage(w, height[i]);
+            img[i] = Image.createImage(screenW, height[i]);
             Graphics g = img[i].getGraphics();
             gg[i] = g;
             g.setColor(bgCol[i]);
-            g.fillRect(0, 0, w, height[i]);
+            g.fillRect(0, 0, screenW, height[i]);
             g.setFont(font);
         }
         gg[HISTORY].setFont(normalFont);
@@ -112,7 +118,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     private void updateResult() {
         Graphics rg = gg[RESULT];
         rg.setColor(bgCol[RESULT]);
-        rg.fillRect(0, 0, w, height[RESULT]);
+        rg.fillRect(0, 0, screenW, height[RESULT]);
         
         if (parser.parse(String.valueOf(line, 0, len), result)) {
             String strResult = (result.arity > 0) ? 
@@ -126,9 +132,9 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         }
         int resultY = nEditLines * lineHeight + 2;
         int ry = resultY+2;
-        int avail = h - ry - KeyState.getH();
+        int avail = screenH - ry - KeyState.getH();
         int rh = Math.min(height[RESULT]-3, avail);
-        repaint(0, ry, w, rh);
+        repaint(0, ry, screenW, rh);
     }
 
     /*
@@ -177,7 +183,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     void editChanged(int changePos) {
         int changeLine = posToLine(editLines, changePos);
         int oldNLines = nEditLines;
-        nEditLines = split(font, line, len, w, changeLine, editLines);
+        nEditLines = split(font, line, len, screenW, changeLine, editLines);
         //System.out.println("pos " + pos + " oldNLines " + oldNLines + " nEditLines " + nEditLines);
         if (nEditLines > maxEditLines) {
             pos = changePos;
@@ -189,8 +195,8 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
 
         Graphics g = gg[EDIT];
         g.setColor(bgCol[EDIT]);
-        g.fillRect(0, 2+changeLine*lineHeight, w, (nEditLines - changeLine)*lineHeight);
-        repaint(0, 2+changeLine*lineHeight, w, (nEditLines - changeLine)*lineHeight);
+        g.fillRect(0, 2+changeLine*lineHeight, screenW, (nEditLines - changeLine)*lineHeight);
+        repaint(0, 2+changeLine*lineHeight, screenW, (nEditLines - changeLine)*lineHeight);
         g.setColor(fgCol[EDIT]);
         int start = changeLine==0 ? 0 : editLines[changeLine-1];
         for (int i = changeLine, y = 2+changeLine*lineHeight,
@@ -251,7 +257,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     void updateHistory() {
         Graphics g = gg[HISTORY];
         g.setColor(bgCol[HISTORY]);
-        g.fillRect(0, 0, w, height[HISTORY]);
+        g.fillRect(0, 0, screenW, height[HISTORY]);
         g.setColor(fgCol[HISTORY]);
         
         int y = normalHeight / 2;
@@ -270,7 +276,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 result.getChars(0, result.length(), histBuf, histBufLen);
                 histBufLen += result.length();
             }
-            int nLines = split(normalFont, histBuf, histBufLen, w, 0, histLines);
+            int nLines = split(normalFont, histBuf, histBufLen, screenW, 0, histLines);
             for (int i = 0, start = 0; i < nLines && y <= yLimit; ++i, y+=normalHeight) {
                 g.drawChars(histBuf, start, histLines[i]-start, 0, y, 0);
                 start = histLines[i];
@@ -318,49 +324,36 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         }
 
         int tailW   = font.charsWidth(formatBuf, ePos, len - ePos);
-        int n = fitWidth(font, w - tailW, formatBuf, 0, baseLen);
+        int n = fitWidth(font, screenW - tailW, formatBuf, 0, baseLen);
         return String.valueOf(formatBuf, 0, n) + String.valueOf(formatBuf, ePos, len - ePos);
     }
 
     protected void paint(Graphics g) {
-        //System.out.println("paint");
+        
+
         int editH = nEditLines * lineHeight + 2;
         int keypadH = KeyState.getH();
         KeyState.paint(g);
         //System.out.println("historyH "+historyH+" keypadH "+keypadH+" editH "+editH+" w "+w+" resultY "+resultY);
         //System.out.println("pos " + pos + "; nLines " + nEditLines + "; cX " + cursorX + "; cY " + cursorY);
-        //System.out.println("a");
-        g.drawRegion(img[EDIT], 0, 0, w, editH, 0,
+        g.drawRegion(img[EDIT], 0, 0, screenW, editH, 0,
                      0, 0, 0);
-        int histAvail = h-editH-height[RESULT]-keypadH;
+        int histAvail = screenH-editH-height[RESULT]-keypadH;
         if (histAvail > 0) {
-            g.drawRegion(img[HISTORY], 0, 0, w, histAvail, 0,
+            g.drawRegion(img[HISTORY], 0, 0, screenW, histAvail, 0,
                          0, editH+height[RESULT], 0);
         }
-        //System.out.println("b");
         if (drawCursor) {
-            //System.out.println("cursor on");
             g.setColor(0);
             g.fillRect(cursorX, cursorY, cursorW, cursorH);
         }
-        //System.out.println("c");
-        int resultAvail = h - editH - keypadH;
+        int resultAvail = screenH - editH - keypadH;
         if (resultAvail < height[RESULT]) {
-            g.drawRegion(img[RESULT], 0, 0, w, resultAvail, 0,
+            g.drawRegion(img[RESULT], 0, 0, screenW, resultAvail, 0,
                          0, editH, 0);
         } else {
             g.drawImage(img[RESULT], 0, editH, 0);
         }
-        /*
-        try {
-            Thread.sleep(300);
-        } catch (InterruptedException e) {}
-        */
-        /*
-        if (needUpdateResult) {
-            C.display.callSerially(this);
-        }
-        */
     }
     
     int prevFlexPoint(int pos) {
