@@ -27,27 +27,21 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     int len = 0, pos = -1;
     int lastInsertLen = 0;
     int editLines[];
-    int nEditLines;
+    int nEditLines = 0;
     int maxEditLines;
     int editH;
 
     static final int RESULT = 0, EDIT = 1, HISTORY = 2, N_ZONES = 3;
-    static final int bgCol[]     = { 0x0,      0xffffff, 0xddddff};
+    static final int bgCol[]     = { 0x0,      0xffffff, 0xccccff};
     static final int fgCol[]     = { 0xffffff, 0x0     , 0x0};
     static final int borderCol[] = { 0xffffff, 0x0,      0x0000ff};
-
+    static final int BACKGR = 0xa0a0a0;
     static final int spaceSide = 1, spaceTop = 1, spaceBot = 1, 
-        spaceEdit = 2, spaceHist = 4;
+        spaceEdit = 2, spaceHist = 2;
     
     int Y[] = new int[N_ZONES];
     static final int clientX = spaceSide + 2;
     static int clientW, historyH;
-
-    /*
-    int height[] = new int[N_ZONES];
-    Image img[] = new Image[N_ZONES];
-    Graphics gg[] = new Graphics[N_ZONES];
-    */
 
     Image img;
     Graphics gg;
@@ -75,7 +69,6 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         System.out.println("max edit lines " + maxEditLines);
         editLines = new int[maxEditLines + 1];
         clientW = screenW - 2*clientX;
-        initFrame(nEditLines);
 
         history = new History(parser);
         DataInputStream is = C.rs.read(2);
@@ -86,29 +79,14 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             history.enter("sin(pi/2)");
         }
         
-        /*
-        height[RESULT]  = lineHeight + 2;
-        height[EDIT]    = maxEditLines * lineHeight + 2;
-        height[HISTORY] = screenH - height[RESULT] - lineHeight - 2;
-
-        for (int i = 0; i < N_ZONES; ++i) {
-            img[i] = Image.createImage(screenW, height[i]);
-            Graphics g = img[i].getGraphics();
-            gg[i] = g;
-            g.setColor(bgCol[i]);
-            g.fillRect(0, 0, screenW, height[i]);
-            g.setFont(font);
-        }
-        gg[HISTORY].setFont(historyFont);
-        */
-
         cursorX = 20;
         cursorY = 10;
         cursorH = lineHeight;
 
+        //initFrame(nEditLines);
         doChanged(-1);
-        updateHistory();
-        //repaint();
+        //updateHistory();
+        repaint();
     }
 
     void threadRun() {
@@ -140,12 +118,12 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         }
 
         //gg.setColor(0x808080);
-        gg.setColor(0xff0000);
+        gg.setColor(BACKGR);
         gg.drawRect(0, 0, screenW-1, screenH-1);
         gg.fillRect(1, Y[EDIT] - 2 - spaceEdit, screenW-2, spaceEdit);
         gg.fillRect(1, Y[HISTORY] - 2 - spaceHist, screenW-2, spaceHist);
 
-        repaint();
+        //repaint();
     }
 
     private void updateResult() {
@@ -157,32 +135,16 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             String strResult = (result.arity > 0) ? 
                 result.name + params[result.arity-1] : format(result.value);
             gg.setColor(fgCol[RESULT]);
-            gg.drawString(strResult, clientX, Y[RESULT], 0);
+            //gg.drawString(strResult, clientX, Y[RESULT], 0);
+            gg.drawString(strResult, clientX + clientW, Y[RESULT], Graphics.TOP|Graphics.RIGHT);
         } else {
             if (result.errorPos < len) {
                 markError(result.errorPos);
             }
         }
         repaint(clientX, Y[RESULT], clientW, lineHeight);
-        /*
-        int resultY = nEditLines * lineHeight + 2;
-        int ry = resultY+2;
-        int avail = screenH - ry - KeyState.getH();
-        int rh = Math.min(height[RESULT]-3, avail);
-        repaint(0, ry, screenW, rh);
-        */
     }
 
-    /*
-    public void run() {
-        System.out.println("serially");
-        if (needUpdateResult) {
-            needUpdateResult = false;
-            updateResult();
-        }
-    }
-    */
-    
     int fitWidth(Font font, int targetWidth, char buf[], int start, int end) {
         int mW = font.charWidth('m');
         int n;
@@ -222,6 +184,9 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         nEditLines = split(font, line, len, clientW, changeLine, editLines);
         if (oldNLines != nEditLines) {
             initFrame(nEditLines);
+            updateHistory();
+            int y = Y[EDIT]-2-spaceEdit;
+            repaint(spaceSide, y, screenW-(spaceSide<<1), Y[HISTORY]-y);
         }
         //System.out.println("pos " + pos + " oldNLines " + oldNLines + " nEditLines " + nEditLines);
         if (nEditLines > maxEditLines) {
@@ -314,13 +279,14 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 result.getChars(0, result.length(), histBuf, histBufLen);
                 histBufLen += result.length();
             }
-            int nLines = split(historyFont, histBuf, histBufLen, screenW, 0, histLines);
+            int nLines = split(historyFont, histBuf, histBufLen, clientW, 0, histLines);
             for (int i = 0, start = 0; i < nLines && y <= yLimit; ++i, y+= histLineHeight) {
                 gg.drawChars(histBuf, start, histLines[i]-start, clientX, y, 0);
                 start = histLines[i];
             }
         }
         gg.setFont(font);
+        repaint(clientX, Y[HISTORY], clientW, historyH);
     }
 
     char formatBuf[] = new char[30];
@@ -368,12 +334,18 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     }
 
     protected void paint(Graphics g) {
-        g.drawImage(img, 0, 0, 0);
+        int keypadH = KeyState.getH();
+        if (keypadH == 0) {
+            g.drawImage(img, 0, 0, 0);
+        } else {
+            g.drawRegion(img, 0, 0, screenW, screenH - keypadH, 0,
+                         0, 0, 0);
+        }
         if (drawCursor) {
             g.setColor(0);
             g.fillRect(cursorX, cursorY, cursorW, cursorH);
         }
-
+        KeyState.paint(g);
         /*
         int editH = nEditLines * lineHeight + 2;
         int keypadH = KeyState.getH();
@@ -473,11 +445,10 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         editChanged(changePos);
         updateCursor();
         updateResult();
-        //needUpdateResult = true;
     }
 
     protected void keyPressed(int key) {
-        System.out.println("key");
+        //System.out.println("key");
         int oldPos = pos;
         int keyPos = getKeyPos(key);
         lastInsertLen = 0;
@@ -579,7 +550,6 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                     updateFromHistEntry(history.getCurrent());
                     doChanged(-1);
                     updateHistory();
-                    repaint();
                     break;
                 }
             } else { //if (key == KEY_CLEAR || key == KEY_END || key == KEY_POWER) { //delete
