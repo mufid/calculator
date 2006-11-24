@@ -4,7 +4,7 @@ import javax.microedition.lcdui.*;
 import java.util.*;
 import java.io.*;
 
-class CalcCanvas extends Canvas implements Runnable {
+class CalcCanvas extends Canvas /* implements Runnable */ {
     static final int KEY_CLEAR=-8, KEY_END=-11, KEY_POWER=-12;
     static final Font 
         normalFont = Font.getFont(0, 0, Font.SIZE_MEDIUM), 
@@ -29,7 +29,7 @@ class CalcCanvas extends Canvas implements Runnable {
 
 
     Result result = new Result();
-    boolean needUpdateResult = true;
+    //boolean needUpdateResult = true;
 
     Font font = largeFont;
     int lineHeight = font.getHeight() + 1;
@@ -94,8 +94,7 @@ class CalcCanvas extends Canvas implements Runnable {
         cursorY = 10;
         cursorH = lineHeight;
 
-        editChanged(-1);
-        updateCursor();
+        doChanged(-1);
         updateHistory();
         repaint();
     }
@@ -110,32 +109,37 @@ class CalcCanvas extends Canvas implements Runnable {
         }
     }
 
+    private void updateResult() {
+        Graphics rg = gg[RESULT];
+        rg.setColor(bgCol[RESULT]);
+        rg.fillRect(0, 0, w, height[RESULT]);
+        
+        if (parser.parse(String.valueOf(line, 0, len), result)) {
+            String strResult = (result.arity > 0) ? 
+                result.name + params[result.arity-1] : format(result.value);
+            rg.setColor(fgCol[RESULT]);
+            rg.drawString(strResult, 0, 2, 0);
+        } else {
+            if (result.errorPos < len) {
+                markError(result.errorPos);
+            }
+        }
+        int resultY = nEditLines * lineHeight + 2;
+        int ry = resultY+2;
+        int avail = h - ry - KeyState.getH();
+        int rh = Math.min(height[RESULT]-3, avail);
+        repaint(0, ry, w, rh);
+    }
+
+    /*
     public void run() {
         System.out.println("serially");
         if (needUpdateResult) {
             needUpdateResult = false;
-            
-            Graphics rg = gg[RESULT];
-            rg.setColor(bgCol[RESULT]);
-            rg.fillRect(0, 0, w, height[RESULT]);
-                
-            if (parser.parse(String.valueOf(line, 0, len), result)) {
-                String strResult = (result.arity > 0) ? 
-                    result.name + params[result.arity-1] : format(result.value);
-                rg.setColor(fgCol[RESULT]);
-                rg.drawString(strResult, 0, 2, 0);
-            } else {
-                if (result.errorPos < len) {
-                    markError(result.errorPos);
-                }
-            }
-            int resultY = nEditLines * lineHeight + 2;
-            int ry = resultY+2;
-            int avail = h - ry - KeyState.getH();
-            int rh = Math.min(height[RESULT]-3, avail);
-            repaint(0, ry, w, rh);
+            updateResult();
         }
     }
+    */
     
     int fitWidth(Font font, int targetWidth, char buf[], int start, int end) {
         int mW = font.charWidth('m');
@@ -352,9 +356,11 @@ class CalcCanvas extends Canvas implements Runnable {
             Thread.sleep(300);
         } catch (InterruptedException e) {}
         */
+        /*
         if (needUpdateResult) {
             C.display.callSerially(this);
         }
+        */
     }
     
     int prevFlexPoint(int pos) {
@@ -432,7 +438,8 @@ class CalcCanvas extends Canvas implements Runnable {
     private void doChanged(int changePos) {
         editChanged(changePos);
         updateCursor();
-        needUpdateResult = true;
+        updateResult();
+        //needUpdateResult = true;
     }
 
     protected void keyPressed(int key) {
@@ -495,7 +502,6 @@ class CalcCanvas extends Canvas implements Runnable {
                         if (history.move(-1)) {
                             updateFromHistEntry(history.getCurrent());
                             doChanged(-1);
-                            needUpdateResult = true;
                         }
                     } else {
                         int width = font.charsWidth(line, editLines[cursorRow-1], cursorCol);
@@ -518,7 +524,6 @@ class CalcCanvas extends Canvas implements Runnable {
                         if (history.move(1)) {
                             updateFromHistEntry(history.getCurrent());
                             doChanged(-1);
-                            needUpdateResult = true;
                         }
                     } else {
                         int width = font.charsWidth(line, START_LINE(editLines, cursorRow), cursorCol);
@@ -539,7 +544,6 @@ class CalcCanvas extends Canvas implements Runnable {
                     history.enter(str);
                     updateFromHistEntry(history.getCurrent());
                     doChanged(-1);
-                    needUpdateResult = true;
                     updateHistory();
                     repaint();
                     break;
