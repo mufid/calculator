@@ -12,8 +12,9 @@ class Config {
         DataInputStream is = rs.read(recId);
         if (is != null) {
             String s1, s2;
+            int sz = 0;
             try {
-                int sz = is.readInt();
+                sz = is.readInt();
                 for (int i = 0; i < sz; ++i) {
                     s1 = is.readUTF();
                     s2 = is.readUTF();
@@ -21,7 +22,9 @@ class Config {
                     System.out.println("--- " + s1 + " " + s2 + " ---");
                 }
             } catch (IOException e) {
-                throw new Error("config read " + e);
+                if (sz != ht.size()) {
+                    throw new Error("config read " + e);
+                }
             }
         }
     }

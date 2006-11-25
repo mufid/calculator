@@ -9,8 +9,8 @@ final class KeyState {
     static KeyState keypad, lastPainted;
 
     private static final int 
-        BACKGR[] = {CalcCanvas.BACKGR, 0xffff44, 0x44ffff},
-        DARKER[] = {0x444444,  0x444400, 0x004444};
+        BACKGR[] = {CalcCanvas.BACKGR, CalcCanvas.BACKGR, 0xffff00},
+        DARKER[] = {0x808080,  0x808080, 0x808080};
     private static final int FOREGR  = 0x000000, LIGHTER = 0xffffff;
     
     /*
@@ -24,20 +24,18 @@ final class KeyState {
 
     static void init(int sw, int sh) {
         w = sw;
-        //int available = sh - CalcCanvas.largeHeight*5;
-        //int size = CalcCanvas.normalHeight*5 < available ? Font.SIZE_MEDIUM : Font.SIZE_SMALL;
-        int size = sh <= 160 ? Font.SIZE_SMALL : Font.SIZE_MEDIUM;
-        //System.out.println("font size " + size);
+        boolean isSmall = sh <= 160;
+        int size = isSmall ? Font.SIZE_SMALL : Font.SIZE_MEDIUM;
         font = Font.getFont(0, 0, size);
         fontHeight = font.getHeight();
 
         stepW = sw/3;
         int w2 = font.stringWidth("mmmm");
         cellWidth = Math.min(stepW, w2);
-        cellHeight = fontHeight + 4;
         singleSpace = (stepW - cellWidth)/2;
 
-        h = cellHeight * 4 + 1;
+        cellHeight = fontHeight + (isSmall ? 2 : 3);
+        h = cellHeight * 4 + 3;
         yPos = sh - h;
         
         trigs = new KeyState(new Object[] {
@@ -172,7 +170,7 @@ final class KeyState {
                         }
                     }
 
-                    int bottom = y + cellHeight - 4;
+                    int bottom = y + fontHeight;
                     g.setColor(LIGHTER);
                     g.drawLine(x, y, x+cellWidth-1, y);
                     g.drawLine(x, y, x, bottom);

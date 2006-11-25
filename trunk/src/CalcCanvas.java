@@ -32,10 +32,10 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     int editH;
 
     static final int RESULT = 0, EDIT = 1, HISTORY = 2, N_ZONES = 3;
-    static final int bgCol[]     = { 0x0,      0xffffff, 0xccccff};
+    static final int bgCol[]     = { 0x0,      0xffffff, 0xe0e0e0};
     static final int fgCol[]     = { 0xffffff, 0x0     , 0x0};
-    static final int borderCol[] = { 0xffffff, 0x0,      0x0000ff};
-    static final int BACKGR = 0xa0a0a0;
+    static final int borderCol[] = { 0xffffff, 0x0,      0x808080};
+    static final int BACKGR = 0xe0e0e0;
     static final int spaceSide = 1, spaceTop = 1, spaceBot = 1, 
         spaceEdit = 2, spaceHist = 2;
     
@@ -136,7 +136,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 result.name + params[result.arity-1] : format(result.value);
             gg.setColor(fgCol[RESULT]);
             //gg.drawString(strResult, clientX, Y[RESULT], 0);
-            gg.drawString(strResult, clientX + clientW, Y[RESULT], Graphics.TOP|Graphics.RIGHT);
+            gg.drawString(strResult, clientX + clientW, Y[RESULT], Graphics.TOP|Graphics.RIGHT); //Graphics.BOTTOM|Graphics.RIGHT);
         } else {
             if (result.errorPos < len) {
                 markError(result.errorPos);
@@ -182,6 +182,12 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         int changeLine = posToLine(editLines, changePos);
         int oldNLines = nEditLines;
         nEditLines = split(font, line, len, clientW, changeLine, editLines);
+        if (nEditLines > maxEditLines) {
+            pos = changePos;
+            delFromLine(pos, lastInsertLen);
+            nEditLines = maxEditLines;
+            return;
+        }
         if (oldNLines != nEditLines) {
             initFrame(nEditLines);
             updateHistory();
@@ -189,12 +195,6 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             repaint(spaceSide, y, screenW-(spaceSide<<1), Y[HISTORY]-y);
         }
         //System.out.println("pos " + pos + " oldNLines " + oldNLines + " nEditLines " + nEditLines);
-        if (nEditLines > maxEditLines) {
-            pos = changePos;
-            delFromLine(pos, lastInsertLen);
-            nEditLines = maxEditLines;
-            return;
-        }
         //System.out.println("nEditLines " + nEditLines + "; changeLine " + changeLine);                           
 
         //Graphics g = gg[EDIT];
@@ -209,7 +209,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                  end = editLines[i]; 
              i < nEditLines; ++i, y+=lineHeight, start = end) {
             end = editLines[i];
-            gg.drawChars(line, start, end-start, clientX, y, 0);
+            gg.drawChars(line, start, end-start, clientX, y, 0); //Graphics.BOTTOM|Graphics.LEFT);
         }
     }
     
@@ -329,7 +329,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         }
 
         int tailW   = font.charsWidth(formatBuf, ePos, len - ePos);
-        int n = fitWidth(font, screenW - tailW, formatBuf, 0, baseLen);
+        int n = fitWidth(font, clientW - tailW, formatBuf, 0, baseLen);
         return String.valueOf(formatBuf, 0, n) + String.valueOf(formatBuf, ePos, len - ePos);
     }
 
