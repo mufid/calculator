@@ -59,21 +59,19 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         angleInRadians = cfg.get("angleUnit").equals("rad");
         calcCanvas = new CalcCanvas();
         
-        //addCommand(cmdSetup);
         calcCanvas.addCommand(cmdKeyDelete);
         calcCanvas.addCommand(cmdAngle);
         calcCanvas.addCommand(cmdHelp);
         calcCanvas.addCommand(cmdAbout);
-        calcCanvas.addCommand(cmdExit);
+        //calcCanvas.addCommand(cmdExit);
         calcCanvas.setCommandListener(this);
+
+        angleList.setCommandListener(this);
+
         try {
             aboutForm.append(Image.createImage("/a"));
         } catch (IOException e) {
         }
-        
-        //angleList.setSelectCommand(List.SELECT_COMMAND);
-        angleList.setCommandListener(this);
-
         aboutForm.append(NAME + " " + VERSION + "\n");
         aboutForm.append("\u00a9 Mihai Preda\n" + URL);
         aboutForm.addCommand(cmdOk);

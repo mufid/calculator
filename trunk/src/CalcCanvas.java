@@ -48,9 +48,9 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
 
     CalcCanvas() {
         boolean isSmallScreen = getHeight() <= 128;
-        if (isSmallScreen) {
+        //if (isSmallScreen) {
             setFullScreenMode(true);
-        }
+            //}
 
         screenW = getWidth();
         screenH = getHeight();
@@ -250,7 +250,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         if (cursorX > 0) {
             --cursorX;
         }
-        System.out.println("pos " + pos + " row " + cursorRow + " col " + cursorCol + " x " + cursorX + " y " + cursorY);
+        //System.out.println("pos " + pos + " row " + cursorRow + " col " + cursorCol + " x " + cursorX + " y " + cursorY);
         setCursor(true);
     }
 
@@ -345,28 +345,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             g.setColor(0);
             g.fillRect(cursorX, cursorY, cursorW, cursorH);
         }
-        KeyState.paint(g);
-        /*
-        int editH = nEditLines * lineHeight + 2;
-        int keypadH = KeyState.getH();
-        KeyState.paint(g);
-        //System.out.println("historyH "+historyH+" keypadH "+keypadH+" editH "+editH+" w "+w+" resultY "+resultY);
-        //System.out.println("pos " + pos + "; nLines " + nEditLines + "; cX " + cursorX + "; cY " + cursorY);
-        g.drawRegion(img[EDIT], 0, 0, screenW, editH, 0,
-                     0, 0, 0);
-        int histAvail = screenH-editH-height[RESULT]-keypadH;
-        if (histAvail > 0) {
-            g.drawRegion(img[HISTORY], 0, 0, screenW, histAvail, 0,
-                         0, editH+height[RESULT], 0);
-        }
-        int resultAvail = screenH - editH - keypadH;
-        if (resultAvail < height[RESULT]) {
-            g.drawRegion(img[RESULT], 0, 0, screenW, resultAvail, 0,
-                         0, editH, 0);
-        } else {
-            g.drawImage(img[RESULT], 0, editH, 0);
-        }
-        */
+        KeyState.paint(g);        
     }
     
     int prevFlexPoint(int pos) {
@@ -448,7 +427,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     }
 
     protected void keyPressed(int key) {
-        //System.out.println("key");
+        System.out.println("key " + key);
         int oldPos = pos;
         int keyPos = getKeyPos(key);
         lastInsertLen = 0;
@@ -512,7 +491,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                         int width = font.charsWidth(line, editLines[cursorRow-1], cursorCol);
                         int startPrev = START_LINE(editLines, cursorRow-1);
                         int targetPos = fitWidth(font, width, line, startPrev, len)-1;
-                        System.out.println("width " + width + " target " + targetPos);
+                        //System.out.println("width " + width + " target " + targetPos);
                         int aheadPos;
                         while (true) {
                             aheadPos = prevFlexPoint(pos);
