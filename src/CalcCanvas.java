@@ -5,7 +5,12 @@ import java.util.*;
 import java.io.*;
 
 class CalcCanvas extends Canvas /* implements Runnable */ {
-    static final int KEY_CLEAR=-8, KEY_END=-11, KEY_POWER=-12;
+    static final int 
+        KEY_SOFT1 =  -6,
+        KEY_SOFT2 =  -7,
+        KEY_CLEAR =  -8, 
+        KEY_END   = -11, 
+        KEY_POWER = -12;
     private static final String arityParens[] = {"", "()", "(,)", "(,,)"};
     private static final String params[] = {"(x)", "(x,y)", "(x,y,z)"};
 
@@ -425,9 +430,13 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         updateCursor();
         updateResult();
     }
-
+    
+    int actualKeySoft2 = 0;
     protected void keyPressed(int key) {
-        System.out.println("key " + key);
+        System.out.println("key " + key + "; " + getKeyName(key) + "; action " + getGameAction(key));
+        if (key == 8) { //unicode backspace
+            key = KEY_CLEAR;
+        }
         int oldPos = pos;
         int keyPos = getKeyPos(key);
         lastInsertLen = 0;
@@ -532,9 +541,27 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                     break;
                 }
             } else { //if (key == KEY_CLEAR || key == KEY_END || key == KEY_POWER) { //delete
-                if (!clearedKeypad) {
-                    delFromLine();
-                    doChanged(pos);
+                if (actualKeySoft2 == 0) {
+                    if (key == KEY_SOFT2 || key == -21) {
+                        actualKeySoft2 = key;
+                    } else {
+                        try {
+                            String name = getKeyName(key).toLowerCase();
+                            if ((name.indexOf("soft") != -1 && name.indexOf("2") != -1) ||
+                                name.indexOf("right") != -1) {
+                                actualKeySoft2 = key;
+                            }
+                        } catch (IllegalArgumentException e) {
+                        }
+                    }
+                }
+                if (key == actualKeySoft2) {
+                    C.self.menu();
+                } else {
+                    if (!clearedKeypad) {
+                        delFromLine();
+                        doChanged(pos);
+                    }
                 }
             }
         }

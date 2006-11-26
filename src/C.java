@@ -3,19 +3,23 @@ import javax.microedition.lcdui.*;
 import java.io.IOException;
 
 public final class C extends MIDlet implements CommandListener, Runnable {
-    //static C midlet;
+    static C self;
     
     private static final Command 
-        //cmdSetup  = new Command("Setup", Command.SCREEN, 1),
-        cmdKeyDelete = new Command("Delete", Command.BACK, 1),
-        cmdAngle = new Command("Angle unit", Command.SCREEN, 2),
+        cmdOk    = new Command("Ok",    Command.BACK, 1),
+        cmdBack  = new Command("Back",  Command.BACK, 2);
+
+    /*
+        cmdAngle = new Command("Set Angle Unit", Command.SCREEN, 2),
         cmdHelp  = new Command("Help",  Command.HELP, 8),
         cmdAbout = new Command("About", Command.HELP, 9),
         cmdExit  = new Command("Exit",  Command.EXIT, 10),
+    */
 
-        cmdOk    = new Command("Ok",    Command.BACK, 1),
-        cmdYes   = new Command("Yes", Command.OK, 1),
-        cmdCancel = new Command("Cancel", Command.CANCEL, 2);
+        //cmdSetup  = new Command("Setup", Command.SCREEN, 1),
+        //cmdKeyDelete = new Command("Delete", Command.BACK, 1),
+        //cmdYes   = new Command("Yes",     Command.OK, 1),
+        //cmdCancel = new Command("Cancel", Command.CANCEL, 2);
     
     static Display display;
     CalcCanvas calcCanvas;
@@ -38,7 +42,14 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 "'ans' is automatically added in front of an expression that starts with an operator. " +
 "E.g. typing '+2' becomes 'ans+2'.";
 
-    List angleList = new List("Angle Unit", List.IMPLICIT, new String[]{"radians", "degrees"}, null);
+    List angleList = new List("Angle Unit", List.IMPLICIT, new String[]{"Radians", "Degrees"}, null);
+    List menuList  = new List("Menu",       List.IMPLICIT, new String[]{
+        "Set Angle Unit", 
+        "Help", 
+        "About", 
+        "Exit"
+    }, null);
+
     Form aboutForm = new Form("About"), helpForm = new Form("Help");
     Thread thread;
 
@@ -50,6 +61,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     static Config cfg;
 
     public C() {
+        self = this;
         rs = new RMS("calc");
         cfg = new Config(rs, RS_CONFIG);
         System.out.println("config size " + cfg.size());
@@ -58,15 +70,19 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         }
         angleInRadians = cfg.get("angleUnit").equals("rad");
         calcCanvas = new CalcCanvas();
-        
+
+        /*
         calcCanvas.addCommand(cmdKeyDelete);
         calcCanvas.addCommand(cmdAngle);
         calcCanvas.addCommand(cmdHelp);
         calcCanvas.addCommand(cmdAbout);
-        //calcCanvas.addCommand(cmdExit);
         calcCanvas.setCommandListener(this);
+        */
+        //calcCanvas.addCommand(cmdExit);
 
         angleList.setCommandListener(this);
+        menuList.addCommand(cmdBack);
+        menuList.setCommandListener(this);
 
         try {
             aboutForm.append(Image.createImage("/a"));
@@ -84,12 +100,47 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         thread = new Thread(this);
         thread.start();
     }
+    
+    void menu() {
+        display.setCurrent(menuList);
+    }
 
     public void run() {
         calcCanvas.threadRun();
     }
 
     public void commandAction(Command c, Displayable d) {
+        if (c == cmdBack || c == cmdOk) {
+            display.setCurrent(calcCanvas);
+            return;
+        }
+
+        //c == List.SELECT_COMMAND
+        if (d == angleList) {
+            angleInRadians = ((List) d).getSelectedIndex() == 0;
+            display.setCurrent(calcCanvas);
+            cfg.set("angleUnit", angleInRadians?"rad":"deg");
+            cfg.save();
+            return;
+        }
+
+        //d == menuList
+        switch (((List) d).getSelectedIndex()) {
+        case 0:
+            angleList.setSelectedIndex(angleInRadians?0:1, true);
+            display.setCurrent(angleList);
+            break;
+        case 1:
+            display.setCurrent(helpForm);
+            break;
+        case 2:
+            display.setCurrent(aboutForm);
+            break;
+        case 3:
+            notifyDestroyed();
+            break;
+        }
+        /*
         if (c == cmdKeyDelete) {
             calcCanvas.keyPressed(CalcCanvas.KEY_CLEAR);
         } else if (c == cmdAngle) {
@@ -101,14 +152,8 @@ public final class C extends MIDlet implements CommandListener, Runnable {
             display.setCurrent(aboutForm);
         } else if (c == cmdExit) {
             notifyDestroyed();
-        } else if (c == List.SELECT_COMMAND) {
-            angleInRadians = ((List) d).getSelectedIndex() == 0;
-            display.setCurrent(calcCanvas);
-            cfg.set("angleUnit", angleInRadians?"rad":"deg");
-            cfg.save();
-        } else { //cmdCancel, cmdOk
-            display.setCurrent(calcCanvas);
-        }
+        } 
+        */ 
     }
 
     protected void startApp() {
