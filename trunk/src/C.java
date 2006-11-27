@@ -64,11 +64,15 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         self = this;
         rs = new RMS("calc");
         cfg = new Config(rs, RS_CONFIG);
-        System.out.println("config size " + cfg.size());
+        //System.out.println("config size " + cfg.size());
         if (cfg.size() == 0) {
             cfg.set("angleUnit", "rad");
         }
         angleInRadians = cfg.get("angleUnit").equals("rad");
+        
+        cfg.addCommand(cmdOk);
+        cfg.setCommandListener(this);
+
         calcCanvas = new CalcCanvas();
 
         /*
@@ -101,7 +105,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         thread.start();
     }
     
-    void menu() {
+    void displayMenu() {
         display.setCurrent(menuList);
     }
 

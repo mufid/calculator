@@ -431,17 +431,111 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         updateResult();
     }
     
-    int actualKeySoft2 = 0;
+    void historyMove(int dir) {
+        history.getCurrent().update(String.valueOf(line, 0, len), pos);
+        if (history.move(dir)) {
+            updateFromHistEntry(history.getCurrent());
+            doChanged(-1);
+        }        
+    }
+
+    void handleAction(int action) {
+        switch (action) {
+        case Canvas.LEFT:
+            pos = prevFlexPoint(pos);
+            updateCursor();
+            //changed = true;
+            break;
+            
+        case Canvas.RIGHT:
+            pos = nextFlexPoint(pos);
+            updateCursor();
+            //changed = true;
+            break;
+            
+        case Canvas.UP:
+            if (cursorRow == 0) {
+                historyMove(-1);
+            } else {
+                int width = font.charsWidth(line, editLines[cursorRow-1], cursorCol);
+                int startPrev = START_LINE(editLines, cursorRow-1);
+                int targetPos = fitWidth(font, width, line, startPrev, len)-1;
+                //System.out.println("width " + width + " target " + targetPos);
+                int aheadPos;
+                while (true) {
+                    aheadPos = prevFlexPoint(pos);
+                    if (aheadPos < targetPos || pos == -1) { break; }
+                    pos = aheadPos;
+                }
+                updateCursor();
+            }
+            break;
+            
+        case Canvas.DOWN:
+            if (cursorRow == nEditLines-1) {
+                historyMove(1);
+            } else {
+                int width = font.charsWidth(line, START_LINE(editLines, cursorRow), cursorCol);
+                int startNext = editLines[cursorRow];
+                int targetPos = pos == -1 ? editLines[0] : fitWidth(font, width, line, startNext, len)-1;
+                int aheadPos;
+                while (true) {
+                    aheadPos = nextFlexPoint(pos);
+                    if (aheadPos > targetPos || pos == len-1) { break; }
+                    pos = aheadPos;
+                }
+                updateCursor();
+            } 
+            break;
+            
+        case Canvas.FIRE:
+            String str = String.valueOf(line, 0, len);
+            history.enter(str);
+            updateFromHistEntry(history.getCurrent());
+            doChanged(-1);
+            updateHistory();
+            break;
+            
+        case Canvas.GAME_A:
+        case Canvas.GAME_C:
+            C.self.displayMenu();
+            break;
+            
+        case Canvas.GAME_B:
+        case Canvas.GAME_D:
+            delFromLine();
+            doChanged(pos);
+            break;
+        default:                    
+        }
+    }
+    
+    int menuKey = 0;
     protected void keyPressed(int key) {
         System.out.println("key " + key + "; " + getKeyName(key) + "; action " + getGameAction(key));
-        if (key == 8) { //unicode backspace
-            key = KEY_CLEAR;
+        int saveKey = key;
+        if (key > 0 && (key < 32 || key > 10000)) {
+            //also handles backspace (unicode 8) -> KEY_CLEAR (-8)
+            key = -key;
         }
-        int oldPos = pos;
-        int keyPos = getKeyPos(key);
-        lastInsertLen = 0;
-        if (keyPos >= 0) {
-            String s = KeyState.handleKey(keyPos);
+        int keyPos = key > 0 ? getKeyPos(key) : -1;
+        if (keyPos < 0 && KeyState.keypad != null) {
+            //a not-numeric key was pressed while the keypad was active,
+            //disable keypad and ignore key
+            KeyState.keypad = null;
+            KeyState.repaint(this);
+            return;
+        }
+
+        if (key > 0) {
+            int oldPos = pos;
+            lastInsertLen = 0;
+            String s;
+            if (keyPos >= 0) {
+                s = KeyState.handleKey(keyPos);
+            } else {
+                s = String.valueOf((char)key);
+            }
             if (s != null) {
                 if (pos == -1 && s.length() == 1 &&
                     "+-*/%^!".indexOf(s.charAt(0)) != -1) {
@@ -467,106 +561,42 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 doChanged(oldPos);
             }
         } else {
-            boolean clearedKeypad = KeyState.keypad != null;
-            KeyState.keypad = null;
             int action = 0;
             try {
-                action = getGameAction(key);
+                action = C.cfg.getGameAction(key);
             } catch (IllegalArgumentException e) {
             }
             //System.out.println("key " + key + " action " + action);
             if (action != 0) {
-                switch (action) {
-                case Canvas.LEFT:
-                    pos = prevFlexPoint(pos);
-                    updateCursor();
-                    //changed = true;
-                    break;
-                    
-                case Canvas.RIGHT:
-                    pos = nextFlexPoint(pos);
-                    updateCursor();
-                    //changed = true;
-                    break;
-                    
-                case Canvas.UP:
-                    if (cursorRow == 0) {
-                        history.getCurrent().update(String.valueOf(line, 0, len), pos);
-                        if (history.move(-1)) {
-                            updateFromHistEntry(history.getCurrent());
-                            doChanged(-1);
-                        }
-                    } else {
-                        int width = font.charsWidth(line, editLines[cursorRow-1], cursorCol);
-                        int startPrev = START_LINE(editLines, cursorRow-1);
-                        int targetPos = fitWidth(font, width, line, startPrev, len)-1;
-                        //System.out.println("width " + width + " target " + targetPos);
-                        int aheadPos;
-                        while (true) {
-                            aheadPos = prevFlexPoint(pos);
-                            if (aheadPos < targetPos || pos == -1) { break; }
-                            pos = aheadPos;
-                        }
-                        updateCursor();
-                    }
-                    break;
-                    
-                case Canvas.DOWN:
-                    if (cursorRow == nEditLines-1) {
-                        history.getCurrent().update(String.valueOf(line, 0, len), pos);
-                        if (history.move(1)) {
-                            updateFromHistEntry(history.getCurrent());
-                            doChanged(-1);
-                        }
-                    } else {
-                        int width = font.charsWidth(line, START_LINE(editLines, cursorRow), cursorCol);
-                        int startNext = editLines[cursorRow];
-                        int targetPos = pos == -1 ? editLines[0] : fitWidth(font, width, line, startNext, len)-1;
-                        int aheadPos;
-                        while (true) {
-                            aheadPos = nextFlexPoint(pos);
-                            if (aheadPos > targetPos || pos == len-1) { break; }
-                            pos = aheadPos;
-                        }
-                        updateCursor();
-                    } 
-                    break;
-                    
-                case Canvas.FIRE:
-                    String str = String.valueOf(line, 0, len);
-                    history.enter(str);
-                    updateFromHistEntry(history.getCurrent());
-                    doChanged(-1);
-                    updateHistory();
-                    break;
-                }
-            } else { //if (key == KEY_CLEAR || key == KEY_END || key == KEY_POWER) { //delete
-                if (actualKeySoft2 == 0) {
-                    if (key == KEY_SOFT2 || key == -21) {
-                        actualKeySoft2 = key;
-                    } else {
-                        try {
-                            String name = getKeyName(key).toLowerCase();
-                            if ((name.indexOf("soft") != -1 && name.indexOf("2") != -1) ||
-                                name.indexOf("right") != -1) {
-                                actualKeySoft2 = key;
-                            }
-                        } catch (IllegalArgumentException e) {
-                        }
+                handleAction(action);
+            } else {
+                if (menuKey == 0) {
+                    if (key == KEY_SOFT1 || key == -21) {
+                        menuKey = key;
                     }
                 }
-                if (key == actualKeySoft2) {
-                    C.self.menu();
+                if (key == menuKey) {
+                    C.self.displayMenu();
                 } else {
-                    if (!clearedKeypad) {
-                        delFromLine();
-                        doChanged(pos);
-                    }
+                    delFromLine();
+                    doChanged(pos);
                 }
             }
         }
         KeyState.repaint(this);
     }
+
+ /* else {
+                        try {
+                            String name = getKeyName(saveKey).toLowerCase();
+                            if ((name.indexOf("soft") != -1 && name.indexOf("1") != -1) ||
+                                name.indexOf("left") != -1) {
+                                menuKey = key;
+                            }
+                        } catch (IllegalArgumentException e) {
+                        }
+                    }
+ */
 
     void updateFromHistEntry(HistEntry entry) {
         pos = entry.pos;
