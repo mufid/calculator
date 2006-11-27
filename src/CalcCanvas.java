@@ -563,20 +563,19 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         } else {
             int action = 0;
             try {
-                action = C.cfg.getGameAction(key);
+                action = getGameAction(key);
             } catch (IllegalArgumentException e) {
             }
-            //System.out.println("key " + key + " action " + action);
-            if (action != 0) {
-                handleAction(action);
+            if ((action == 0 || action == Canvas.FIRE) && 
+                (key == KEY_SOFT1 || //RI, Nokia, SE
+                 key == -21 ||       //Motorola
+                 key == -57345 ||    //Qtek
+                 key == -202 ||      //LG?
+                 key == -4)) {       //Siemens, right soft key
+                C.self.displayMenu();
             } else {
-                if (menuKey == 0) {
-                    if (key == KEY_SOFT1 || key == -21) {
-                        menuKey = key;
-                    }
-                }
-                if (key == menuKey) {
-                    C.self.displayMenu();
+                if (action != 0) {
+                    handleAction(action);
                 } else {
                     delFromLine();
                     doChanged(pos);

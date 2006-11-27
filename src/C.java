@@ -70,19 +70,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         }
         angleInRadians = cfg.get("angleUnit").equals("rad");
         
-        cfg.addCommand(cmdOk);
-        cfg.setCommandListener(this);
-
         calcCanvas = new CalcCanvas();
-
-        /*
-        calcCanvas.addCommand(cmdKeyDelete);
-        calcCanvas.addCommand(cmdAngle);
-        calcCanvas.addCommand(cmdHelp);
-        calcCanvas.addCommand(cmdAbout);
-        calcCanvas.setCommandListener(this);
-        */
-        //calcCanvas.addCommand(cmdExit);
 
         angleList.setCommandListener(this);
         menuList.addCommand(cmdBack);
