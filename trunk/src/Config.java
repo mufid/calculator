@@ -1,15 +1,7 @@
 import java.util.*;
 import java.io.*;
-import javax.microedition.lcdui.*;
 
-/*
-  The fact that Config extends Canvas is the result of a 'class merge',
-  in order to reduce the number of classes. 
-  Otherwise these two, the config and the canvas, have nothing to do with each other.
-  The canvas is used exculsively for getActionCode(), and is never displayed.
-*/
-
-class Config extends Canvas {
+class Config {
     Hashtable ht = new Hashtable();
     RMS rs;
     int recId;
@@ -66,10 +58,5 @@ class Config extends Canvas {
         }
         rs.write(recId);
         System.out.println("config saved");
-    }
-
-    //---- Canvas below, not related to Config above ----
-    
-    protected void paint(Graphics g) {
     }
 }
