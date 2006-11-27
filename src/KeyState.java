@@ -35,7 +35,7 @@ final class KeyState {
         singleSpace = (stepW - cellWidth)/2;
 
         cellHeight = fontHeight + (isSmall ? 2 : 3);
-        h = cellHeight * 4 + 3;
+        h = cellHeight * 4 + 1;
         yPos = sh - h;
         
         trigs = new KeyState(new Object[] {
@@ -146,18 +146,12 @@ final class KeyState {
             g = img.getGraphics();
             g.setFont(font);
             g.setColor(BACKGR[0]);
-            //g.drawRect(0, 0, space-1, 0);
-            //g.drawRect(w-space, 0, space-1, 0);
-            g.drawLine(0, 0, w, 0);
-            g.fillRect(0, 1, w, h-1);
-            g.setColor(CalcCanvas.borderCol[CalcCanvas.HISTORY]);
-            int space = CalcCanvas.spaceSide;
-            g.drawLine(space, 0, w-(space<<1), 0);
+            g.fillRect(0, 0, w, h);
             String txt = null;
             Object o;
             int colIndex;
             for (int x=singleSpace, col=0; col < 3; ++col, x+=stepW) {
-                for (int pos=col, y=3; y < h; y += cellHeight, pos += 3) {
+                for (int pos=col, y=1; y < h; y += cellHeight, pos += 3) {
                     //txt = null;
                     colIndex = 0;
                     if ((o = keys[pos]) != null) {
@@ -191,7 +185,7 @@ final class KeyState {
 
     static void repaint(Canvas c) {
         if (lastPainted != keypad) {
-            c.repaint(0, yPos, w, h);
+            c.repaint(0, yPos-3, w, h+3);
         }
     }
 }

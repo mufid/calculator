@@ -343,8 +343,15 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         if (keypadH == 0) {
             g.drawImage(img, 0, 0, 0);
         } else {
-            g.drawRegion(img, 0, 0, screenW, screenH - keypadH, 0,
+            int border = spaceBot+2;
+            int h = screenH - keypadH - border;
+            g.drawRegion(img, 0, 0, screenW, h, 0,
                          0, 0, 0);
+            int historySpace = h - Y[HISTORY];
+            if (historySpace > 0) {
+                g.drawRegion(img, 0, screenH - border, screenW, border, 0,
+                             0, h, 0);
+            }
         }
         if (drawCursor) {
             g.setColor(0);
