@@ -41,8 +41,8 @@ final class KeyState {
         trigs = new KeyState(new Object[] {
             "asinh", "acosh", "atanh",
             "sinh",  "cosh",  "tanh",
-            "sin",   "cos",   "tan", 
             "asin",  "acos",  "atan", 
+            "sin",   "cos",   "tan", 
         });
                 
         logs = new KeyState(new Object[] {
@@ -68,16 +68,23 @@ final class KeyState {
 
         rootOp = new KeyState(new Object[] {
             "(",  ",",  ")",
-            null, "!",  "^", 
-            "%",  "/",  "*",
-            null, "-",  "+",
+            "^",  "!",  null, 
+            "*",  "/",  "%",
+            "+",  "-",  null,
         });
 
         rootExp = new KeyState(new Object[] {
             "sqrt",  "ans",  "E",
+            null,    vars,   ":=",
+            "pi",    "e",    ints,
+            trigs,   logs,   ".",
+
+            /*
+            "sqrt",  "ans",  "E",
             "pi",    "e",    null,
             trigs,   logs,   ints,
             ".",     vars,   ":=",
+            */
         });
 
         //"\u03c0" == pi
@@ -95,9 +102,9 @@ final class KeyState {
     static String handleKey(int pos) {
         if (keypad == null) {
             switch (pos) {
-            case 9: keypad = rootExp; return null;
+            case 9: keypad = rootOp; return null;
             case 10: return "0";
-            case 11: keypad = rootOp; return null;
+            case 11: keypad = rootExp; return null;
             default: return (0 <= pos && pos <= 8) ? base[pos] : null;
             }
         }

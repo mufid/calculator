@@ -132,20 +132,6 @@ public final class C extends MIDlet implements CommandListener, Runnable {
             notifyDestroyed();
             break;
         }
-        /*
-        if (c == cmdKeyDelete) {
-            calcCanvas.keyPressed(CalcCanvas.KEY_CLEAR);
-        } else if (c == cmdAngle) {
-            angleList.setSelectedIndex(angleInRadians?0:1, true);
-            display.setCurrent(angleList);
-        } else if (c == cmdHelp) {
-            display.setCurrent(helpForm);
-        } else if (c == cmdAbout) {
-            display.setCurrent(aboutForm);
-        } else if (c == cmdExit) {
-            notifyDestroyed();
-        } 
-        */ 
     }
 
     protected void startApp() {
