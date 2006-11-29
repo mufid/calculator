@@ -1,8 +1,5 @@
+#include "defines.inc"
 #define START_LINE(lines, n) (((n)==0)?0:lines[n-1])
-
-import javax.microedition.lcdui.*;
-import java.util.*;
-import java.io.*;
 
 class CalcCanvas extends Canvas /* implements Runnable */ {
     static final int 
@@ -71,7 +68,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         KeyState.init(screenW, screenH);
 
         maxEditLines = (screenH - (KeyState.h + spaceTop + spaceEdit + spaceHist + 8)) / lineHeight - 1;
-        System.out.println("max edit lines " + maxEditLines);
+        LOG("max edit lines " + maxEditLines);
         editLines = new int[maxEditLines + 1];
         clientW = screenW - 2*clientX;
 
@@ -203,8 +200,8 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             int y = Y[EDIT]-2-spaceEdit;
             repaint(spaceSide, y, screenW-(spaceSide<<1), Y[HISTORY]-y);
         }
-        //System.out.println("pos " + pos + " oldNLines " + oldNLines + " nEditLines " + nEditLines);
-        //System.out.println("nEditLines " + nEditLines + "; changeLine " + changeLine);                           
+        //LOG("pos " + pos + " oldNLines " + oldNLines + " nEditLines " + nEditLines);
+        //LOG("nEditLines " + nEditLines + "; changeLine " + changeLine);                           
 
         //Graphics g = gg[EDIT];
         gg.setColor(bgCol[EDIT]);
@@ -259,7 +256,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         if (cursorX > 0) {
             --cursorX;
         }
-        //System.out.println("pos " + pos + " row " + cursorRow + " col " + cursorCol + " x " + cursorX + " y " + cursorY);
+        //LOG("pos " + pos + " row " + cursorRow + " col " + cursorCol + " x " + cursorX + " y " + cursorY);
         setCursor(true);
     }
 
@@ -481,7 +478,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 int width = font.charsWidth(line, editLines[cursorRow-1], cursorCol);
                 int startPrev = START_LINE(editLines, cursorRow-1);
                 int targetPos = fitWidth(font, width, line, startPrev, len)-1;
-                //System.out.println("width " + width + " target " + targetPos);
+                //LOG("width " + width + " target " + targetPos);
                 int aheadPos;
                 while (true) {
                     aheadPos = prevFlexPoint(pos);
@@ -533,7 +530,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     
     int menuKey = 0;
     protected void keyPressed(int key) {
-        System.out.println("key " + key + "; " + getKeyName(key) + "; action " + getGameAction(key));
+        LOG("key " + key + "; " + getKeyName(key) + "; action " + getGameAction(key));
         int saveKey = key;
         if (key > 0 && (key < 32 || key > 10000)) {
             //also handles backspace (unicode 8) -> KEY_CLEAR (-8)

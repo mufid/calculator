@@ -1,4 +1,4 @@
-import javax.microedition.lcdui.*;
+#include "defines.inc"
 
 final class KeyState {
     static Font font;
@@ -144,7 +144,7 @@ final class KeyState {
             keypad.doPaint(destG);
         }
         lastPainted = keypad;
-        //System.out.println("painted");
+        //LOG("painted");
     }
 
     void doPaint(Graphics destG) {

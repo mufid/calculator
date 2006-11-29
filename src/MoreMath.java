@@ -1,3 +1,4 @@
+//#include "defines.inc"
 class MoreMath {
     //parts derived from FDLIBM 5.3
 
@@ -304,16 +305,16 @@ class MoreMath {
         }
         k  += (hx >> 20) - 1023;
 
-        //System.out.println("k= " + k);
+        //LOG("k= " + k);
 
         hx &= 0x000fffff;
         i = (hx + 0x95f64) & 0x100000;
-        //System.out.println("hx= " + hx + "; i= " + i);
+        //LOG("hx= " + hx + "; i= " + i);
         long bits = (((long)(hx | (i ^ 0x3ff00000))) << 32) | 
             (Double.doubleToLongBits(x) & 0xffffffffL);
         x = Double.longBitsToDouble(bits);
         //HI(x) = hx | (i ^ 0x3ff00000);	/* normalize x or x/2 */
-        //System.out.println("x= " + x);
+        //LOG("x= " + x);
         k += (i >> 20);
         f = x - 1.0;
         if ((0x000fffff & (2 + hx)) < 3) {	/* |f| < 2**-20 */
@@ -408,7 +409,7 @@ class MoreMath {
             save = y;
             y = x % y;
             x = save;
-            //System.out.println(y);
+            //LOG(y);
         } 
         return x > 1e-10 ? x : 0;
     }

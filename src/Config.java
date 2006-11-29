@@ -1,5 +1,4 @@
-import java.util.*;
-import java.io.*;
+#include "defines.inc"
 
 class Config {
     Hashtable ht = new Hashtable();
@@ -19,7 +18,7 @@ class Config {
                     s1 = is.readUTF();
                     s2 = is.readUTF();
                     ht.put(s1, s2);
-                    System.out.println("--- " + s1 + " " + s2 + " ---");
+                    LOG("--- " + s1 + " " + s2 + " ---");
                 }
             } catch (IOException e) {
                 if (sz != ht.size()) {
@@ -57,6 +56,6 @@ class Config {
             throw new Error("config save " + e);
         }
         rs.write(recId);
-        System.out.println("config saved");
+        LOG("config saved");
     }
 }

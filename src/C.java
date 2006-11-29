@@ -1,6 +1,5 @@
+#include "defines.inc"
 import javax.microedition.midlet.*;
-import javax.microedition.lcdui.*;
-import java.io.IOException;
 
 public final class C extends MIDlet implements CommandListener, Runnable {
     static C self;
@@ -42,7 +41,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     Thread thread;
 
     static final int RS_CONFIG = 1;
-    static final int RS_HIST_START = 3, RS_MAX_HIST = 12; //32;
+    static final int RS_HIST_START = 3, RS_MAX_HIST = 32; //32;
     static final int RS_SYMB_START = RS_HIST_START + RS_MAX_HIST;
     static RMS rs;
     static boolean angleInRadians = true;
@@ -52,7 +51,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         self = this;
         rs = new RMS("calc");
         cfg = new Config(rs, RS_CONFIG);
-        //System.out.println("config size " + cfg.size());
+        //LOG("config size " + cfg.size());
         if (cfg.size() == 0) {
             cfg.set("angleUnit", "rad");
         }
