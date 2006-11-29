@@ -150,7 +150,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         repaint(clientX, Y[RESULT], clientW, lineHeight);
     }
 
-    int fitWidth(Font font, int targetWidth, char buf[], int start, int end) {
+    static int fitWidth(Font font, int targetWidth, char buf[], int start, int end) {
         int mW = font.charWidth('m');
         int n;
         while ((n = Math.min(targetWidth/mW, end - start)) >= 2) {
@@ -163,8 +163,12 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         return start;
     }
 
-    int split(Font font, char buf[], int len, int w, 
-              int changeLine, int lines[]) {
+    static int split(Font font, char buf[], int len, int w, int lines[]) {
+        return split(font, buf, len, w, lines, 0);
+    }
+
+    static int split(Font font, char buf[], int len, int w, 
+              int lines[], int changeLine) {
         int end = START_LINE(lines, changeLine);
         int i;
         for (i = changeLine; i < lines.length && end < len; ++i) {
@@ -186,7 +190,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     void editChanged(int changePos) {
         int changeLine = posToLine(editLines, changePos);
         int oldNLines = nEditLines;
-        nEditLines = split(font, line, len, clientW, changeLine, editLines);
+        nEditLines = split(font, line, len, clientW, editLines, changeLine);
         if (nEditLines > maxEditLines) {
             pos = changePos;
             delFromLine(pos, lastInsertLen);
@@ -284,7 +288,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 result.getChars(0, result.length(), histBuf, histBufLen);
                 histBufLen += result.length();
             }
-            int nLines = split(historyFont, histBuf, histBufLen, clientW, 0, histLines);
+            int nLines = split(historyFont, histBuf, histBufLen, clientW, histLines);
             for (int i = 0, start = 0; i < nLines && y <= yLimit; ++i, y+= histLineHeight) {
                 gg.drawChars(histBuf, start, histLines[i]-start, clientX, y, 0);
                 start = histLines[i];
@@ -340,6 +344,10 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
 
     protected void paint(Graphics g) {
         int keypadH = KeyState.getH();
+        /*
+        if (keypadH == 0 && helpText != null) {
+        }
+        */
         if (keypadH == 0) {
             g.drawImage(img, 0, 0, 0);
         } else {
