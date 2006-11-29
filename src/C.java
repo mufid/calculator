@@ -8,18 +8,6 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     private static final Command 
         cmdOk    = new Command("Ok",    Command.BACK, 1),
         cmdBack  = new Command("Back",  Command.BACK, 2);
-
-    /*
-        cmdAngle = new Command("Set Angle Unit", Command.SCREEN, 2),
-        cmdHelp  = new Command("Help",  Command.HELP, 8),
-        cmdAbout = new Command("About", Command.HELP, 9),
-        cmdExit  = new Command("Exit",  Command.EXIT, 10),
-    */
-
-        //cmdSetup  = new Command("Setup", Command.SCREEN, 1),
-        //cmdKeyDelete = new Command("Delete", Command.BACK, 1),
-        //cmdYes   = new Command("Yes",     Command.OK, 1),
-        //cmdCancel = new Command("Cancel", Command.CANCEL, 2);
     
     static Display display;
     CalcCanvas calcCanvas;
@@ -91,9 +79,13 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
         thread = new Thread(this);
         thread.start();
+
+        display = Display.getDisplay(this);
+        display.setCurrent(calcCanvas);
     }
     
     void displayMenu() {
+        menuList.set(0, (angleInRadians? "Degrees" : "Radians") + " (angle unit)", null);
         display.setCurrent(menuList);
     }
 
@@ -108,19 +100,22 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         }
 
         //c == List.SELECT_COMMAND
+        /*
         if (d == angleList) {
             angleInRadians = ((List) d).getSelectedIndex() == 0;
-            display.setCurrent(calcCanvas);
-            cfg.set("angleUnit", angleInRadians?"rad":"deg");
-            cfg.save();
             return;
         }
+        */
 
         //d == menuList
         switch (((List) d).getSelectedIndex()) {
         case 0:
-            angleList.setSelectedIndex(angleInRadians?0:1, true);
-            display.setCurrent(angleList);
+            angleInRadians = !angleInRadians;
+            display.setCurrent(calcCanvas);
+            cfg.set("angleUnit", angleInRadians?"rad":"deg");
+            cfg.save();
+            //angleList.setSelectedIndex(angleInRadians?0:1, true);
+            //display.setCurrent(angleList);
             break;
         case 1:
             display.setCurrent(helpForm);
@@ -129,20 +124,29 @@ public final class C extends MIDlet implements CommandListener, Runnable {
             display.setCurrent(aboutForm);
             break;
         case 3:
+            onExit();
             notifyDestroyed();
             break;
         }
     }
 
     protected void startApp() {
-        display = Display.getDisplay(this);
-        display.setCurrent(calcCanvas);
     }
 
     protected void pauseApp() {
     }
 
-    protected void destroyApp(boolean uncond) {
+    static final private MIDletStateChangeException stateChanged = new MIDletStateChangeException();
+    protected void destroyApp(boolean uncond) throws MIDletStateChangeException {
+        if (uncond || display.getCurrent() != calcCanvas) {
+            onExit();
+        } else {
+            calcCanvas.keyPressed(CalcCanvas.KEY_CLEAR);
+            throw stateChanged;
+        }
+    }
+
+    private void onExit() {
         calcCanvas.saveOnExit();
     }
 }
