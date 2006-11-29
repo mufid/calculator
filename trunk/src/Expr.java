@@ -1,4 +1,4 @@
-import java.io.*;
+#include "defines.inc"
 
 final class Result {
     String name, definition;
@@ -38,7 +38,7 @@ final class Expr {
         int n = argv.length;
         for (int i = 0; i < n; ++i) {
             boolean ok = parser.parse(argv[i], result);
-            System.out.println("   = " + result.value);
+            LOG("   = " + result.value);
         }
     }
 
@@ -97,7 +97,7 @@ final class Expr {
             result.value = 0;
             result.errorPos = tokenStart - nAddedBefore + 
                 (result.name == null ? 0 : (result.name.length() + 2));
-            //System.out.println("errorPos " + result.errorPos);
+            //LOG("errorPos " + result.errorPos);
             result.arity = 0;
             return false;
         }
@@ -141,7 +141,7 @@ final class Expr {
     private void scan() {
         tokenType = '$';
         tokenStart = pos;
-        //System.out.println("pos " + pos + "; n " + n + "; c " + text[pos]);
+        //LOG("pos " + pos + "; n " + n + "; c " + text[pos]);
         if (pos < n) { 
             char c = text[pos];
             if ((c >= '0' && c <= '9') || c == '.') {
@@ -177,7 +177,7 @@ final class Expr {
                 } else try {
                     tokenValue = Double.parseDouble(String.valueOf(text, start, pos - start));
                 } catch (NumberFormatException e) {
-                    System.out.println("number: " + String.valueOf(text, start, pos - start));
+                    LOG("number: " + String.valueOf(text, start, pos - start));
                     tokenType = 'e';
                 }
             } else {
@@ -248,7 +248,7 @@ final class Expr {
     private final double parseUnary() {
         double value;
         scan();
-        //System.out.println("token " + tokenType);
+        //LOG("token " + tokenType);
         switch (tokenType) {
             
         case '-': 
