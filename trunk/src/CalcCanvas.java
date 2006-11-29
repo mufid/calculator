@@ -372,6 +372,9 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         if (pos < 0) {
             return pos;
         }
+        if (line[pos] == '=' && pos >= 1 && line[pos-1] == ':') {
+            return pos - 2;
+        }
         int p = pos;
         if (p >= 0 && line[p] == '(') {
             --p;
@@ -386,6 +389,9 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     int nextFlexPoint(int pos) {
         if (pos >= len - 1) {
             return pos;
+        }
+        if (line[pos+1] == ':' && pos <= len-3 && line[pos+2] == '=') {
+            return pos + 2;
         }
         ++pos;
         if (Expr.isLetter(line[pos])) {
@@ -555,6 +561,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 if (pos == -1 && s.length() == 1 &&
                     "+-*/%^!".indexOf(s.charAt(0)) != -1) {
                     insertIntoLine("ans");
+                    lastInsertLen += 3;
                 }
                 insertIntoLine(s);
                 lastInsertLen += s.length();
@@ -571,6 +578,12 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                             insertIntoLine("(");
                             ++lastInsertLen;
                         }
+                    }
+                } else if (s.length() == 1) {
+                    char c = s.charAt(0);
+                    if ('a' <= c && c < 'x') {
+                        insertIntoLine(":=");
+                        lastInsertLen += 2;
                     }
                 }
                 doChanged(oldPos);
