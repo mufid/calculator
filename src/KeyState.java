@@ -48,8 +48,8 @@ final class KeyState {
         logs = new KeyState(new Object[] {
             null,  null,   null,
             null,  null,   null,
-            "lg",  "ln",   "lb",
             "cbrt", null,  null,
+            "lg",  "ln",   "lb",
         });
 
         ints = new KeyState(new Object[] {
@@ -61,9 +61,9 @@ final class KeyState {
 
         vars = new KeyState(new Object[] {
             "x",  "y",  "z",
-            "h",  "m",  "n",
-            "g",  "c",  "d",
             "f",  "a",  "b",
+            "g",  "c",  "d",
+            "h",  "m",  "n",
         });
 
         rootOp = new KeyState(new Object[] {
