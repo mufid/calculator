@@ -1,0 +1,6 @@
+DirectoryIndex index
+Options +Multiviews
+AddCharset UTF-8 xhtml html css
+AddType application/java-archive .jar
+AddType text/vnd.sun.j2me.app-descriptor .jad
+Header append Cache-Control max-age=3600,public

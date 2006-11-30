@@ -1,0 +1,6 @@
+.framed { padding: 2px; margin: 8px; border: 1px solid black; }
+.leftbar   { width: 160px; float: left; }
+.main { margin-left: 190px; max-width: 40em; }
+body { font-family: verdana,arial,sans-serif; font-size: 80%; line-height: 140%; }
+h1 { line-height: 100%; }
+.footer { background: #eee; color: black; border-top: 1px solid #aaa; text-align: center; font-size: 70%; }
