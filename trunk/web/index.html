@@ -16,11 +16,11 @@
 </div>
 
 <div class="main">
-<img class="ss" src="javia-calculator.png" width="128" height="128" alt="screenshot: initial" />
 <h1>Javia Calculator</h1>
 <p>
-Javia Calculator is the <em>easy-to-use</em> calculator for mobile phones; 
-it uses an input mode specially designed for the mobile phone's keypad, 
+<img class="ss" src="javia-calculator.png" width="128" height="128" alt="screenshot: initial" />
+Javia Calculator is an <em>easy-to-use</em> calculator for mobile phones; 
+it features an input mode specially designed for the mobile phone's keypad, 
 which allows to quickly and easily type a mathematical expression.
 </p>
 
@@ -30,7 +30,7 @@ combinations, permutations and factorial, and allows you to define new functions
 </p>
 
 <p>
-A mobile phone must support CLDC-1.1 in order to be able to run Javia Calculator 
+Javia Calculator requires a phone with CLDC-1.1
 (if you bougth your phone in 2005 or more recently, it likely supports CLDC-1.1).
 To find out whether your phone can run Javia Calculator, simply try to install the application,
 as your mobile phone will inform you if it can't handle it.
@@ -46,27 +46,72 @@ You may download the development build here:<br />
 <a href="Javia-Calculator.jad" accesskey="2">Javia-Calculator.jad</a><br />
 </p>
 
-<div>
-<img class="ss" src="operators.png" width="128" height="128" alt="screenshot: operators" />
-<h2>Operators</h2>
+<h2>Key-Menu</h2>
+<p>
+The two keys <strong>*</strong> and <strong>#</strong> are special, because they
+open what I call the <em>operators' key-menu</em> and respectively the <em>functions' key-menu</em>.
+</p>
+<p>
+<img class="ss" src="operators-menu.png" width="114" height="58" alt="operators' menu" />
+The left key-menu, activated by pressing <strong>*</strong>, contains the operators.
+When the menu is active (i.e. displayed on the screen) you may select an entry by pressing
+one of the keys of the numeric keypad (<strong>1</strong>-<strong>9</strong>, <strong>*0#</strong>).
+The top row of the key-menu corresponds to the keys <strong>1 2 3</strong>, and the bottom row 
+corresponds to the keys <strong>* 0 #</strong>.
+</p>
+<p>
+For example, pressing the <strong>*</strong> key when the operators menu is active produces
+the <strong>+</strong> operator, while the <strong>7</strong> key produces the <strong>*</strong> operator,
+as is displayed in the menu visible on the screen.
+</p>
 
-Pressing <strong>*</strong> opens the operators' menu.
+<p>
+When in the normal input mode (no key-menu is active) you can easily obtain the <strong>+</strong>
+operator by double-pressing the <strong>*</strong> key (as the first press activates the operators' menu,
+while the second press selects <strong>+</strong> from the menu. Of course, you don't have to wait for the menu
+when you double-press).
+</p>
+
+<p>
+<img class="ss" src="functions-menu.png" width="114" height="58" alt="functions' menu" />
+The right key-menu, activated with the <strong>#</strong> key, 
+contains everything else: the decimal dot, functions and constants.
+</p>
+
+<p>
+Some entries on the functions' menu (such as <span class="menu">sin</span>, <span class="menu">ln</span>)
+are displayed in yellow. These colored entries open additional sub-menus that contain related entries. 
+For example, <span class="menu">sin</span> opens the trigonometric menu where you find sin, cos, tan.
+</p>
+
+<p>
+A yellow menu entry can also be selected directly by double-pressing its key. 
+For example, when the functions' menu is active, a double-press on <strong>*</strong> produces the
+<strong>sin</strong> function, and a double-press on <strong>0</strong> produces the <strong>ln</strong> function.
+</p>
+
+<p>
+A key-menu which is active can be dismissed without selecting anything from it by
+pressing any softkey, any arrow-key, or the <em>clear</em> key. 
+In this situation, the normal function of the pressed key (cursor navigation, clear) is
+not invoked, the only effect being that the key-menu is dismissed.
+</p>
+
+<h2>Operators</h2>
+<img class="ss" src="operators.png" width="128" height="128" alt="screenshot: operators" />
+Pressing <strong>*</strong> opens the operators' menu, which contains the usual operators<br/>
+<strong>+ - * /</strong>, the parentheses <strong>( )</strong>, as well as:
 
 <table>
-<tr><th>+</th><td>addition</td></tr>
-<tr><th>-</th><td>substraction, and unary sign-change</td></tr>
-<tr><th>*</th><td>multiplication</td></tr>
-<tr><th>/</th><td>division</td></tr>
 <tr><th>%</th><td>real modulo (remainder). E.g. 1.75 % 0.5 = 0.25</td></tr>
 <tr><th>^</th><td>power (exponentiation)</td></tr>
 <tr><th>!</th><td>the factorial, extended to real numbers</td></tr>
+<tr><th>,</th><td>the <em>comma</em>, used to separate the parameters of a function<br/>
+E.g. <code>min(3/4<strong>,</strong>10/16)</code></td></tr>
 </table>
-</div>
 
-<div>
-<img class="ss" src="functions.png" width="128" height="128" alt="screenshot: functions" />
 <h2>Functions, constants, decimal dot</h2>
-
+<img class="ss" src="functions.png" width="128" height="128" alt="screenshot: functions" />
 Pressing <strong>#</strong> opens the functions' menu. 
 This menu contains everything except the operators:
 
@@ -87,12 +132,10 @@ combinations, permutations, random number generator, fractional and integer part
 <tr><th>ans</th><td>Answer, the result of the previous operation</td></tr>
 <tr><th>E</th><td>Exponent notation symbol (e.g. 2.5E3 == 2500)</td></tr>
 </table>
-</div>
 
-<div>
-<img class="ss" src="define-function.png" width="128" height="128" alt="screenshot: define function" />
 <h2>User-defined variables and functions</h2>
 <p>
+<img class="ss" src="define-function.png" width="128" height="128" alt="screenshot: define function" />
 To define a new variable or function, first choose it's name from the <em>letters</em> menu.
 You have a limited choice of one-letter names: a, b, c, d, m, n, f, g, h; these may all be used
 to name either variables or functions.
@@ -114,32 +157,59 @@ third parameter.
 The presence of at least one parameter is what differentiates a function definition from a variable definition. 
 Example: 
 <code>
-f:=2^x
+f:=sqrt(x^2+y^2
 </code>
-defines the function f(x).
+defines the function f(x,y). (remark that the closing parentheses at the end was omitted).
 </p>
 <p>
 All user definitions (variables and functions) are saved between invocations (they're <em>persistent</em>).
 </p>
-</div>
 
-<div>
-<h2>History</h2>
+
+<h2>Operations History</h2>
 The most recent 32 expressions are saved in <em>history</em>.
 You can easilly navigate the history using the UP/DOWN arrows.
-</div>
 
-<div>
 <h2>Parentheses</h2>
 Use parentheses <strong>( )</strong> to control the evaluation of the expressions.
 You may omit the parentheses located at the beginning or at the end of the expression,
 as they are implied in order to correctly match the remaining parentheses.<br />
-<code>1+2*3 == 7</code><br />
-<code>(1+2)*3 == 9</code><br />
-<code>1+2)*3 == 9</code><br />
+<pre>1+2*3    = 7
+(1+2)*3  = 9
+1+2)*3   = 9
+</pre>
 In the last expression the missing open parentheses is implicitly positioned at
 the beginning of the expression.
-</div>
+
+
+<h2>Edit Navigation</h2>
+<p>
+The LEFT/RIGHT arrows are used to move the cursor inside the expression's text. 
+When the expression is long and spans multiple lines, the UP/DOWN arrows may be used to
+move the cursor vertically between lines.
+</p>
+
+<p>
+When the expression is single-line, the UP/DOWN arrows navigate within the history. 
+DOWN moves towards older expressions, while UP moves towards more recent ones.
+In a multi-line expression the history navigation takes place when the cursor tries
+to move vertically beyond the bounds of the expression 
+(i.e. when the cursor is positioned on the first line and you press UP, or 
+when the cursor is positioned on the last line and you press DOWN).
+</p>
+
+<p>
+The Left Softkey displays the application's menu, which allows to change the angle unit
+(between radians and degrees), and offers access to the Help and About screens, as well as
+an option to exit the application.
+</p>
+
+<p>
+The Right Softkey is used to <em>clear</em> the token positioned before the cursor, i.e.
+to erase, similarly to the way Backspace works on a computer. 
+Other additional keys which are present on some mobiles (for example, a dedicated Clear key)
+may have the same effect.
+</p>
 </div>
 
 <div class="footer">
