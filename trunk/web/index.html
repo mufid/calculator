@@ -13,19 +13,133 @@
 
 <body>
 <div class="leftbar">
-<img class="framed" src="javia-calculator.png" width="128" height="128" alt="calculator screenshot" />
 </div>
 
 <div class="main">
+<img class="ss" src="javia-calculator.png" width="128" height="128" alt="screenshot: initial" />
 <h1>Javia Calculator</h1>
+<p>
+Javia Calculator is the <em>easy-to-use</em> calculator for mobile phones; 
+it uses an input mode specially designed for the mobile phone's keypad, 
+which allows to quickly and easily type a mathematical expression.
+</p>
+
+<p>
+Javia Calculator supports trigonometric and hyperbolic functions, logarithms and exponentiation, 
+combinations, permutations and factorial, and allows you to define new functions and constants.
+</p>
+
+<p>
+A mobile phone must support CLDC-1.1 in order to be able to run Javia Calculator 
+(if you bougth your phone in 2005 or more recently, it likely supports CLDC-1.1).
+To find out whether your phone can run Javia Calculator, simply try to install the application,
+as your mobile phone will inform you if it can't handle it.
+</p>
+
 <p>
 The application is still under development. A beta release is expected towards the beginning of December 2006.
 </p>
+
 <p>
 You may download the development build here:<br />
 <a href="Javia-Calculator.jar" accesskey="1">Javia-Calculator.jar</a><br />
 <a href="Javia-Calculator.jad" accesskey="2">Javia-Calculator.jad</a><br />
 </p>
+
+<div>
+<img class="ss" src="operators.png" width="128" height="128" alt="screenshot: operators" />
+<h2>Operators</h2>
+
+Pressing <strong>*</strong> opens the operators' menu.
+
+<table>
+<tr><th>+</th><td>addition</td></tr>
+<tr><th>-</th><td>substraction, and unary sign-change</td></tr>
+<tr><th>*</th><td>multiplication</td></tr>
+<tr><th>/</th><td>division</td></tr>
+<tr><th>%</th><td>real modulo (remainder). E.g. 1.75 % 0.5 = 0.25</td></tr>
+<tr><th>^</th><td>power (exponentiation)</td></tr>
+<tr><th>!</th><td>the factorial, extended to real numbers</td></tr>
+</table>
+</div>
+
+<div>
+<img class="ss" src="functions.png" width="128" height="128" alt="screenshot: functions" />
+<h2>Functions, constants, decimal dot</h2>
+
+Pressing <strong>#</strong> opens the functions' menu. 
+This menu contains everything except the operators:
+
+<table>
+<tr><th><span class="menu">sin</span></th><td>trigonometric functions menu:<br/>
+sin cos tan, asin acos atan, and their hyperbolic variants.</td></tr>
+<tr><th><span class="menu">ln</span></th><td>logarithms menu:<br />
+lg (base 10 logarithm), ln (natural logarithm), lb (base 2 logarithm), cbrt (cubic root).</td></tr>
+<tr><th>.</th><td>decimal dot</td></tr>
+<tr><th>pi</th><td>PI constant</td></tr>
+<tr><th>e</th><td>Euler constant</td></tr>
+<tr><th><span class="menu">abs</span></th><td>various functions:<br/>
+combinations, permutations, random number generator, fractional and integer part, min, max, abs.
+</td></tr>
+<tr><th><span class="menu">a</span></th><td>names for user-defined functions and constants</td></tr>
+<tr><th>:=</th><td>function/constant definition symbol</td></tr>
+<tr><th>sqrt</th><td>square root</td></tr>
+<tr><th>ans</th><td>Answer, the result of the previous operation</td></tr>
+<tr><th>E</th><td>Exponent notation symbol (e.g. 2.5E3 == 2500)</td></tr>
+</table>
+</div>
+
+<div>
+<img class="ss" src="define-function.png" width="128" height="128" alt="screenshot: define function" />
+<h2>User-defined variables and functions</h2>
+<p>
+To define a new variable or function, first choose it's name from the <em>letters</em> menu.
+You have a limited choice of one-letter names: a, b, c, d, m, n, f, g, h; these may all be used
+to name either variables or functions.
+</p>
+
+<p>
+You use the <em>definition symbol</em>, <strong>:=</strong>, to give a value to the variable:
+<code>
+a:=sqrt(pi/2)
+</code>
+gives a value to the variable <strong>a</strong>.
+</p>
+
+<p>
+In order to define a function, you must use one of the special <em>parameter names</em>
+<strong>x</strong>, <strong>y</strong> or <strong>z</strong> in the function's expression.
+<strong>x</strong> denotes the first parameter of the function, while <strong>z</strong> is the
+third parameter.
+The presence of at least one parameter is what differentiates a function definition from a variable definition. 
+Example: 
+<code>
+f:=2^x
+</code>
+defines the function f(x).
+</p>
+<p>
+All user definitions (variables and functions) are saved between invocations (they're <em>persistent</em>).
+</p>
+</div>
+
+<div>
+<h2>History</h2>
+The most recent 32 expressions are saved in <em>history</em>.
+You can easilly navigate the history using the UP/DOWN arrows.
+</div>
+
+<div>
+<h2>Parentheses</h2>
+Use parentheses <strong>( )</strong> to control the evaluation of the expressions.
+You may omit the parentheses located at the beginning or at the end of the expression,
+as they are implied in order to correctly match the remaining parentheses.<br />
+<code>1+2*3 == 7</code><br />
+<code>(1+2)*3 == 9</code><br />
+<code>1+2)*3 == 9</code><br />
+In the last expression the missing open parentheses is implicitly positioned at
+the beginning of the expression.
+</div>
 </div>
 
 <div class="footer">
