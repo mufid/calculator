@@ -5,14 +5,20 @@ PREV=$WTK/bin/preverify
 PROGUARD="java -jar /home/preda/proguard3.7beta2/lib/proguard.jar @src/proguard.txt"
 
 NAME="Javia-Calculator"
-VERSION="0.0.3"
-URL="http://javia.org/"
+URL="http://calculator.javia.org/"
 SRCS="C CalcCanvas Config Expr History KeyState MoreMath Symbol RMS"
 
 CLASS=$WTK/lib/cldcapi11.jar:$WTK/lib/midpapi20.jar
 CLDC=1.1
 MIDP=2.0
 ICON=a
+
+function readVersion {
+MAJOR=$1
+MINOR=$2
+MICRO=$3
+VERSION=$MAJOR.$MINOR.$MICRO
+}
 
 function genManifest {
 echo "MIDlet-1: $NAME, /$ICON, C"
@@ -34,12 +40,23 @@ echo MIDlet-Info-URL: $URL
 
 function genJad {
     cp $1 $2 &&
-    echo MIDlet-Jar-URL: $3 >> $2 &&
+    echo MIDlet-Jar-URL: $URL$3 >> $2 &&
     echo MIDlet-Jar-Size: `find bin -name $3 -printf %s` >> $2
 }
 
 function gen {
-FULLNAME=$NAME
+readVersion `cat src/version.txt`
+if [ x$1 == "x-release" ] ; then
+DEBUG=""
+NEW_MICRO=`expr $MICRO + 1`
+echo $MAJOR $MINOR $NEW_MICRO > src/version.txt
+FULLNAME=$NAME-$VERSION
+else
+DEBUG="-D DEBUG=1"
+FULLNAME=$NAME-$VERSION-a
+fi
+
+
 echo $FULLNAME
 DIRS="class tmp"
 rm -rf $DIRS
@@ -51,11 +68,6 @@ genManifest > $MANF
 set -e
 echo Preprocess
 rm -f psrc/*.java
-if [ a$1 == "a-d" ] ; then
-DEBUG="-D DEBUG=1"
-else
-DEBUG=""
-fi
 for name in $SRCS ; do
 cpp -P $DEBUG -D VERSION="\"$VERSION\"" -D NAME="\"$NAME\"" -D URL="\"$URL\"" src/$name.java psrc/$name.java
 done
@@ -79,7 +91,11 @@ $PREV -classpath $CLASS -target CLDC$CLDC -d bin tmp/$FULLNAME.jar
 genJad $MANF bin/$FULLNAME.jad $FULLNAME.jar
 echo
 
-scp bin/$FULLNAME.jar javia.org:www/calculator
+if [ x$1 == "x-release" ] ; then
+    scp web/.htaccess bin &&
+    echo "Redirect 302 /$NAME.jar $URL$FULLNAME.jar" >> bin/.htaccess &&
+    scp bin/$FULLNAME.jar bin/.htaccess javia.org:www/calculator
+fi
 }
 
 gen $*
