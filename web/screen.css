@@ -10,3 +10,4 @@ th { vertical-align: top; font-weight: bold; padding-left: 1em; padding-right: 1
 .menu { background-color: yellow; }
 td { padding-left: 1em; }
 h2 { font-size: 120%; margin-top: 2em; }
+.invis { display: none; }
