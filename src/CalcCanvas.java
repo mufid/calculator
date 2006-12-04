@@ -458,7 +458,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     }
 
     void handleAction(int action) {
-        System.out.println("cursorRow " + cursorRow);
+        LOG("cursorRow " + cursorRow);
         switch (action) {
         case Canvas.LEFT:
             pos = prevFlexPoint(pos);
