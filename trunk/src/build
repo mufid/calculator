@@ -95,6 +95,7 @@ if [ x$1 == "x-release" ] ; then
     scp web/.htaccess bin &&
     echo "Redirect 302 /$NAME.jar $URL$FULLNAME.jar" >> bin/.htaccess &&
     echo "Redirect 302 /$NAME.jad $URL$FULLNAME.jad" >> bin/.htaccess &&
+    echo "Redirect 302 /jar $URL$FULLNAME.jar" >> bin/.htaccess &&
     scp bin/$FULLNAME.jar bin/$FULLNAME.jad bin/.htaccess javia.org:www/calculator
 else
     scp bin/$FULLNAME.jar javia.org:www/calculator/tmp
