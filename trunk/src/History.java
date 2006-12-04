@@ -1,5 +1,4 @@
-import java.util.Vector;
-import java.io.*;
+#include "defines.inc"
 
 class HistEntry {
     String base, edited;
@@ -20,6 +19,7 @@ class HistEntry {
             hasResult = in.readBoolean();
             base = in.readUTF();
         } catch (IOException e) {
+            LOG(e);
             //throw new Error(e.toString());
         }
         flush();
@@ -68,6 +68,7 @@ class History {
             try {
                 seq = is.readInt();
             } catch (IOException e) {
+                LOG(e);
             }
             if (seq > maxSeq) {
                 posMaxSeq = v.size();
