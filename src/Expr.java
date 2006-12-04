@@ -70,7 +70,7 @@ final class Expr {
             outResult.errorPos = 0;
             return false;
         }
-        if (str.length() > 3 && str.charAt(1) == ':' && str.charAt(2) == '=') {
+        if (str.length() >= 3 && str.charAt(1) == ':' && str.charAt(2) == '=') {
             char c = str.charAt(0);
             if ('a' <= c || c < 'x') {
                 String name = String.valueOf(c);

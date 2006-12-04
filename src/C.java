@@ -135,14 +135,17 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     protected void pauseApp() {
     }
 
-    static final private MIDletStateChangeException stateChanged = new MIDletStateChangeException();
-    protected void destroyApp(boolean uncond) throws MIDletStateChangeException {
+    //static final private MIDletStateChangeException stateChanged = new MIDletStateChangeException();
+    protected void destroyApp(boolean uncond) { //throws MIDletStateChangeException {
+        onExit();
+        /*
         if (uncond || display.getCurrent() != calcCanvas) {
             onExit();
         } else {
             calcCanvas.keyPressed(CalcCanvas.KEY_CLEAR);
             throw stateChanged;
         }
+        */
     }
 
     private void onExit() {

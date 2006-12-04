@@ -458,6 +458,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     }
 
     void handleAction(int action) {
+        System.out.println("cursorRow " + cursorRow);
         switch (action) {
         case Canvas.LEFT:
             pos = prevFlexPoint(pos);
@@ -555,14 +556,22 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 s = String.valueOf((char)key);
             }
             if (s != null) {
-                if (pos == -1 && s.length() == 1 &&
-                    "+-*/%^!".indexOf(s.charAt(0)) != -1) {
-                    insertIntoLine("ans");
-                    lastInsertLen += 3;
-                }
-                insertIntoLine(s);
-                lastInsertLen += s.length();
                 Symbol symbol = Expr.symbols.get(s);
+                if (pos == -1 && s.length() == 1) {
+                    if ("+-*/%^!".indexOf(s.charAt(0)) != -1) {
+                        insertIntoLine("ans");
+                        lastInsertLen += 3;
+                    }
+                    insertIntoLine(s);
+                    char c = s.charAt(0);
+                    if (symbol == null && 'a' <= c && c < 'x') {
+                        insertIntoLine(":=");
+                        lastInsertLen += 2;
+                    }
+                } else {
+                    insertIntoLine(s);
+                }
+                lastInsertLen += s.length();
                 if (symbol != null) { // && symbol.arity > 0) {
                     String parens = arityParens[symbol.arity];
                     int parensLen = parens.length();
@@ -575,12 +584,6 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                             insertIntoLine("(");
                             ++lastInsertLen;
                         }
-                    }
-                } else if (s.length() == 1) {
-                    char c = s.charAt(0);
-                    if ('a' <= c && c < 'x') {
-                        insertIntoLine(":=");
-                        lastInsertLen += 2;
                     }
                 }
                 doChanged(oldPos);
