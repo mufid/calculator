@@ -13,11 +13,11 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     static final String helpStr = 
 "Press * or # to display the menu, " +
 "next press one more key (1-9,*0#) to select. " +
-"The left menu * contains the decimal dot, functions and constants. " +
-"The right menu # contains operators like +,-,*,/. " +
-"The entries marked in blue open additional sub-menus. " +
-"E.g. to obtain the decimal dot, press twice *; " +
-"to obtain +, press twice #.\n\n" +
+"The left menu * contains operators like +-*/. " +
+"The right menu # contains the decimal dot, functions and constants. " +
+"The yellow entries open additional sub-menus. " +
+"To obtain +, press twice *. " +
+"To obtain the decimal dot, press twice #.\n\n" +
 
 "Use UP and DOWN to navigate the history.\n\n" +
 
@@ -29,7 +29,6 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 "'ans' is automatically added in front of an expression that starts with an operator. " +
 "E.g. typing '+2' becomes 'ans+2'.";
 
-    List angleList = new List("Angle Unit", List.IMPLICIT, new String[]{"Radians", "Degrees"}, null);
     List menuList  = new List("Menu",       List.IMPLICIT, new String[]{
         "Set Angle Unit", 
         "Help", 
@@ -59,7 +58,6 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         
         calcCanvas = new CalcCanvas();
 
-        angleList.setCommandListener(this);
         menuList.addCommand(cmdBack);
         menuList.setCommandListener(this);
 
@@ -84,7 +82,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     }
     
     void displayMenu() {
-        menuList.set(0, (angleInRadians? "Degrees" : "Radians") + " (angle unit)", null);
+        menuList.set(0, (angleInRadians? "Degrees" : "Radians") + " angle unit", null);
         display.setCurrent(menuList);
     }
 
@@ -98,23 +96,12 @@ public final class C extends MIDlet implements CommandListener, Runnable {
             return;
         }
 
-        //c == List.SELECT_COMMAND
-        /*
-        if (d == angleList) {
-            angleInRadians = ((List) d).getSelectedIndex() == 0;
-            return;
-        }
-        */
-
-        //d == menuList
         switch (((List) d).getSelectedIndex()) {
         case 0:
             angleInRadians = !angleInRadians;
             display.setCurrent(calcCanvas);
             cfg.set("angleUnit", angleInRadians?"rad":"deg");
             cfg.save();
-            //angleList.setSelectedIndex(angleInRadians?0:1, true);
-            //display.setCurrent(angleList);
             break;
         case 1:
             display.setCurrent(helpForm);
@@ -135,17 +122,8 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     protected void pauseApp() {
     }
 
-    //static final private MIDletStateChangeException stateChanged = new MIDletStateChangeException();
     protected void destroyApp(boolean uncond) { //throws MIDletStateChangeException {
         onExit();
-        /*
-        if (uncond || display.getCurrent() != calcCanvas) {
-            onExit();
-        } else {
-            calcCanvas.keyPressed(CalcCanvas.KEY_CLEAR);
-            throw stateChanged;
-        }
-        */
     }
 
     private void onExit() {
