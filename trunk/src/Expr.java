@@ -72,7 +72,7 @@ final class Expr {
         }
         if (str.length() >= 3 && str.charAt(1) == ':' && str.charAt(2) == '=') {
             char c = str.charAt(0);
-            if ('a' <= c || c < 'x') {
+            if ('a' <= c && c < 'x') {
                 String name = String.valueOf(c);
                 Symbol s = symbols.get(name);
                 if (s == null || s.code == 0) {
