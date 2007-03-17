@@ -1,3 +1,5 @@
+// Copyright (c) 2006-2007, Mihai Preda
+
 //#include "defines.inc"
 class MoreMath {
     //parts derived from FDLIBM 5.3
