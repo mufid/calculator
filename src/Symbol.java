@@ -1,3 +1,5 @@
+// Copyright (c) 2006-2007, Mihai Preda
+
 import java.util.Hashtable;
 import java.util.Random;
 import java.io.*;

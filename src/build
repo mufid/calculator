@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright (c) 2006-2007, Mihai Preda
 
 WTK=/home/preda/WTK2.2
 PREV=$WTK/bin/preverify

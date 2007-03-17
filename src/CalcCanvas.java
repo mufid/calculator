@@ -1,3 +1,5 @@
+// Copyright (c) 2006-2007, Mihai Preda
+
 #include "defines.inc"
 #define START_LINE(lines, n) (((n)==0)?0:lines[n-1])
 
