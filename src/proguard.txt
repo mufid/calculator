@@ -1,4 +1,5 @@
--keep public class C 
+-keep public class C
+-keep class UnitTest { static void main(java.lang.String[]); }
 -overloadaggressively
 -printmapping map.txt
 #-printusage
