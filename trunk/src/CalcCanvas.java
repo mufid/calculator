@@ -53,8 +53,8 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     CalcCanvas() {
         boolean isSmallScreen = getHeight() <= 128;
         //if (isSmallScreen) {
-            setFullScreenMode(true);
-            //}
+        setFullScreenMode(true);
+        //}
 
         screenW = getWidth();
         screenH = getHeight();
@@ -147,6 +147,11 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             }
         }
         repaint(clientX, Y[RESULT], clientW, lineHeight);
+    }
+
+    static int fitWidth(Font font, int targetWidth, String str) {
+        char buf[] = str.toCharArray();
+        return fitWidth(font, targetWidth, buf, 0, buf.length);
     }
 
     static int fitWidth(Font font, int targetWidth, char buf[], int start, int end) {
@@ -297,48 +302,21 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         repaint(clientX, Y[HISTORY], clientW, historyH);
     }
 
-    char formatBuf[] = new char[30];
-    int ePos;
-    private int formatAux(double v) {
-        String s = Double.toString(v);
-        ePos = s.lastIndexOf('E');
-        int len = s.length();
-        int exp;
-        if (ePos == -1 || v <= 1 || (exp = Integer.parseInt(s.substring(ePos + 1))) > 10) {
-            s.getChars(0, len, formatBuf, 0);
-            return len;
-        }
-        formatBuf[0] = s.charAt(0);
-        len = ePos;
-        ePos = -1;
-        if (exp + 2 < len) {
-            int p = exp + 2;
-            s.getChars(2, p, formatBuf, 1);            
-            formatBuf[p-1] = '.';
-            s.getChars(p, len, formatBuf, p);
-            return len;
-        } else {
-            s.getChars(2, len, formatBuf, 1);
-            for (int i = len - 2; i < exp; ++i) {
-                formatBuf[i] = '0';
-            }
-            return exp+1;
-        }
-    }
-
     String format(double v) {
-        int len = formatAux(v);
+        String str = Util.doubleToString(v, 20);
+        int len  = str.length();
+        int ePos = str.lastIndexOf('E');
         if (ePos == -1) {
-            ePos = len;
+            int n = fitWidth(font, clientW, str);
+            return str.substring(0, n);
+            //return str;
+        } else {
+            String tail = str.substring(ePos);
+            str = str.substring(0, ePos);
+            int tailW   = font.stringWidth(tail);
+            int n = fitWidth(font, clientW - tailW, str);
+            return str.substring(0, n) + tail;
         }
-        int baseLen = ePos;
-        if (baseLen >= 2 && formatBuf[baseLen-1] == '0' && formatBuf[baseLen-2] == '.') {
-            baseLen -= 2;
-        }
-
-        int tailW   = font.charsWidth(formatBuf, ePos, len - ePos);
-        int n = fitWidth(font, clientW - tailW, formatBuf, 0, baseLen);
-        return String.valueOf(formatBuf, 0, n) + String.valueOf(formatBuf, ePos, len - ePos);
     }
 
     protected void paint(Graphics g) {
