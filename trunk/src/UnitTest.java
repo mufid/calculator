@@ -3,37 +3,64 @@
 class UnitTest {
 
     class FormatCase {
-        public FormatCase(double v, String s) {
+        public FormatCase(int rounding, double v, String s) {
+            this.rounding = rounding;
             this.val = v;
             this.res = s;
         }
 
+        public int rounding;
         public double val;
         public String res;            
     }
 
     FormatCase cases[] = { 
-        new FormatCase(0.1, "0.1"),
-        new FormatCase(0.12, "0.12"),
-        new FormatCase(0.001, "0.001"),
-        new FormatCase(0.0012, "0.0012"),
-        new FormatCase(0.0000001, "1E-7"),
-        new FormatCase(0.00000012, "1.2E-7"),
-        new FormatCase(0.123456789012345, "0.123456789012345"),
+        new FormatCase(0, 0.1, "0.1"),
+        new FormatCase(0, 0.12, "0.12"),
+        new FormatCase(0, 0.001, "0.001"),
+        new FormatCase(0, 0.0012, "0.0012"),
+        new FormatCase(0, 0.0000001, "1E-7"),
+        new FormatCase(0, 0.00000012, "1.2E-7"),
+        new FormatCase(0, 0.123456789012345, "0.123456789012345"),
 
-        new FormatCase(0, "0"),
-        new FormatCase(1, "1"),
-        new FormatCase(12, "12"),
-        new FormatCase(1234567890.,   "1234567890"), 
-        new FormatCase(1000000000.,   "1000000000"),
+        new FormatCase(0, 0, "0"),
+        new FormatCase(0, 1, "1"),
+        new FormatCase(0, 12, "12"),
+        new FormatCase(0, 1234567890.,   "1234567890"), 
+        new FormatCase(0, 1000000000.,   "1000000000"),
         
-        new FormatCase(1.23456789012345,  "1.23456789012345"),
-        new FormatCase(12345.6789012345,  "12345.6789012345"),
-        new FormatCase(1234567890.12345,  "1234567890.12345"),  
-        new FormatCase(123456789012345.,   "1.23456789012345E14"), 
-        new FormatCase(100000000000000.,   "1E14"),
-        new FormatCase(120000000000000.,   "1.2E14"),
-        new FormatCase(100000000000001.,   "1.00000000000001E14"),
+        new FormatCase(0, 1.23456789012345,  "1.23456789012345"),
+        new FormatCase(0, 12345.6789012345,  "12345.6789012345"),
+        new FormatCase(0, 1234567890.12345,  "1234567890.12345"),  
+        new FormatCase(0, 123456789012345.,   "1.23456789012345E14"), 
+        new FormatCase(0, 100000000000000.,   "1E14"),
+        new FormatCase(0, 120000000000000.,   "1.2E14"),
+        new FormatCase(0, 100000000000001.,   "1.00000000000001E14"),
+
+
+        new FormatCase(2, 0.1, "0.1"),
+        new FormatCase(2, 0.00000012, "1.2E-7"),
+        new FormatCase(3, 0.123456789012345, "0.12345678901235"),
+
+        new FormatCase(2, 0, "0"),
+        
+        new FormatCase(3, 1.23456789012345,  "1.2345678901235"),
+        new FormatCase(4, 1.23456789012345,  "1.234567890123"),
+        
+        new FormatCase(2, 12345.6789012345,  "12345.6789012345"),
+        new FormatCase(3, 1234567890.12345,  "1234567890.1235"),  
+        new FormatCase(4, 123456789012345.,   "1.234567890123E14"), 
+        new FormatCase(3, 100000000000001.,   "1E14"),
+
+        new FormatCase(0, 12345678901234567.,   "1.2345678901234568E16"),
+        new FormatCase(1, 12345678901234567.,   "1.234567890123457E16"),
+        new FormatCase(2, 12345678901234567.,   "1.23456789012346E16"),
+
+        new FormatCase(0, 99999999999999999.,   "1E17"),
+        new FormatCase(0, 9999999999999999.,    "1E16"),
+        new FormatCase(2, 999999999999999.,     "9.99999999999999E14"),
+        new FormatCase(3, 999999999999999.,     "1E15"),
+        new FormatCase(3, 999999999999994.,     "9.9999999999999E14"),        
     };
 
     boolean testFormat() {
@@ -41,10 +68,10 @@ class UnitTest {
         for (int i = 0; i < cases.length; ++i) {
             FormatCase c = cases[i];
             double v = Double.parseDouble(c.res);
-            if (v != c.val) {
+            if (c.rounding == 0 && v != c.val) {
                 System.out.println("wrong test? " + c.res + " " + v + " " + c.val);
             }
-            String res = Util.doubleToString(c.val, 20);
+            String res = Util.doubleToString(c.val, c.rounding);
             if (!res.equals(c.res)) {
                 System.out.println("Expected '" + c.res + "', got '" + res + "'. " + Double.toString(c.val));
                 ret = false;
@@ -56,22 +83,5 @@ class UnitTest {
     public static void main(String argv[]) {
         UnitTest tester = new UnitTest();
         tester.testFormat();
-        System.out.println("");
-        long 
-            b1 = 0, 
-            b2 = 0x000fffffffffffffL,
-            b3 = 0x0000000000000001L;
-
-        System.out.println(" " + Double.longBitsToDouble(b1) +
-                           " " + Double.longBitsToDouble(b2) +
-                           " " + Double.longBitsToDouble(b3));
-        
-        double d1 = 1.;
-        long l1 = Double.doubleToLongBits(d1);
-        System.out.println(" " + (l1 >> 52) + 
-                           " " + (l1 & ~0xfff0000000000000L));
-
-        //System.out.println("% " + (0.100234 % 0.00001));
-        //System.out.println("log10(2) " + Math.log10(2));
     }
 }
