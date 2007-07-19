@@ -1,9 +1,6 @@
 class Util {
-    static String doubleToString(double v, int roundingStart) {
-        // Return unchanged if:
-        // anyway contains a decimal dot (< 1),
-        // or isn't in exponent notation,
-        // or the number is large enough to warrant exponent notation.
+    static String doubleToString(double v, int roundingDigits) {        
+        int roundingStart = 17 - roundingDigits;
 
         String str = Double.toString(v);
         StringBuffer buf = new StringBuffer(str);
@@ -24,9 +21,23 @@ class Util {
         }
 
         //round
+        for (int p = 0; p < len && buf.charAt(p) == '0'; ++p) { 
+            ++roundingStart; 
+        }
+
         if (roundingStart < len) {
             if (buf.charAt(roundingStart) >= '5') {
-                buf.setCharAt(roundingStart-1, (char)(buf.charAt(roundingStart-1)+1));
+                int p;
+                for (p = roundingStart-1; p >= 0 && buf.charAt(p)=='9'; --p) {
+                    buf.setCharAt(p, '0');
+                }
+                if (p >= 0) {
+                    buf.setCharAt(p, (char)(buf.charAt(p)+1));
+                } else {
+                    buf.insert(0, '1');
+                    ++roundingStart;
+                    ++exp;
+                }
             }
             buf.setLength(roundingStart);
         }
