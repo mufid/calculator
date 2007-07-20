@@ -34,8 +34,9 @@ class Config {
         ht.put(key, value);
     }
     
-    String get(String key) {
-        return (String) ht.get(key);
+    String get(String key, String def) {
+        Object o = ht.get(key);
+        return (o == null) ? def : (String)o; 
     }
 
     int size() {
@@ -50,7 +51,7 @@ class Config {
             rs.out.writeInt(sz);
             for (int i = 0; i < sz; ++i) {
                 s1 = (String) keys.nextElement();
-                s2 = get(s1);
+                s2 = get(s1, null);
                 rs.out.writeUTF(s1);
                 rs.out.writeUTF(s2);
             }
