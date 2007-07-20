@@ -27,25 +27,27 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 "'ans' is automatically added in front of an expression that starts with an operator. " +
 "E.g. typing '+2' becomes 'ans+2'.";
 
-    /*
-    List menuList  = new List("Menu",       List.IMPLICIT, new String[]{
-        "Set Angle Unit", 
-        "Help", 
-        "About", 
-        "Exit"
-    }, null);
-    */
-
-    static final int CMD_OK=1, CMD_SET_ANGLE=2, CMD_HELP=3, CMD_ABOUT=4, CMD_EXIT=5;
+    static final int CMD_OK=1, CMD_HELP=3, CMD_ABOUT=4, CMD_EXIT=5,
+        CMD_ANG_RAD = 6, CMD_ANG_DEG = 7,
+        CMD_ROUND_NONE = 8, CMD_ROUND_YES = 9;
 
     static final Command cmdOk
-        = new IdCommand("Ok", CMD_OK, Command.BACK, 1);
+        = new Cmd("Ok", CMD_OK, Command.BACK, 1);
 
-    Menu menu = new Menu("Menu", new Command[] {
-            new IdCommand("Change Angle Unit", CMD_SET_ANGLE),
-            new IdCommand("Help",  CMD_HELP),
-            new IdCommand("About", CMD_ABOUT),
-            new IdCommand("Exit",  CMD_EXIT)
+    Menu menu = new Menu("Menu", new Cmd[] {
+            new Menu("Setup", new Cmd[] {
+                    new Menu("Angle Unit", new Cmd[] {
+                            new Cmd("Radians", CMD_ANG_RAD),
+                            new Cmd("Degrees", CMD_ANG_DEG)
+                        }),
+                    new Menu("Rounding", new Cmd[] {
+                            new Cmd("Smart Rounding", CMD_ROUND_YES),
+                            new Cmd("No Rouding",     CMD_ROUND_NONE),
+                        })
+                }),
+            new Cmd("Help",  CMD_HELP),
+            new Cmd("About", CMD_ABOUT),
+            new Cmd("Exit",  CMD_EXIT)
         });
 
     Form aboutForm = new Form("About"), helpForm = new Form("Help");
@@ -70,9 +72,6 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         
         calcCanvas = new CalcCanvas();
 
-        //menuList.addCommand(cmdBack);
-        //menuList.setCommandListener(this);
-
         try {
             aboutForm.append(Image.createImage("/a"));
         } catch (IOException e) {
@@ -91,12 +90,10 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
         display = Display.getDisplay(this);
         display.setCurrent(calcCanvas);
-        menu.setParent(display, calcCanvas);
-        menu.setCommandListener(this);
+        menu.setParent(display, calcCanvas, this);
     }
     
     void displayMenu() {
-        //menuList.set(0, (angleInRadians? "Degrees" : "Radians") + " angle unit", null);
         display.setCurrent(menu.list);
     }
 
@@ -105,15 +102,20 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     }
 
     public void commandAction(Command c, Displayable d) {
-        switch (((IdCommand)c).id) {
+        display.setCurrent(calcCanvas);
+        switch (((Cmd)c).id) {
         case CMD_OK:
-            display.setCurrent(calcCanvas);
             break;
 
-        case CMD_SET_ANGLE:
-            angleInRadians = !angleInRadians;
-            display.setCurrent(calcCanvas);
-            cfg.set("angleUnit", angleInRadians?"rad":"deg");
+        case CMD_ANG_RAD:
+            angleInRadians = true;
+            cfg.set("angleUnit", "rad");
+            cfg.save();
+            break;
+
+        case CMD_ANG_DEG:
+            angleInRadians = false;
+            cfg.set("angleUnit", "deg");
             cfg.save();
             break;
 
