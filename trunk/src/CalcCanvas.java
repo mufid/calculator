@@ -303,7 +303,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     }
 
     String format(double v) {
-        String str = Util.doubleToString(v, 20);
+        String str = Util.doubleToString(v, 0);
         int len  = str.length();
         int ePos = str.lastIndexOf('E');
         if (ePos == -1) {
