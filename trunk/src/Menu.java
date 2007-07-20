@@ -1,11 +1,11 @@
 #include "defines.inc"
 
-class IdCommand extends Command {
-    IdCommand(String label, int id) {
+class Cmd extends Command {
+    Cmd(String label, int id) {
         this(label, id, Command.SCREEN, 1);
     }
 
-    IdCommand(String label, int id, int commandType, int priority) {
+    Cmd(String label, int id, int commandType, int priority) {
         super(label, commandType, priority);
         this.id = id;
     }
@@ -17,11 +17,11 @@ class IdCommand extends Command {
     int id;
 }
 
-class Menu extends Command implements CommandListener {
+class Menu extends Cmd implements CommandListener {
     static final Command kCmdBack = new Command("Back", Command.BACK, 2);
 
     Menu(String label, Command children[]) {
-        super(label, Command.SCREEN, 1);
+        super(label, -1);
         this.children = children;
         this.parent   = null;
         this.display  = null;
@@ -36,42 +36,30 @@ class Menu extends Command implements CommandListener {
         list.setCommandListener(this);
     }
 
-    void setParent(Display display, Displayable parent) {
+    void setParent(Display display, Displayable parent, CommandListener root) {
         this.display = display;
         this.parent  = parent;
-        this.rootListener = rootListener;
+        this.rootListener = root;
         int nChildren = children.length;
         for (int i = 0; i < nChildren; ++i) {
             if (children[i] instanceof Menu) {
-                ((Menu)children[i]).setParent(display, list);
+                ((Menu)children[i]).setParent(display, list, root);
             }
         }
-    }
-
-    void setCommandListener(CommandListener listener) {
-        rootListener = listener;
     }
 
     public void commandAction(Command cmd, Displayable cmdSource) {
-        Command parentCmd = cmd;
-        if (cmdSource == list) {
-            LOG("from self list");
-            if (cmd.getCommandType() == Command.BACK) {
-                display.setCurrent(parent);
-                return;
-            }
-            int index = ((List)cmdSource).getSelectedIndex();
-            Command child = children[index];
-            if (child instanceof Menu) {
-                display.setCurrent(((Menu)child).list);
-                return;
-            } else {
-                parentCmd = child;
-            }
+        if (cmd.getCommandType() == Command.BACK) {
+            display.setCurrent(parent);
+            return;
         }
-        CommandListener upper = 
-            (rootListener == null) ? (CommandListener)parent : rootListener;
-        upper.commandAction(parentCmd, list);
+        int index = ((List)cmdSource).getSelectedIndex();
+        Command child = children[index];
+        if (child instanceof Menu) {
+            display.setCurrent(((Menu)child).list);
+        } else {
+            rootListener.commandAction(child, list);
+        }
     }
 
     Command[] children;
