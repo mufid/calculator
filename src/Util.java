@@ -1,6 +1,9 @@
 class Util {
-    static String doubleToString(double v, int roundingDigits) {        
-        int roundingStart = 17 - roundingDigits;
+    static String doubleToString(double v, int roundingDigits) {
+        if (roundingDigits > 10) {
+            roundingDigits = 0;
+        }
+        int roundingStart = roundingDigits == 0 ? 17 : 15 - roundingDigits;
 
         String str = Double.toString(v);
         StringBuffer buf = new StringBuffer(str);
