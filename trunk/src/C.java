@@ -28,8 +28,8 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 "E.g. typing '+2' becomes 'ans+2'.";
 
     static final int CMD_OK=1, CMD_HELP=3, CMD_ABOUT=4, CMD_EXIT=5,
-        CMD_ANG_RAD = 6, CMD_ANG_DEG = 7,
-        CMD_ROUND_NONE = 8, CMD_ROUND_YES = 9;
+        CMD_ANG_RAD  = 6, CMD_ANG_DEG   = 7,
+        CMD_ROUND_NO = 8, CMD_ROUND_YES = 9;
 
     static final Command cmdOk
         = new Cmd("Ok", CMD_OK, Command.BACK, 1);
@@ -42,7 +42,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
                         }),
                     new Menu("Rounding", new Cmd[] {
                             new Cmd("Smart Rounding", CMD_ROUND_YES),
-                            new Cmd("No Rouding",     CMD_ROUND_NONE),
+                            new Cmd("No Rouding",     CMD_ROUND_NO),
                         })
                 }),
             new Cmd("Help",  CMD_HELP),
@@ -57,19 +57,12 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     static final int RS_HIST_START = 3, RS_MAX_HIST = 32; //32;
     static final int RS_SYMB_START = RS_HIST_START + RS_MAX_HIST;
     static RMS rs;
-    static boolean angleInRadians = true;
-    static Config cfg;
+    static CalcConfig cfg;
 
     public C() {
         self = this;
         rs = new RMS("calc");
-        cfg = new Config(rs, RS_CONFIG);
-        //LOG("config size " + cfg.size());
-        if (cfg.size() == 0) {
-            cfg.set("angleUnit", "rad");
-        }
-        angleInRadians = cfg.get("angleUnit").equals("rad");
-        
+        cfg = new CalcConfig(rs, RS_CONFIG);
         calcCanvas = new CalcCanvas();
 
         try {
@@ -108,15 +101,19 @@ public final class C extends MIDlet implements CommandListener, Runnable {
             break;
 
         case CMD_ANG_RAD:
-            angleInRadians = true;
-            cfg.set("angleUnit", "rad");
-            cfg.save();
+            cfg.setAngleInRadians(true);
             break;
 
         case CMD_ANG_DEG:
-            angleInRadians = false;
-            cfg.set("angleUnit", "deg");
-            cfg.save();
+            cfg.setAngleInRadians(false);
+            break;
+
+        case CMD_ROUND_YES:
+            cfg.setRoundingDigits(1);
+            break;
+
+        case CMD_ROUND_NO:
+            cfg.setRoundingDigits(0);
             break;
 
         case CMD_HELP:

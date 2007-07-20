@@ -7,7 +7,7 @@ PROGUARD="java -jar /home/preda/proguard/lib/proguard.jar @src/proguard.txt"
 
 NAME="Javia-Calculator"
 URL="http://calculator.javia.org/"
-SRCS="Menu Util UnitTest C CalcCanvas Config Expr History KeyState MoreMath Symbol RMS"
+SRCS="CalcConfig Menu Util UnitTest C CalcCanvas Config Expr History KeyState MoreMath Symbol RMS"
 
 CLASS=$WTK/lib/cldcapi11.jar:$WTK/lib/midpapi20.jar
 CLDC=1.1

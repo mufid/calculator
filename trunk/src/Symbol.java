@@ -195,7 +195,7 @@ final class Symbol {
         }
         
         if (SIN <= code && code <= ATAN) {
-            if (C.angleInRadians) {
+            if (C.cfg.angleInRadians) {
                 return trigEval(code, x);
             } else { //angle in degrees
                 if (code <= TAN) {//sin,cos,tan
