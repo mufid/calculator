@@ -5,11 +5,7 @@ import javax.microedition.midlet.*;
 
 public final class C extends MIDlet implements CommandListener, Runnable {
     static C self;
-    
-    private static final Command 
-        cmdOk    = new Command("Ok",    Command.BACK, 1),
-        cmdBack  = new Command("Back",  Command.BACK, 2);
-    
+        
     static Display display;
     CalcCanvas calcCanvas;
     static final String helpStr = 
@@ -31,12 +27,26 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 "'ans' is automatically added in front of an expression that starts with an operator. " +
 "E.g. typing '+2' becomes 'ans+2'.";
 
+    /*
     List menuList  = new List("Menu",       List.IMPLICIT, new String[]{
         "Set Angle Unit", 
         "Help", 
         "About", 
         "Exit"
     }, null);
+    */
+
+    static final int CMD_OK=1, CMD_SET_ANGLE=2, CMD_HELP=3, CMD_ABOUT=4, CMD_EXIT=5;
+
+    static final Command cmdOk
+        = new IdCommand("Ok", CMD_OK, Command.BACK, 1);
+
+    Menu menu = new Menu("Menu", new Command[] {
+            new IdCommand("Change Angle Unit", CMD_SET_ANGLE),
+            new IdCommand("Help",  CMD_HELP),
+            new IdCommand("About", CMD_ABOUT),
+            new IdCommand("Exit",  CMD_EXIT)
+        });
 
     Form aboutForm = new Form("About"), helpForm = new Form("Help");
     Thread thread;
@@ -60,8 +70,8 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         
         calcCanvas = new CalcCanvas();
 
-        menuList.addCommand(cmdBack);
-        menuList.setCommandListener(this);
+        //menuList.addCommand(cmdBack);
+        //menuList.setCommandListener(this);
 
         try {
             aboutForm.append(Image.createImage("/a"));
@@ -81,11 +91,13 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
         display = Display.getDisplay(this);
         display.setCurrent(calcCanvas);
+        menu.setParent(display, calcCanvas);
+        menu.setCommandListener(this);
     }
     
     void displayMenu() {
-        menuList.set(0, (angleInRadians? "Degrees" : "Radians") + " angle unit", null);
-        display.setCurrent(menuList);
+        //menuList.set(0, (angleInRadians? "Degrees" : "Radians") + " angle unit", null);
+        display.setCurrent(menu.list);
     }
 
     public void run() {
@@ -93,25 +105,27 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     }
 
     public void commandAction(Command c, Displayable d) {
-        if (c == cmdBack || c == cmdOk) {
+        switch (((IdCommand)c).id) {
+        case CMD_OK:
             display.setCurrent(calcCanvas);
-            return;
-        }
+            break;
 
-        switch (((List) d).getSelectedIndex()) {
-        case 0:
+        case CMD_SET_ANGLE:
             angleInRadians = !angleInRadians;
             display.setCurrent(calcCanvas);
             cfg.set("angleUnit", angleInRadians?"rad":"deg");
             cfg.save();
             break;
-        case 1:
+
+        case CMD_HELP:
             display.setCurrent(helpForm);
             break;
-        case 2:
+            
+        case CMD_ABOUT:
             display.setCurrent(aboutForm);
             break;
-        case 3:
+            
+        case CMD_EXIT:
             onExit();
             notifyDestroyed();
             break;

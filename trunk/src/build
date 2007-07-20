@@ -7,7 +7,7 @@ PROGUARD="java -jar /home/preda/proguard/lib/proguard.jar @src/proguard.txt"
 
 NAME="Javia-Calculator"
 URL="http://calculator.javia.org/"
-SRCS="Util UnitTest C CalcCanvas Config Expr History KeyState MoreMath Symbol RMS"
+SRCS="Menu Util UnitTest C CalcCanvas Config Expr History KeyState MoreMath Symbol RMS"
 
 CLASS=$WTK/lib/cldcapi11.jar:$WTK/lib/midpapi20.jar
 CLDC=1.1
@@ -41,7 +41,7 @@ echo MIDlet-Info-URL: $URL
 
 function genJad {
     cp $1 $2 &&
-    echo MIDlet-Jar-URL: $URL$3 >> $2 &&
+    echo MIDlet-Jar-URL: $3 >> $2 &&
     echo MIDlet-Jar-Size: `find bin -name $3 -printf %s` >> $2
 }
 
@@ -75,6 +75,7 @@ done
 
 echo Compilation
 CMD="javac -bootclasspath $CLASS -d class psrc/*.java -source 1.4 -target 1.4 -g:none"
+#CMD="javac -bootclasspath $CLASS -d class psrc/*.java -source 1.4 -target 1.4"
 #CMD="gcj -C -bootclasspath $CLASS -d class psrc/*.java"
 echo $CMD
 $CMD
