@@ -1,6 +1,16 @@
 DirectoryIndex index
 Options +Multiviews
+#DefaultCharset UTF-8
+DefaultType php5-cgi
+#DefaultType application/x-httpd-php
 AddCharset UTF-8 xhtml html css
-AddType application/java-archive .jar
-AddType text/vnd.sun.j2me.app-descriptor .jad
-Header append Cache-Control max-age=3600,public
+#AddType application/java-archive .jar
+#AddType text/vnd.sun.j2me.app-descriptor .jad
+#Header append Cache-Control max-age=3600,public
+Redirect 302 /Javia-Calculator.jar http://calculator.javia.org/rel/Javia-Calculator-0.1.1.jar
+Redirect 302 /Javia-Calculator.jad http://calculator.javia.org/rel/Javia-Calculator-0.1.1.jad
+Redirect 302 /jar http://calculator.javia.org/rel/Javia-Calculator-0.1.1.jar
+Redirect 302 /jad http://calculator.javia.org/rel/Javia-Calculator-0.1.1.jad
+Redirect 302 /x http://calculator.javia.org/
+#ServerSignature Off
+#ServerTokens min
