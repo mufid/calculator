@@ -1,3 +1,5 @@
+// Copyright (c) 2007, Carlo Teubner
+
 import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
