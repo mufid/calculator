@@ -312,6 +312,7 @@ final class Expr {
                 double xmin = parseExpression();
                 if (tokenType != ',') throw new Error("tokenType != ',' (ii)");
                 double xmax = parseExpression();
+                if (xmin >= xmax) throw new Error("xmin >= xmax");
                 if (tokenType != ')') throw new Error("tokenType != ')'");
                 result.plotFunc = func;
                 result.plotXmin = xmin;
