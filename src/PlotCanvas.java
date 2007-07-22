@@ -63,7 +63,7 @@ public class PlotCanvas extends Canvas {
         }
         if (ymin <= 0 && 0 <= ymax) {
             int yy = (int) (-ymin / yf + 0.499);
-            g.drawLine(0, yy, width-1, yy);
+            g.drawLine(0, height - 1 - yy, width-1, height - 1 - yy);
         }
 
         g.setColor(0x000000FF);
