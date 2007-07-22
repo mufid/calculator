@@ -17,6 +17,7 @@ public class PlotCanvas extends Canvas {
     
     public PlotCanvas(Display display) {
         this.display = display;
+        setFullScreenMode(true);
     }
 
     public void init(Displayable next) {
@@ -30,7 +31,7 @@ public class PlotCanvas extends Canvas {
         this.xmax = xmax;
         display.setCurrent(this);
     }
-    
+
     protected void paint(Graphics g) {
         int width = getWidth();
         int height = getHeight();
