@@ -314,10 +314,11 @@ final class Expr {
                 double xmax = parseExpression();
                 if (xmin >= xmax) throw new Error("xmin >= xmax");
                 if (tokenType != ')') throw new Error("tokenType != ')'");
+                scan();
+                if (tokenType != '$') throw new Error("tokenType != '$'");
                 result.plotFunc = func;
                 result.plotXmin = xmin;
                 result.plotXmax = xmax;
-                scan();
                 return 0.;
             }
             double[] params = null;
