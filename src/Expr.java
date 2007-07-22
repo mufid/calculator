@@ -1,22 +1,25 @@
 // Copyright (c) 2006-2007, Mihai Preda
 
-#include "defines.inc"
-
 final class Result {
     String name, definition;
     int arity;
     double value;
     int errorPos; //-1 when no error
 
+    Symbol plotFunc; // != null iff result is a plot
+    double plotXmin, plotXmax;
+
     void reset() {
         name = definition = null;
         arity = 0;
         value = 0;
         errorPos = -1;
+        plotFunc = null;
+        plotXmin = plotXmax = 0.;
     }
 
     boolean hasValue() {
-        return errorPos == -1 && arity == 0;
+        return errorPos == -1 && arity == 0 && plotFunc == null;
     }    
 }
 
@@ -30,9 +33,12 @@ final class Expr {
     private double tokenValue;
     private StringBuffer tokenID = new StringBuffer();
     private int pos = 0, tokenStart = -1, nAddedBefore = 0;
+    private int tokenCnt;
     
     private int arity;
     private boolean isDefinition;
+    
+    private Result result;
 
     public static void main(String argv[]) {
         Expr parser = new Expr();
@@ -40,7 +46,8 @@ final class Expr {
         int n = argv.length;
         for (int i = 0; i < n; ++i) {
             boolean ok = parser.parse(argv[i], result);
-            LOG("   = " + result.value);
+            Log.log(argv[i] + " = " + result.value);
+            //LOG("   = " + result.value);
         }
     }
 
@@ -66,10 +73,10 @@ final class Expr {
                     new Symbol(def.name, def.arity, def.definition));
     }
 
-    static boolean splitDefinition(String str, Result outResult) {
-        outResult.reset();
+    boolean splitDefinition(String str) {
+        result.reset();
         if (str.length() == 0) {
-            outResult.errorPos = 0;
+            result.errorPos = 0;
             return false;
         }
         if (str.length() >= 3 && str.charAt(1) == ':' && str.charAt(2) == '=') {
@@ -78,20 +85,21 @@ final class Expr {
                 String name = String.valueOf(c);
                 Symbol s = symbols.get(name);
                 if (s == null || s.code == 0) {
-                    outResult.name = name;
-                    outResult.definition = str.substring(3);
+                    result.name = name;
+                    result.definition = str.substring(3);
+                    tokenCnt = 2;
                     return true;
                 }
             }
-            outResult.errorPos = 0;
+            result.errorPos = 0;
             return false;
         } else {
-            outResult.definition = str;
+            result.definition = str;
         }
         return true;
     }
 
-    boolean parseSplitted(Result result) {
+    boolean parseSplitted() {
         isDefinition = result.name != null;
         try {
             result.value = parseThrow(result.definition);
@@ -99,7 +107,7 @@ final class Expr {
             result.value = 0;
             result.errorPos = tokenStart - nAddedBefore + 
                 (result.name == null ? 0 : (result.name.length() + 2));
-            //LOG("errorPos " + result.errorPos);
+            Log.log("Parse error: '" + e.getMessage() + "' at " + result.errorPos);
             result.arity = 0;
             return false;
         }
@@ -108,10 +116,12 @@ final class Expr {
     }
 
     boolean parse(String str, Result outResult) {
-        if (!splitDefinition(str, outResult)) {
+        tokenCnt = 0;
+        result = outResult;
+        if (!splitDefinition(str)) {
             return false;
         }
-        return parseSplitted(outResult);
+        return parseSplitted();
     }
     
     double parseThrow(String str) {
@@ -143,7 +153,7 @@ final class Expr {
     private void scan() {
         tokenType = '$';
         tokenStart = pos;
-        //LOG("pos " + pos + "; n " + n + "; c " + text[pos]);
+        //Log.log("pos " + pos + "; n " + n + "; c " + text[pos]);
         if (pos < n) { 
             char c = text[pos];
             if ((c >= '0' && c <= '9') || c == '.') {
@@ -179,7 +189,7 @@ final class Expr {
                 } else try {
                     tokenValue = Double.parseDouble(String.valueOf(text, start, pos - start));
                 } catch (NumberFormatException e) {
-                    LOG("number: " + String.valueOf(text, start, pos - start));
+                    Log.log("number: " + String.valueOf(text, start, pos - start));
                     tokenType = 'e';
                 }
             } else {
@@ -198,6 +208,7 @@ final class Expr {
                 }
             }
         }
+        ++tokenCnt;
     }
 
     private final double parseWholeExpression() {
@@ -250,7 +261,7 @@ final class Expr {
     private final double parseUnary() {
         double value;
         scan();
-        //LOG("token " + tokenType);
+        //Log.log("token " + tokenType);
         switch (tokenType) {
             
         case '-': 
@@ -282,6 +293,31 @@ final class Expr {
                 } else {
                     throw error;
                 }
+            }
+            if (symbol.code == Symbol.PLOT) {
+                if (tokenCnt != 2) // "plot" must be at beginning of line 
+                    throw new Error("tokenCnt != 2");
+                if (tokenType != '(')
+                    throw new Error("tokenType != '('");
+                scan();
+                if (tokenType != 'a')
+                    throw new Error("tokenType != 'a'");
+                Symbol func = symbols.get(tokenID.toString());
+                if (func == null)
+                    throw new Error("func == null");
+                if (func.arity != 1)
+                    throw new Error("arity != 1");
+                scan();
+                if (tokenType != ',') throw new Error("tokenType != ',' (i)");
+                double xmin = parseExpression();
+                if (tokenType != ',') throw new Error("tokenType != ',' (ii)");
+                double xmax = parseExpression();
+                if (tokenType != ')') throw new Error("tokenType != ')'");
+                result.plotFunc = func;
+                result.plotXmin = xmin;
+                result.plotXmax = xmax;
+                scan();
+                return 0.;
             }
             double[] params = null;
             int symbolArity = symbol.arity;

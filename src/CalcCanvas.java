@@ -1,9 +1,14 @@
 // Copyright (c) 2006-2007, Mihai Preda
 
-#include "defines.inc"
-#define START_LINE(lines, n) (((n)==0)?0:lines[n-1])
+import javax.microedition.lcdui.*;
+import java.io.*;
+
+///#define START_LINE(lines, n) (((n)==0)?0:lines[n-1])
 
 class CalcCanvas extends Canvas /* implements Runnable */ {
+    
+    private static int START_LINE(int[] lines, int n) { return n == 0 ? 0 : lines[n-1]; }
+    
     static final int 
         KEY_SOFT1 =  -6,
         KEY_SOFT2 =  -7,
@@ -70,7 +75,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         KeyState.init(screenW, screenH);
 
         maxEditLines = (screenH - (KeyState.h + spaceTop + spaceEdit + spaceHist + 8)) / lineHeight - 1;
-        LOG("max edit lines " + maxEditLines);
+        Log.log("max edit lines " + maxEditLines);
         editLines = new int[maxEditLines + 1];
         clientW = screenW - 2*clientX;
 
@@ -134,8 +139,12 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         //Graphics rg = gg[RESULT];
         gg.setColor(bgCol[RESULT]);
         gg.fillRect(clientX, Y[RESULT], clientW, lineHeight);
-        
+
         if (parser.parse(String.valueOf(line, 0, len), result)) {
+            if (result.plotFunc != null) {
+                C.self.plotCanvas.plot(result.plotFunc, Expr.symbols, result.plotXmin, result.plotXmax);
+                return;
+            }
             String strResult = (result.arity > 0) ? 
                 result.name + params[result.arity-1] : format(result.value);
             gg.setColor(fgCol[RESULT]);
@@ -207,8 +216,8 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             int y = Y[EDIT]-2-spaceEdit;
             repaint(spaceSide, y, screenW-(spaceSide<<1), Y[HISTORY]-y);
         }
-        //LOG("pos " + pos + " oldNLines " + oldNLines + " nEditLines " + nEditLines);
-        //LOG("nEditLines " + nEditLines + "; changeLine " + changeLine);                           
+        //Log.log("pos " + pos + " oldNLines " + oldNLines + " nEditLines " + nEditLines);
+        //Log.log("nEditLines " + nEditLines + "; changeLine " + changeLine);                           
 
         //Graphics g = gg[EDIT];
         gg.setColor(bgCol[EDIT]);
@@ -263,7 +272,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         if (cursorX > 0) {
             --cursorX;
         }
-        //LOG("pos " + pos + " row " + cursorRow + " col " + cursorCol + " x " + cursorX + " y " + cursorY);
+        //Log.log("pos " + pos + " row " + cursorRow + " col " + cursorCol + " x " + cursorX + " y " + cursorY);
         setCursor(true);
     }
 
@@ -422,7 +431,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     protected void keyRepeated(int key) {
         keyPressed(key);
     }
-
+    
     private void doChanged(int changePos) {
         editChanged(changePos);
         updateCursor();
@@ -438,7 +447,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     }
 
     void handleAction(int action) {
-        LOG("cursorRow " + cursorRow);
+        Log.log("cursorRow " + cursorRow);
         switch (action) {
         case Canvas.LEFT:
             pos = prevFlexPoint(pos);
@@ -459,7 +468,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 int width = font.charsWidth(line, editLines[cursorRow-1], cursorCol);
                 int startPrev = START_LINE(editLines, cursorRow-1);
                 int targetPos = fitWidth(font, width, line, startPrev, len)-1;
-                //LOG("width " + width + " target " + targetPos);
+                //Log.log("width " + width + " target " + targetPos);
                 int aheadPos;
                 while (true) {
                     aheadPos = prevFlexPoint(pos);
@@ -511,7 +520,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     
     int menuKey = 0;
     protected void keyPressed(int key) {
-        LOG("key " + key + "; " + getKeyName(key) + "; action " + getGameAction(key));
+        Log.log("key " + key + "; " + getKeyName(key) + "; action " + getGameAction(key));
         int saveKey = key;
         if (key > 0 && (key < 32 || key > 10000)) {
             //also handles backspace (unicode 8) -> KEY_CLEAR (-8)
@@ -552,7 +561,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                     insertIntoLine(s);
                 }
                 lastInsertLen += s.length();
-                if (symbol != null) { // && symbol.arity > 0) {
+                if (symbol != null && !"plot(".equals(String.valueOf(line, 0, oldPos + 1))) { // && symbol.arity > 0) {
                     String parens = arityParens[symbol.arity];
                     int parensLen = parens.length();
                     if (parensLen > 0) {

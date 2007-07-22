@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2007, Mihai Preda
 
-#include "defines.inc"
+import javax.microedition.lcdui.*;
 
 final class KeyState {
     static Font font;
@@ -77,7 +77,7 @@ final class KeyState {
 
         rootExp = new KeyState(new Object[] {
             "sqrt",  "ans",  "E",
-            null,    vars,   ":=",
+            "plot",    vars,   ":=",
             "pi",    "e",    ints,
             trigs,   logs,   ".",
 
@@ -146,7 +146,7 @@ final class KeyState {
             keypad.doPaint(destG);
         }
         lastPainted = keypad;
-        //LOG("painted");
+        //Log.log("painted");
     }
 
     void doPaint(Graphics destG) {
