@@ -11,23 +11,28 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     CalcCanvas calcCanvas;
     PlotCanvas plotCanvas;
     static final String helpStr = 
-"Press * or # to display the menu, " +
-"next press one more key (1-9,*0#) to select. " +
-"The left menu * contains operators like +-*/. " +
-"The right menu # contains the decimal dot, functions and constants. " +
-"The yellow entries open additional sub-menus. " +
-"To obtain +, press twice *. " +
-"To obtain the decimal dot, press twice #.\n\n" +
+"Press * or # to display a menu, " +
+"next press a key (1-9,*0#) to select. " +
+"Left menu * contains operators like +-*/; " +
+"right menu # contains decimal dot, functions and constants. " +
+"Yellow entries open additional sub-menus. " +
+"To obtain +, press * twice. " +
+"To obtain decimal dot, press # twice.\n\n" +
 
-"Use UP and DOWN to navigate the history.\n\n" +
+"Use UP and DOWN to navigate history.\n\n" +
 
 "Use := to define new functions and constants. " +
 "E.g. a:=pi/2 is a constant; f:=sqrt(x^2+y^2) is a function with two parameters x,y. " +
-"The functions may have up to three parameters named x,y,z.\n\n" +
+"Functions may have up to three parameters x,y,z.\n\n" +
 
 "The variable 'ans' contains the value of the most recent expression. " + 
-"'ans' is automatically added in front of an expression that starts with an operator. " +
-"E.g. typing '+2' becomes 'ans+2'.";
+"'ans' is automatically added in front of an expression that starts with an operator, " +
+"e.g. typing '+2' yields 'ans+2'.\n\n" +
+
+"Use plot(f, xmin, xmax) to see a graph of function f(x) with " +
+"x running from xmin to xmax. f can be user-defined (see above) or built-in " +
+"(like sin, sqrt), and xmin,xmax can be numbers or expressions.";
+
 
     static final int CMD_OK=1, CMD_HELP=3, CMD_ABOUT=4, CMD_EXIT=5,
         CMD_ANG_RAD  = 6, CMD_ANG_DEG   = 7,
