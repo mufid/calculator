@@ -1,0 +1,13 @@
+.framed { padding: 2px; margin: 8px; border: 1px solid black; }
+img.ss { padding: 2px; margin: 8px; border: 1px solid black; position: absolute; top: auto; left: 8px; /*float: left;*/ }
+.leftbar   { width: 160px; float: left; }
+.main { margin-left: 190px; max-width: 40em; }
+body { font-family: verdana,arial,sans-serif; font-size: 80%; line-height: 140%; }
+h1 { line-height: 100%; }
+.footer { clear: both; background: #eee; color: black; border-top: 1px solid #aaa; text-align: center; font-size: 70%; }
+/* table { border: thin solid black; } */
+th { vertical-align: top; font-weight: bold; padding-left: 1em; padding-right: 1em; }
+.menu { background-color: yellow; }
+td { padding-left: 1em; }
+h2 { font-size: 120%; margin-top: 2em; }
+.invis { display: none; }

@@ -1,0 +1,107 @@
+#!/bin/bash
+# Copyright (c) 2006-2007, Mihai Preda
+
+WTK=/home/preda/WTK
+PREV=$WTK/bin/preverify
+PROGUARD="java -jar /home/preda/proguard/lib/proguard.jar @src/proguard.txt"
+
+NAME="Javia-Calculator"
+URL="http://calculator.javia.org/"
+SRCS="CalcConfig Menu Util UnitTest C CalcCanvas Config Expr History KeyState MoreMath Symbol RMS"
+
+CLASS=$WTK/lib/cldcapi11.jar:$WTK/lib/midpapi20.jar
+CLDC=1.1
+MIDP=2.0
+ICON=a
+
+function readVersion {
+MAJOR=$1
+MINOR=$2
+MICRO=$3
+VERSION=$MAJOR.$MINOR.$MICRO
+}
+
+function genManifest {
+echo "MIDlet-1: $NAME, /$ICON, C"
+echo MIDlet-Name: $NAME
+echo "MIDlet-Vendor: Mihai Preda"
+echo MIDlet-Version: $VERSION
+echo MicroEdition-Configuration: CLDC-$CLDC
+echo MicroEdition-Profile: MIDP-$MIDP
+echo MIDlet-Info-URL: $URL
+#MIDlet-Install-Notify
+#MIDlet-Delete-Notify
+#MIDlet-Delete-Confirm
+#MIDlet-Description
+#MIDlet-Icon
+#MIDlet-Data-Size
+#MIDlet-Permissions
+#MIDlet-Permissions-Opt
+}
+
+function genJad {
+    cp $1 $2 &&
+    echo MIDlet-Jar-URL: $3 >> $2 &&
+    echo MIDlet-Jar-Size: `find bin -name $3 -printf %s` >> $2
+}
+
+function gen {
+readVersion `cat src/version.txt`
+if [ x$1 == "x-release" ] ; then
+DEBUG=""
+NEW_MICRO=`expr $MICRO + 1`
+echo $MAJOR $MINOR $NEW_MICRO > src/version.txt
+FULLNAME=$NAME-$VERSION
+else
+DEBUG="-D DEBUG=1"
+FULLNAME=$NAME-$VERSION-a
+fi
+
+
+echo $FULLNAME
+DIRS="class tmp"
+rm -rf $DIRS
+mkdir -p $DIRS
+
+MANF=tmp/MANIFEST.MF
+genManifest > $MANF
+
+set -e
+echo Preprocess
+rm -f psrc/*.java
+for name in $SRCS ; do
+cpp -P $DEBUG -D VERSION="\"$VERSION\"" -D NAME="\"$NAME\"" -D URL="\"$URL\"" src/$name.java psrc/$name.java
+done
+
+echo Compilation
+CMD="javac -bootclasspath $CLASS -d class psrc/*.java -source 1.4 -target 1.4 -g:none"
+#CMD="javac -bootclasspath $CLASS -d class psrc/*.java -source 1.4 -target 1.4"
+#CMD="gcj -C -bootclasspath $CLASS -d class psrc/*.java"
+echo $CMD
+$CMD
+jar cfm tmp/class.jar $MANF -C src $ICON -C class .
+if [ a$1 != "a-ng" ] ; then
+    $PROGUARD -libraryjars $CLASS -injars tmp/class.jar -outjar tmp/$FULLNAME.jar
+else
+    cp tmp/class.jar tmp/$FULLNAME.jar
+fi
+
+echo Preverify
+mkdir -p bin
+$PREV -classpath $CLASS -target CLDC$CLDC -d bin tmp/$FULLNAME.jar
+
+genJad $MANF bin/$FULLNAME.jad $FULLNAME.jar
+echo
+
+if [ x$1 == "x-release" ] ; then
+    scp web/.htaccess bin &&
+    echo "Redirect 302 /$NAME.jar $URL$FULLNAME.jar" >> bin/.htaccess &&
+    echo "Redirect 302 /$NAME.jad $URL$FULLNAME.jad" >> bin/.htaccess &&
+    echo "Redirect 302 /jar $URL$FULLNAME.jar" >> bin/.htaccess
+    #scp bin/$FULLNAME.jar bin/$FULLNAME.jad bin/.htaccess javia.org:www/calculator
+#else
+    #scp bin/$FULLNAME.jar javia.org:www/calculator/tmp
+fi
+}
+
+gen $*

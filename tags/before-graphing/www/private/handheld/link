@@ -1,0 +1,34 @@
+<head>
+<title>Javia Calculator linking guidelines</title>
+</head>
+<body>
+<p>
+You may use screen-shot images from this site when writing about Javia Calculator, 
+but please <em>do not hotlink</em> 
+to the images on this site; instead, download the images and host them on your server.
+</p>
+
+<p>
+The preferred way to refer to Javia Calculator is to use this URL:
+<strong>http://calculator.javia.org/</strong>, and the name Javia Calculator.
+</p>
+
+<p>
+If you want to link directly to the downloadable .jar, please use this URL:
+<strong>http://calculator.javia.org/jar</strong>.
+</p>
+
+<p>
+Please <em>do not host the .jar on your server</em> 
+(this would mean that you are re-distributing Javia Calculator, 
+and you are not allowed to do this without permission). 
+</p>
+
+<p>
+You should avoid to link to a specific version 
+(such as http://calculator.javia.org/Javia-Calculator-0.1.0.jar). 
+Instead, link to http://calculator.javia.org/jar, which redirects to
+the most recent version available.
+</p>
+</body>
+</html>
