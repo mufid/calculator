@@ -1,6 +1,7 @@
 // Copyright (c) 2006-2007, Mihai Preda
 
-#include "defines.inc"
+import javax.microedition.lcdui.*;
+import java.io.*;
 import javax.microedition.midlet.*;
 
 public final class C extends MIDlet implements CommandListener, Runnable {
@@ -8,6 +9,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         
     static Display display;
     CalcCanvas calcCanvas;
+    PlotCanvas plotCanvas;
     static final String helpStr = 
 "Press * or # to display the menu, " +
 "next press one more key (1-9,*0#) to select. " +
@@ -63,14 +65,17 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         self = this;
         rs = new RMS("calc");
         cfg = new CalcConfig(rs, RS_CONFIG);
+        display = Display.getDisplay(this);
+        plotCanvas = new PlotCanvas(display);
         calcCanvas = new CalcCanvas();
+        plotCanvas.init(calcCanvas);
 
         try {
             aboutForm.append(Image.createImage("/a"));
         } catch (IOException e) {
         }
-        aboutForm.append(NAME + " " + VERSION + "\n");
-        aboutForm.append("\u00a9 Mihai Preda\n" + URL);
+        aboutForm.append("Javia-Calculator 1.2.3\n");
+        aboutForm.append("\u00a9 Mihai Preda\nhttp://calculator.javia.org/");
         aboutForm.addCommand(cmdOk);
         aboutForm.setCommandListener(this);
 
@@ -81,11 +86,10 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         thread = new Thread(this);
         thread.start();
 
-        display = Display.getDisplay(this);
         display.setCurrent(calcCanvas);
         menu.setParent(display, calcCanvas, this);
     }
-    
+
     void displayMenu() {
         display.setCurrent(menu.list);
     }

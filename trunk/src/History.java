@@ -1,6 +1,7 @@
 // Copyright (c) 2006-2007, Mihai Preda
 
-#include "defines.inc"
+import java.util.*;
+import java.io.*;
 
 class HistEntry {
     String base, edited;
@@ -9,7 +10,7 @@ class HistEntry {
     int pos;
 
     HistEntry(String str, double res, boolean hasRes) {
-        base = str == null ? "" : str;;
+        base = str == null ? "" : str;
         result = res;
         hasResult = hasRes;
         flush();
@@ -21,7 +22,7 @@ class HistEntry {
             hasResult = in.readBoolean();
             base = in.readUTF();
         } catch (IOException e) {
-            LOG(e);
+            Log.log(e);
             //throw new Error(e.toString());
         }
         flush();
@@ -33,6 +34,7 @@ class HistEntry {
             out.writeBoolean(hasResult);
             out.writeUTF(base);
         } catch (IOException e) {
+            Log.log(e);
             //throw new Error(e.toString());
         }
     }
@@ -70,7 +72,7 @@ class History {
             try {
                 seq = is.readInt();
             } catch (IOException e) {
-                LOG(e);
+                Log.log(e);
             }
             if (seq > maxSeq) {
                 posMaxSeq = v.size();
@@ -148,7 +150,7 @@ class History {
     void enter(String str) {
         if (parser.parse(str, result)) {
             if (result.name != null) {
-                parser.define(result);
+                Expr.define(result);
             }
         }
 

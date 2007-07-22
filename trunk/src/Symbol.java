@@ -86,7 +86,8 @@ final class Symbol {
         MIN   = 26, MAX  = 27, GCD  = 28,
         COMB  = 29, PERM = 30, RND  = 31,
         PI    = 52, E = 53, 
-        ANS = 54;
+        ANS = 54,
+        PLOT = 55;
 
     static final String names[] = {
         "sin",  "cos",  "tan",  "asin",  "acos",  "atan",
@@ -101,6 +102,7 @@ final class Symbol {
         "C",    "P", 
         "pi",   "\u03c0", "e",
         "ans",
+        "plot"
     };
         
     /* keep 'codes' in sync with 'names' above */
@@ -117,6 +119,7 @@ final class Symbol {
         COMB, PERM,
         PI,   PI,   E,
         ANS,
+        PLOT
     };
     /* keep in sync with codes above */
     static final int arities[] = {
@@ -131,6 +134,7 @@ final class Symbol {
         2, 2,
         0, 0, 0,
         0,
+        3
     };
     static final Random random = new Random();
     static final String args[] = {"x", "y", "z"}; 

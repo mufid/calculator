@@ -1,6 +1,6 @@
 // Copyright (c) 2006-2007, Mihai Preda
 
-#include "defines.inc"
+import java.io.*;
 import javax.microedition.rms.*;
 
 class RMS {
@@ -18,7 +18,7 @@ class RMS {
                 rs.addRecord(buf, 0, 1); //rec 1
             }
         } catch (Exception e) {
-            LOG("creation err " + e);
+            Log.log("creation err " + e);
             throw new Error(e.toString());
         }
     }
@@ -32,7 +32,7 @@ class RMS {
             }
         } catch (InvalidRecordIDException e) { //to get out of the while()
         } catch (Exception e) { //IOException, RecordStoreException
-            LOG("read err " + e);
+            Log.log("read err " + e);
             throw new Error(e.toString());
         }
         return null;
@@ -50,7 +50,7 @@ class RMS {
             int size = bos.size();
             rs.setRecord(recId, size==0 ? null : bos.toByteArray(), 0, size);
         } catch (Exception e) {
-            LOG("write err " + e);
+            Log.log("write err " + e);
             throw new Error(e.toString());
         } finally {
             bos.reset();

@@ -1,6 +1,5 @@
 // Copyright (c) 2006-2007, Mihai Preda
 
-//#include "defines.inc"
 class MoreMath {
     //parts derived from FDLIBM 5.3
 
@@ -140,31 +139,31 @@ class MoreMath {
 
         hx = HI(x);
         ix = hx & 0x7fffffff;
-        if(ix >= 0x44100000) {	/* if |x| >= 2^66 */
+        if(ix >= 0x44100000) {  /* if |x| >= 2^66 */
             if(ix>0x7ff00000||
                (ix==0x7ff00000&&(LO(x)!=0)))
-                return x+x;		/* NaN */
+                return x+x;     /* NaN */
             if(hx>0) return  atanhi[3]+atanlo[3];
             else     return -atanhi[3]-atanlo[3];
-        } if (ix < 0x3fdc0000) {	/* |x| < 0.4375 */
-            if (ix < 0x3e200000) {	/* |x| < 2^-29 */
+        } if (ix < 0x3fdc0000) {    /* |x| < 0.4375 */
+            if (ix < 0x3e200000) {  /* |x| < 2^-29 */
                 return x;
             }
             id = -1;
         } else {
             x = Math.abs(x);
-            if (ix < 0x3ff30000) {		/* |x| < 1.1875 */
-                if (ix < 0x3fe60000) {	/* 7/16 <=|x|<11/16 */
+            if (ix < 0x3ff30000) {      /* |x| < 1.1875 */
+                if (ix < 0x3fe60000) {  /* 7/16 <=|x|<11/16 */
                     id = 0; 
                     x = (2.0*x-1.)/(2.0+x); 
-                } else {			/* 11/16<=|x|< 19/16 */
+                } else {            /* 11/16<=|x|< 19/16 */
                     id = 1; 
                     x  = (x-1.)/(x+1.); 
                 }
             } else {
-                if (ix < 0x40038000) {	/* |x| < 2.4375 */
+                if (ix < 0x40038000) {  /* |x| < 2.4375 */
                     id = 2; x  = (x-1.5)/(1.+1.5*x);
-                } else {			/* 2.4375 <= |x| < 2^66 */
+                } else {            /* 2.4375 <= |x| < 2^66 */
                     id = 3; x  = -1.0/x;
                 }
             }}
@@ -185,14 +184,14 @@ class MoreMath {
         //double t,w,p,q,c,r,s;
         int hx = HI(x);
         int ix = hx&0x7fffffff;
-        if (ix >= 0x3ff00000) {		/* |x|>= 1 */
+        if (ix >= 0x3ff00000) {     /* |x|>= 1 */
             if (((ix - 0x3ff00000) | LO(x)) == 0) {
                 /* asin(1)=+-pi/2 with inexact */
-                return x*pio2_hi+x*pio2_lo;	
+                return x*pio2_hi+x*pio2_lo; 
             }
-            return (x-x)/(x-x);		/* asin(|x|>1) is NaN */   
-        } else if (ix < 0x3fe00000) {	/* |x|<0.5 */
-            if (ix < 0x3e400000) {		/* if |x| < 2**-27 */
+            return (x-x)/(x-x);     /* asin(|x|>1) is NaN */   
+        } else if (ix < 0x3fe00000) {   /* |x|<0.5 */
+            if (ix < 0x3e400000) {      /* if |x| < 2**-27 */
                 return x;
             }
             double t = x*x;
@@ -207,7 +206,7 @@ class MoreMath {
         double p = t*(pS0+t*(pS1+t*(pS2+t*(pS3+t*(pS4+t*pS5)))));
         double q = 1.+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
         double s = Math.sqrt(t);
-        if (ix >= 0x3FEF3333) { 	/* if |x| > 0.975 */
+        if (ix >= 0x3FEF3333) {     /* if |x| > 0.975 */
             w = p/q;
             t = pio2_hi-(2.0*(s+s*w)-pio2_lo);
         } else {
@@ -230,13 +229,13 @@ class MoreMath {
         int xsb = shx >>> 31;
         int hx = shx & 0x7fffffff;
         
-        if (hx >= 0x40862E42) {			/* if |x|>=709.78... */
+        if (hx >= 0x40862E42) {         /* if |x|>=709.78... */
             if(hx >= 0x7ff00000) {
                 if(((hx & 0xfffff) | LO(x)) != 0) { 
                     return Double.NaN;
                 } else {
                     return shx < 0 ? 0. : Double.POSITIVE_INFINITY; 
-                        //(xsb == 0) ? x : 0.0;	/* exp(+-inf)={inf,0} */
+                        //(xsb == 0) ? x : 0.0; /* exp(+-inf)={inf,0} */
                 }
             }
             if (x > o_threshold) { return Double.POSITIVE_INFINITY; }
@@ -245,19 +244,19 @@ class MoreMath {
 
         double hi = 0, lo = 0, c, t, y;
         int k = 0;
-        if (hx > 0x3fd62e42) {		/* if  |x| > 0.5 ln2 */ 
-            if(hx < 0x3FF0A2B2) {	/* and |x| < 1.5 ln2 */
+        if (hx > 0x3fd62e42) {      /* if  |x| > 0.5 ln2 */ 
+            if(hx < 0x3FF0A2B2) {   /* and |x| < 1.5 ln2 */
                 hi = x - ln2HI[xsb]; 
                 lo = ln2LO[xsb]; 
                 k = 1 - xsb - xsb;
             } else {
                 k  = (int)(LOG2E * x + halF[xsb]);
                 t  = k;
-                hi = x - t * ln2HI[0];	/* t*ln2HI is exact here */
+                hi = x - t * ln2HI[0];  /* t*ln2HI is exact here */
                 lo = t*ln2LO[0];
             }
             x  = hi - lo;
-        } else if (hx < 0x3e300000)  {	/* when |x|<2**-28 */
+        } else if (hx < 0x3e300000)  {  /* when |x|<2**-28 */
             return 1. + x;
         } else {
             k = 0;
@@ -291,7 +290,7 @@ class MoreMath {
         int lx = LO(x);
 
         k=0;
-        if (hx < 0x00100000) {			/* x < 2**-1022  */
+        if (hx < 0x00100000) {          /* x < 2**-1022  */
             if (((hx&0x7fffffff) | lx) == 0) {
                 return Double.NEGATIVE_INFINITY;
             }
@@ -300,26 +299,26 @@ class MoreMath {
             }
             k -= 54; 
             x *= two54; /* subnormal number, scale up x */
-            hx = HI(x);		/* high word of x */
+            hx = HI(x);     /* high word of x */
         } 
         if (hx >= 0x7ff00000) {
             return x + x;
         }
         k  += (hx >> 20) - 1023;
 
-        //LOG("k= " + k);
+        //Log.log("k= " + k);
 
         hx &= 0x000fffff;
         i = (hx + 0x95f64) & 0x100000;
-        //LOG("hx= " + hx + "; i= " + i);
+        //Log.log("hx= " + hx + "; i= " + i);
         long bits = (((long)(hx | (i ^ 0x3ff00000))) << 32) | 
             (Double.doubleToLongBits(x) & 0xffffffffL);
         x = Double.longBitsToDouble(bits);
-        //HI(x) = hx | (i ^ 0x3ff00000);	/* normalize x or x/2 */
-        //LOG("x= " + x);
+        //HI(x) = hx | (i ^ 0x3ff00000);    /* normalize x or x/2 */
+        //Log.log("x= " + x);
         k += (i >> 20);
         f = x - 1.0;
-        if ((0x000fffff & (2 + hx)) < 3) {	/* |f| < 2**-20 */
+        if ((0x000fffff & (2 + hx)) < 3) {  /* |f| < 2**-20 */
             if(f==0.) {
                 if(k==0) {
                     return 0.;
@@ -411,7 +410,7 @@ class MoreMath {
             save = y;
             y = x % y;
             x = save;
-            //LOG(y);
+            //Log.log(y);
         } 
         return x > 1e-10 ? x : 0;
     }
@@ -544,19 +543,19 @@ class MoreMath {
         /* +-NaN return x+y */
         if (ix > 0x7ff00000 || ((ix==0x7ff00000)&&(lx!=0)) ||
             iy > 0x7ff00000 || ((iy==0x7ff00000)&&(ly!=0))) {
-            return x+y;	
+            return x+y; 
         }
 
         /* determine if y is an odd int when x < 0
-         * yisint = 0	... y is not an integer
-         * yisint = 1	... y is an odd int
-         * yisint = 2	... y is an even int
+         * yisint = 0   ... y is not an integer
+         * yisint = 1   ... y is an odd int
+         * yisint = 2   ... y is an even int
          */
         yisint  = 0;
-        if (hx<0) {	
+        if (hx<0) { 
             if (iy>=0x43400000) yisint = 2; /* even integer y */
             else if (iy>=0x3ff00000) {
-                k = (iy>>20)-0x3ff;	   /* exponent */
+                k = (iy>>20)-0x3ff;    /* exponent */
                 if(k>20) {
                     j = ly>>(52-k);
                     if((j<<(52-k))==ly) yisint = 2-(j&1);
@@ -564,26 +563,26 @@ class MoreMath {
                     j = iy>>(20-k);
                     if((j<<(20-k))==iy) yisint = 2-(j&1);
                 }
-            }		
+            }       
         } 
         
         /* special value of y */
-        if(ly==0) { 	
-            if (iy==0x7ff00000) {	/* y is +-inf */
+        if(ly==0) {     
+            if (iy==0x7ff00000) {   /* y is +-inf */
                 if(((ix-0x3ff00000)|lx)==0)
-                    return  y - y;	/* inf**+-1 is NaN */
+                    return  y - y;  /* inf**+-1 is NaN */
                 else if (ix >= 0x3ff00000)/* (|x|>1)**+-inf = inf,0 */
                     return (hy>=0)? y: 0.;
-                else			/* (|x|<1)**-,+inf = inf,0 */
+                else            /* (|x|<1)**-,+inf = inf,0 */
                     return (hy<0)?-y: 0.;
             } 
-            if(iy==0x3ff00000) {	/* y is  +-1 */
+            if(iy==0x3ff00000) {    /* y is  +-1 */
                 if(hy<0) return 1./x; else return x;
             }
             if(hy==0x40000000) return x*x; /* y is  2 */
-            if(hy==0x3fe00000) {	/* y is  0.5 */
-                if(hx>=0)	/* x >= +0 */
-                    return Math.sqrt(x);	
+            if(hy==0x3fe00000) {    /* y is  0.5 */
+                if(hx>=0)   /* x >= +0 */
+                    return Math.sqrt(x);    
             }
         }
         
@@ -591,13 +590,13 @@ class MoreMath {
         /* special value of x */
         if(lx==0) {
             if(ix==0x7ff00000||ix==0||ix==0x3ff00000){
-                z = ax;			/*x is +-0,+-inf,+-1*/
-                if(hy<0) z = 1./z;	/* z = (1/|x|) */
+                z = ax;         /*x is +-0,+-inf,+-1*/
+                if(hy<0) z = 1./z;  /* z = (1/|x|) */
                 if(hx<0) {
                     if(((ix-0x3ff00000)|yisint)==0) {
                         z = (z-z)/(z-z); /* (-1)**non-int is NaN */
                     } else if(yisint==1) 
-                        z = -z;		/* (x<0)**odd = -(|x|**odd) */
+                        z = -z;     /* (x<0)**odd = -(|x|**odd) */
                 }
                 return z;
             }
@@ -613,7 +612,7 @@ class MoreMath {
         
         /* |y| is huge */
         if(iy>0x41e00000) { /* if |y| > 2**31 */
-            if(iy>0x43f00000){	/* if |y| > 2**64, must o/uflow */
+            if(iy>0x43f00000){  /* if |y| > 2**64, must o/uflow */
                 if(ix<=0x3fefffff) return (hy<0)? huge*huge:tiny*tiny;
                 if(ix>=0x3ff00000) return (hy>0)? huge*huge:tiny*tiny;
             }
@@ -622,9 +621,9 @@ class MoreMath {
             if(ix>0x3ff00000) return (hy>0)? s*huge*huge:s*tiny*tiny;
             /* now |1-x| is tiny <= 2**-20, suffice to compute 
                log(x) by x-x^2/2+x^3/3-x^4/4 */
-            t = ax-1.;		/* t has 20 trailing zeros */
+            t = ax-1.;      /* t has 20 trailing zeros */
             w = (t*t)*(0.5-t*(0.3333333333333333333333-t*0.25));
-            u = ivln2_h*t;	/* ivln2_h has 21 sig. bits */
+            u = ivln2_h*t;  /* ivln2_h has 21 sig. bits */
             v = t*ivln2_l-w * LOG2E;
             t1 = u+v;
             t1 = setLO(t1, 0);
@@ -641,9 +640,9 @@ class MoreMath {
             n  += ((ix)>>20)-0x3ff;
             j  = ix&0x000fffff;
             /* determine interval */
-            ix = j|0x3ff00000;		/* normalize ix */
-            if(j<=0x3988E) k=0;		/* |x|<sqrt(3/2) */
-            else if (j<0xBB67A) k=1;	/* |x|<sqrt(3)   */
+            ix = j|0x3ff00000;      /* normalize ix */
+            if(j<=0x3988E) k=0;     /* |x|<sqrt(3/2) */
+            else if (j<0xBB67A) k=1;    /* |x|<sqrt(3)   */
             else {
                 k=0;n+=1;
                 ix -= 0x00100000;
@@ -651,7 +650,7 @@ class MoreMath {
             ax = setHI(ax, ix);
             
             /* compute ss = s_h+s_l = (x-1)/(x+1) or (x-1.5)/(x+1.5) */
-            u = ax-bp[k];		/* bp[0]=1.0, bp[1]=1.5 */
+            u = ax-bp[k];       /* bp[0]=1.0, bp[1]=1.5 */
             v = 1./(ax+bp[k]);
             ss = u*v;
             s_h = ss;
@@ -676,7 +675,7 @@ class MoreMath {
             p_h = u+v;
             p_h = setLO(p_h, 0);
             p_l = v-(p_h-u);
-            z_h = cp_h*p_h;		/* cp_h+cp_l = 2/(3*log2) */
+            z_h = cp_h*p_h;     /* cp_h+cp_l = 2/(3*log2) */
             z_l = cp_l*p_h+p_l*cp+dp_l[k];
             /* log2(ax) = (ss+..)*2/(3*log2) = n + dp_h + z_h + z_l */
             t = (double)n;
@@ -692,17 +691,17 @@ class MoreMath {
         z = p_l+p_h;
         j = HI(z);
         i = LO(z);
-        if (j>=0x40900000) {				/* z >= 1024 */
-            if(((j-0x40900000)|i)!=0)			/* if z > 1024 */
-                return s*huge*huge;			/* overflow */
+        if (j>=0x40900000) {                /* z >= 1024 */
+            if(((j-0x40900000)|i)!=0)           /* if z > 1024 */
+                return s*huge*huge;         /* overflow */
             else {
-                if(p_l+ovt>z-p_h) return s*huge*huge;	/* overflow */
+                if(p_l+ovt>z-p_h) return s*huge*huge;   /* overflow */
             }
-        } else if((j&0x7fffffff)>=0x4090cc00 ) {	/* z <= -1075 */
-            if(((j-0xc090cc00)|i)!=0) 		/* z < -1075 */
-                return s*tiny*tiny;		/* underflow */
+        } else if((j&0x7fffffff)>=0x4090cc00 ) {    /* z <= -1075 */
+            if(((j-0xc090cc00)|i)!=0)       /* z < -1075 */
+                return s*tiny*tiny;     /* underflow */
             else {
-                if(p_l<=z-p_h) return s*tiny*tiny;	/* underflow */
+                if(p_l<=z-p_h) return s*tiny*tiny;  /* underflow */
             }
         }
         /*
@@ -711,9 +710,9 @@ class MoreMath {
         i = j&0x7fffffff;
         k = (i>>20)-0x3ff;
         n = 0;
-        if(i>0x3fe00000) {		/* if |z| > 0.5, set n = [z+0.5] */
+        if(i>0x3fe00000) {      /* if |z| > 0.5, set n = [z+0.5] */
             n = j+(0x00100000>>(k+1));
-            k = ((n&0x7fffffff)>>20)-0x3ff;	/* new k for n */
+            k = ((n&0x7fffffff)>>20)-0x3ff; /* new k for n */
             t = 0.;
             t = setHI(t, (n&~(0x000fffff>>k)));
             n = ((n&0x000fffff)|0x00100000)>>(20-k);
@@ -733,7 +732,7 @@ class MoreMath {
         j  = HI(z);
         j += (n<<20);
         if ((j>>20) <= 0) {
-            z = scalbn(z,n);	/* subnormal output */
+            z = scalbn(z,n);    /* subnormal output */
         } else {
             z = setHI(z, HI(z) + (n<<20));
         }
@@ -765,14 +764,14 @@ class MoreMath {
         int hx = HI(x);
         int lx = LO(x);
         int k = (hx & 0x7ff00000) >> 20; /* extract exponent */
-        if (k==0) {				/* 0 or subnormal x */
+        if (k==0) {             /* 0 or subnormal x */
             if ((lx|(hx&0x7fffffff))==0) return x; /* +-0 */
             x *= two54; 
             hx = HI(x);
             k = ((hx&0x7ff00000)>>20) - 54; 
-            if (n< -50000) return tiny*x; 	/*underflow*/
-	    }
-        if (k==0x7ff) return x+x;		/* NaN or Inf */
+            if (n< -50000) return tiny*x;   /*underflow*/
+        }
+        if (k==0x7ff) return x+x;       /* NaN or Inf */
         k = k+n; 
         if (k >  0x7fe) return huge * copysign(huge, x); /* overflow  */
         if (k > 0) {
@@ -780,10 +779,10 @@ class MoreMath {
             return x;
         }
         if (k <= -54)
-            if (n > 50000) 	/* in case integer overflow in n+k */
-                return huge*copysign(huge,x);	/*overflow*/
-            else return tiny*copysign(tiny,x); 	/*underflow*/
-        k += 54;				/* subnormal result */
+            if (n > 50000)  /* in case integer overflow in n+k */
+                return huge*copysign(huge,x);   /*overflow*/
+            else return tiny*copysign(tiny,x);  /*underflow*/
+        k += 54;                /* subnormal result */
         setHI(x, (hx&0x800fffff)|(k<<20));
         return x * twom54;
     }

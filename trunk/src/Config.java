@@ -1,6 +1,7 @@
 // Copyright (c) 2006-2007, Mihai Preda
 
-#include "defines.inc"
+import java.util.*;
+import java.io.*;
 
 class Config {
     Hashtable ht = new Hashtable();
@@ -20,7 +21,7 @@ class Config {
                     s1 = is.readUTF();
                     s2 = is.readUTF();
                     ht.put(s1, s2);
-                    LOG("--- " + s1 + " " + s2 + " ---");
+                    Log.log("--- " + s1 + " " + s2 + " ---");
                 }
             } catch (IOException e) {
                 if (sz != ht.size()) {
@@ -59,6 +60,6 @@ class Config {
             throw new Error("config save " + e);
         }
         rs.write(recId);
-        LOG("config saved");
+        Log.log("config saved");
     }
 }

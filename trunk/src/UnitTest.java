@@ -1,5 +1,3 @@
-#include "defines.inc"
-
 class UnitTest {
 
     class FormatCase {
