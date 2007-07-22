@@ -141,15 +141,13 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         gg.fillRect(clientX, Y[RESULT], clientW, lineHeight);
 
         if (parser.parse(String.valueOf(line, 0, len), result)) {
-            if (result.plotFunc != null) {
-                C.self.plotCanvas.plot(result.plotFunc, Expr.symbols, result.plotXmin, result.plotXmax);
-                return;
+            if (result.plotFunc == null) {
+                String strResult = (result.arity > 0) ? 
+                    result.name + params[result.arity-1] : format(result.value);
+                gg.setColor(fgCol[RESULT]);
+                //gg.drawString(strResult, clientX, Y[RESULT], 0);
+                gg.drawString(strResult, clientX + clientW, Y[RESULT], Graphics.TOP|Graphics.RIGHT); //Graphics.BOTTOM|Graphics.RIGHT);
             }
-            String strResult = (result.arity > 0) ? 
-                result.name + params[result.arity-1] : format(result.value);
-            gg.setColor(fgCol[RESULT]);
-            //gg.drawString(strResult, clientX, Y[RESULT], 0);
-            gg.drawString(strResult, clientX + clientW, Y[RESULT], Graphics.TOP|Graphics.RIGHT); //Graphics.BOTTOM|Graphics.RIGHT);
         } else {
             if (result.errorPos < len) {
                 markError(result.errorPos);
@@ -499,6 +497,11 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         case Canvas.FIRE:
             String str = String.valueOf(line, 0, len);
             history.enter(str);
+            if (str.startsWith("plot(")) {
+                if (parser.parse(String.valueOf(line, 0, len), result))
+                    if (result.plotFunc != null)
+                        C.self.plotCanvas.plot(result.plotFunc, Expr.symbols, result.plotXmin, result.plotXmax);
+            }
             updateFromHistEntry(history.getCurrent());
             doChanged(-1);
             updateHistory();
