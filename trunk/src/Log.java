@@ -1,3 +1,5 @@
+// Copyright (c) 2007, Carlo Teubner
+
 public class Log {
     
     public static void log(Object msg) {
