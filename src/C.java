@@ -5,6 +5,7 @@ import java.io.*;
 import javax.microedition.midlet.*;
 
 public final class C extends MIDlet implements CommandListener, Runnable {
+    static final String NAME = "Javia-Calculator", VERSION = "1.2.3", URL = "http://calculator.javia.org/";
     static C self;
         
     static Display display;
@@ -39,17 +40,17 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         CMD_ROUND_NO = 8, CMD_ROUND_YES = 9;
 
     static final Command cmdOk
-        = new Cmd("Ok", CMD_OK, Command.BACK, 1);
+        = new Cmd("OK", CMD_OK, Command.BACK, 1);
 
     Menu menu = new Menu("Menu", new Cmd[] {
             new Menu("Setup", new Cmd[] {
-                    new Menu("Angle Unit", new Cmd[] {
+                    new Menu("Angle unit", new Cmd[] {
                             new Cmd("Radians", CMD_ANG_RAD),
                             new Cmd("Degrees", CMD_ANG_DEG)
                         }),
                     new Menu("Rounding", new Cmd[] {
-                            new Cmd("Smart Rounding", CMD_ROUND_YES),
-                            new Cmd("No Rouding",     CMD_ROUND_NO),
+                            new Cmd("Smart rounding", CMD_ROUND_YES),
+                            new Cmd("No rounding",     CMD_ROUND_NO),
                         })
                 }),
             new Cmd("Help",  CMD_HELP),
@@ -79,8 +80,8 @@ public final class C extends MIDlet implements CommandListener, Runnable {
             aboutForm.append(Image.createImage("/a"));
         } catch (IOException e) {
         }
-        aboutForm.append("Javia-Calculator 1.2.3\n");
-        aboutForm.append("\u00a9 Mihai Preda\nhttp://calculator.javia.org/");
+        aboutForm.append(NAME + " " + VERSION + "\n");
+        aboutForm.append("\u00a9 Mihai Preda\n" + URL);
         aboutForm.addCommand(cmdOk);
         aboutForm.setCommandListener(this);
 
