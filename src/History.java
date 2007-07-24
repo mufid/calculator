@@ -51,12 +51,11 @@ class HistEntry {
 }
 
 class History {
-    //static RMS rs = C.rs;
     static double ans = 0;
 
     private Expr parser;
     private int historyPos;
-    private Vector history; // = new Vector();
+    private Vector history;
     
     int posMaxSeq = -1;
     int maxSeq = 0;
@@ -119,33 +118,11 @@ class History {
         if (newPos < 0 || newPos >= history.size()) {
             return false;
         }
-        //((HistEntry) history.elementAt(historyPos)).update(parent.line, parent.len, parent.pos);
         HistEntry entry = (HistEntry) history.elementAt(newPos);
         historyPos = newPos;
-        //getFrom(entry);
         return true;
     }
     
-    /*
-    private void getFrom(HistEntry entry) {
-        parent.pos = entry.pos;
-        String str = entry.edited;
-        str.getChars(0, str.length(), parent.line, 0);
-        parent.len = str.length();
-    }
-    */
-
-    /*
-    void clear() {
-        history.setSize(1);
-        historyPos = 0;
-        posMaxSeq = -1;
-        maxSeq = 0;
-        for (int i = RS_HIST_START; i < C.RS_MAX_HIST+RS_HIST_START; ++i) {
-            C.rs.write(i);
-        }
-    }
-    */
     private Result result = new Result();
     void enter(String str) {
         if (parser.parse(str, result)) {
@@ -178,6 +155,5 @@ class History {
             }
         }
         historyPos = 0;
-        //getFrom((HistEntry)history.elementAt(historyPos));
     }
 }

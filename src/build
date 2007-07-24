@@ -5,7 +5,7 @@ WTK=/home/preda/WTK
 PREV=$WTK/bin/preverify
 PROGUARD="java -jar /home/preda/proguard/lib/proguard.jar @src/proguard.txt"
 
-NAME="Javia-Calculator"
+NAME="calculator"
 URL="http://calculator.javia.org/"
 SRCS="CalcConfig Menu Util UnitTest C CalcCanvas Config Expr History KeyState MoreMath Symbol RMS"
 
@@ -22,8 +22,8 @@ VERSION=$MAJOR.$MINOR.$MICRO
 }
 
 function genManifest {
-echo "MIDlet-1: $NAME, /$ICON, C"
-echo MIDlet-Name: $NAME
+echo "MIDlet-1: Calculator, /$ICON, C"
+echo MIDlet-Name: Calculator
 echo "MIDlet-Vendor: Mihai Preda"
 echo MIDlet-Version: $VERSION
 echo MicroEdition-Configuration: CLDC-$CLDC
