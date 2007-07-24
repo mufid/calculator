@@ -9,6 +9,20 @@ TODO
 - Rewrite Expr and Symbol to use a stack-based "virtual machine" - the speed gain should be useful especially for map().
 - Make the plot screen interactive: user can move around and zoom (both plot() and map()).
 
+- Add unit tests, get good test coverage.
+- Fix bugs with function re-definition.
+- Make new release including the plot functionality.
+- Support pointer for pushing buttons (for touch-screen mobile phones).
+- Improve usability (how?).
+- Support different key layouts (e.g. for Nokia E61).
+
 DONE
 ====
 - Only plot when the user presses the fire button.
+
+IDEAS
+=====
+- Dimensions, unit conversion (300m/s -> km/h; sin(60deg); 100ft^2 -> m^2).
+- Contextual help for functions.
+- Allow custom function and parameter names (how?) (e.g.: BMI(weight, height) := weight/height^2). 
+- Additional, optional function packages.
