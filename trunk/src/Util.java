@@ -1,6 +1,6 @@
 class Util {
     static String doubleToString(double v, int roundingDigits) {
-        if (roundingDigits > 10) {
+        if (roundingDigits > 13) {
             roundingDigits = 0;
         }
         int roundingStart = roundingDigits == 0 ? 17 : 15 - roundingDigits;
@@ -46,7 +46,6 @@ class Util {
         }
 
         //re-insert dot
-        //System.out.println(""+exp);
         if ((exp < -5) || (exp > 10)) {
             buf.insert(1, '.');
             --exp;
