@@ -5,9 +5,7 @@ import java.io.*;
 import javax.microedition.midlet.*;
 
 public final class C extends MIDlet implements CommandListener, Runnable {
-    static final String NAME = "Javia-Calculator", VERSION = "1.2.3", URL = "http://calculator.javia.org/";
-    static C self;
-        
+    static C self;        
     static Display display;
     CalcCanvas calcCanvas;
     PlotCanvas plotCanvas;
@@ -80,8 +78,12 @@ public final class C extends MIDlet implements CommandListener, Runnable {
             aboutForm.append(Image.createImage("/a"));
         } catch (IOException e) {
         }
-        aboutForm.append(NAME + " " + VERSION + "\n");
-        aboutForm.append("\u00a9 Mihai Preda\n" + URL);
+        aboutForm.append("" + 
+                         getAppProperty("MIDlet-Name") + " " + 
+                         getAppProperty("MIDlet-Version") + "\n");
+        aboutForm.append("\u00a9 " + 
+                         getAppProperty("MIDlet-Vendor") + "\n" + 
+                         getAppProperty("MIDlet-Info-URL"));
         aboutForm.addCommand(cmdOk);
         aboutForm.setCommandListener(this);
 
