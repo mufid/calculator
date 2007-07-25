@@ -19,4 +19,4 @@ extralibs = []
 
 midlet = mebuild.Midlet(**spec)
 
-midlet.process(midlet.fileName, midlet.tmpDir)
+midlet.build(mebuild.cmdLineOptions())
