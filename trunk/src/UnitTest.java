@@ -1,3 +1,6 @@
+// Copyright (c) 2007, Mihai Preda.
+// Available under the MIT License (see COPYING).
+
 class UnitTest {
 
     class FormatCase {

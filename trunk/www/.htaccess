@@ -4,13 +4,11 @@ Options +Multiviews
 DefaultType php5-cgi
 #DefaultType application/x-httpd-php
 AddCharset UTF-8 xhtml html css
-#AddType application/java-archive .jar
-#AddType text/vnd.sun.j2me.app-descriptor .jad
 #Header append Cache-Control max-age=3600,public
-Redirect 302 /Javia-Calculator.jar http://calculator.javia.org/rel/Javia-Calculator-0.1.1.jar
-Redirect 302 /Javia-Calculator.jad http://calculator.javia.org/rel/Javia-Calculator-0.1.1.jad
-Redirect 302 /jar http://calculator.javia.org/rel/Javia-Calculator-0.1.1.jar
-Redirect 302 /jad http://calculator.javia.org/rel/Javia-Calculator-0.1.1.jad
-Redirect 302 /x http://calculator.javia.org/
-#ServerSignature Off
-#ServerTokens min
+Redirect 302 /Javia-Calculator.jar http://calculator.javia.org/calculator.jar
+Redirect 302 /Javia-Calculator.jad http://calculator.javia.org/calculator.jad
+Redirect 302 /jar http://calculator.javia.org/calculator.jar
+Redirect 302 /jad http://calculator.javia.org/calculator.jad
+RewriteEngine on
+rewriterule ^calculator\.jar$ rel/last/calculator.jar [L]
+rewriterule ^calculator\.jad$ rel/last/calculator.jad [L]
