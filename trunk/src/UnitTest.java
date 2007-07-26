@@ -60,7 +60,9 @@ class UnitTest {
         new FormatCase(0, 9999999999999999.,    "1E16"),
         new FormatCase(0, 999999999999999.,     "9.99999999999999E14"),
         new FormatCase(1, 999999999999999.,     "1E15"),
-        new FormatCase(1, 999999999999994.,     "9.9999999999999E14"),        
+        new FormatCase(1, 999999999999994.,     "9.9999999999999E14"),
+
+        new FormatCase(1, MoreMath.log2(1+.00002), "0.029")
     };
 
     boolean testFormat() {
@@ -82,6 +84,9 @@ class UnitTest {
 
     public static void main(String argv[]) {
         UnitTest tester = new UnitTest();
-        tester.testFormat();
+        boolean ok = tester.testFormat();
+        if (ok) {
+            System.out.println("all test passed ok");
+        }
     }
 }
