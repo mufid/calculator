@@ -11,14 +11,18 @@ TODO
 
 - Add unit tests, get good test coverage.
 - Fix bugs with function re-definition.
-- Make new release including the plot functionality.
 - Support pointer for pushing buttons (for touch-screen mobile phones).
 - Improve usability (how?).
 - Support different key layouts (e.g. for Nokia E61).
 
+- Improve web page.
+- Setup mailing list.
+- Declare open-source status on web page, link to svn & mailing list.
+
 DONE
 ====
 - Only plot when the user presses the fire button.
+- New release including the plot functionality (0.1.2).
 
 IDEAS
 =====
