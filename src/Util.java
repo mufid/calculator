@@ -56,7 +56,7 @@ class Util {
             for (int i = len; i < exp; ++i) {
                 buf.append('0');
             }
-            buf.insert(exp, '.');
+            buf.insert((exp<0)? 0 : exp, '.');
             for (int i = exp; i <= 0; ++i) {
                 buf.insert(0, '0');
             }
