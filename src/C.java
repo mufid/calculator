@@ -82,9 +82,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         aboutForm.append("" + 
                          getAppProperty("MIDlet-Name") + " " + 
                          getAppProperty("MIDlet-Version") + "\n");
-        aboutForm.append("\u00a9 " + 
-                         getAppProperty("MIDlet-Vendor") + "\n" + 
-                         getAppProperty("MIDlet-Info-URL"));
+        aboutForm.append(new StringItem(null, getAppProperty("MIDlet-Info-URL"), Item.HYPERLINK));
         aboutForm.addCommand(cmdOk);
         aboutForm.setCommandListener(this);
 
