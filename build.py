@@ -1,20 +1,18 @@
 #!/usr/bin/python
 
 import mebuild
-import glob
-import shutil
-from os import path
 
 spec = dict(
 cldc    = '1.1',
 midp    = '2.0',
-name    = 'Calculator',
+name    = 'Javia Calculator',
 icon    = 'a',
 cls     = 'C',
-version = '0.1.3',
+version = '0.1.2',
 author  = 'Mihai Preda & Carlo Teubner',
 infoUrl = 'http://calculator.javia.org/',
-extralibs = []
+extralibs = [],
+fileName  = 'calculator'
 )
 
 midlet = mebuild.Midlet(**spec)

@@ -1,4 +1,5 @@
-// Copyright (c) 2006-2007, Mihai Preda
+// Copyright (c) 2006-2007, Mihai Preda.
+// Available under the MIT License (see COPYING).
 
 class MoreMath {
     //parts derived from FDLIBM 5.3

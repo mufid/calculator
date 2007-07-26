@@ -1,3 +1,6 @@
+// Copyright 2007, Mihai Preda.
+// Available under the MIT License (see COPYING).
+
 class Util {
     static String doubleToString(double v, int roundingDigits) {
         if (roundingDigits > 13) {

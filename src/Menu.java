@@ -1,3 +1,6 @@
+// Copyright (c) 2007, Mihai Preda.
+// Available under the MIT License (see COPYING).
+
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Display;

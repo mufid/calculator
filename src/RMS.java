@@ -1,4 +1,5 @@
-// Copyright (c) 2006-2007, Mihai Preda
+// Copyright (c) 2006-2007, Mihai Preda.
+// Available under the MIT License (see COPYING).
 
 import java.io.*;
 import javax.microedition.rms.*;
