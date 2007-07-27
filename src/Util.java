@@ -3,21 +3,24 @@
 
 class Util {
     /* returns a number which is an approximation of v (within maxError)
-       and which is simpler (has fewer digits in base-10).
+       and which has fewer digits in base-10).
     */
-    static double shortApprox(double v, double maxError) {
+    static double shortApprox(double iniV, double maxError) {
+        final double v = Math.abs(iniV);
         final double tail = MoreMath.intExp10(MoreMath.intLog10(Math.abs(maxError)));
         //return v - v % tail;
-        return ((int)(v/tail +.5))*tail;
+        final double ret = ((int)(v/tail +.5))*tail;
+        return (iniV < 0) ? -ret : ret;
     }
 
     static String doubleToString(double v, int roundingDigits) {
+        
         if (roundingDigits > 13) {
             roundingDigits = 0;
         }
         int roundingStart = roundingDigits == 0 ? 17 : 15 - roundingDigits;
 
-        String str = Double.toString(v);
+        String str = Double.toString(Math.abs(v));
         StringBuffer buf = new StringBuffer(str);
         int ePos = str.lastIndexOf('E');
         int exp  =  (ePos != -1) ? Integer.parseInt(str.substring(ePos + 1)) : 0;
@@ -84,6 +87,9 @@ class Util {
 
         if (exp != 0) {
             buf.append('E').append(exp);
+        }
+        if (v < 0) {
+            buf.insert(0, '-');
         }
         return buf.toString();
     }

@@ -33,7 +33,7 @@ public class PlotCanvas extends Canvas {
     }
 
     private static String format(double v, double maxError) {
-        return Util.doubleToString(Util.shortApprox(v, maxError), 0);
+        return Util.doubleToString(Util.shortApprox(v, maxError), 1);
     }
 
     protected void paint(Graphics g) {
