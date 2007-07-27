@@ -798,5 +798,15 @@ class MoreMath {
 
     static final boolean isPiMultiple(double x) {
         return x % Math.PI == 0;
-    }    
+    }
+
+    static final int intLog10(double x) {
+        //an alternative implem is using a for loop.
+        return (int)Math.floor(log10(x));
+        //return (int)log10(x);
+    }
+
+    static final double intExp10(int exp) {
+        return Double.parseDouble("1E" + exp);
+    }
 }

@@ -32,6 +32,10 @@ public class PlotCanvas extends Canvas {
         display.setCurrent(this);
     }
 
+    private static String format(double v, double maxError) {
+        return Util.doubleToString(Util.shortApprox(v, maxError), 0);
+    }
+
     protected void paint(Graphics g) {
         int width = getWidth();
         int height = getHeight();
@@ -69,8 +73,8 @@ public class PlotCanvas extends Canvas {
 
         g.setColor(0x000000FF);
         g.setFont(Font.getFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_SMALL));
-        g.drawString(Double.toString(ymin), 0, height-1, Graphics.BOTTOM | Graphics.LEFT);
-        g.drawString(Double.toString(ymax), 0, 0, Graphics.TOP | Graphics.LEFT);
+        g.drawString(format(ymin, xf), 0, height-1, Graphics.BOTTOM | Graphics.LEFT);
+        g.drawString(format(ymax, xf), 0, 0, Graphics.TOP | Graphics.LEFT);
         
         g.setColor(0x00000000);
         if (ymin == ymax)
