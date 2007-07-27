@@ -1,21 +1,20 @@
 // Copyright (c) 2007, Mihai Preda.
 // Available under the MIT License (see COPYING).
 
-class UnitTest {
-
-    class FormatCase {
-        public FormatCase(int rounding, double v, String s) {
-            this.rounding = rounding;
-            this.val = v;
-            this.res = s;
-        }
-
-        public int rounding;
-        public double val;
-        public String res;            
+class FormatCase {
+    public FormatCase(int rounding, double v, String s) {
+        this.rounding = rounding;
+        this.val = v;
+        this.res = s;
     }
+    
+    public int rounding;
+    public double val;
+    public String res;            
+}
 
-    FormatCase cases[] = { 
+class TestFormat {
+    static FormatCase cases[] = { 
         new FormatCase(0, 0.1, "0.1"),
         new FormatCase(0, 0.12, "0.12"),
         new FormatCase(0, 0.001, "0.001"),
@@ -37,7 +36,6 @@ class UnitTest {
         new FormatCase(0, 100000000000000.,   "1E14"),
         new FormatCase(0, 120000000000000.,   "1.2E14"),
         new FormatCase(0, 100000000000001.,   "1.00000000000001E14"),
-
 
         new FormatCase(2, 0.1, "0.1"),
         new FormatCase(2, 0.00000012, "1.2E-7"),
@@ -65,7 +63,7 @@ class UnitTest {
         new FormatCase(1, MoreMath.log2(1+.00002), "00000.28853612282487")
     };
 
-    boolean testFormat() {
+    static boolean testFormat() {
         boolean ret = true;
         for (int i = 0; i < cases.length; ++i) {
             FormatCase c = cases[i];
@@ -81,14 +79,49 @@ class UnitTest {
         }
         return ret;
     }
+}
 
+class UnitTest {
     public static void main(String argv[]) {
-        UnitTest tester = new UnitTest();
-        boolean ok = tester.testFormat();
-        if (!ok) {
+        //UnitTest tester = new UnitTest();
+        checkCounter = 0;
+
+        cheq(MoreMath.log(-1), Double.NaN);
+        cheq(MoreMath.log(-0.03), Double.NaN);
+        cheq(MoreMath.intLog10(-0.03), 0);
+        cheq(MoreMath.intLog10(0.03), -2);
+        cheq(MoreMath.intExp10(3), 1000);
+        cheq(MoreMath.intExp10(-1), 0.1);
+        cheq(Util.shortApprox( 1.235, 0.02),  1.24);
+        cheq(Util.shortApprox( 1.235, 0.4),   1.2000000000000002);
+        cheq(Util.shortApprox(-1.235, 0.02), -1.24);
+        cheq(Util.shortApprox(-1.235, 0.4),  -1.2000000000000002);
+
+        check(TestFormat.testFormat());
+
+        if (!allOk) {
             System.exit(1);
         } else {
             System.out.println("All tests passed ok");
         }
     }
+
+    static void cheq(double v1, double v2) {
+        ++checkCounter;
+        if (v1 != v2 && !(Double.isNaN(v1) && Double.isNaN(v2))) {
+            allOk = false;
+            Log.log("check equal " + checkCounter + " failed: " + v1 + " " + v2);
+        }
+    }
+    
+    static void check(boolean cond) {
+        ++checkCounter;
+        if (!cond) {
+            allOk = false;
+            Log.log("check " + checkCounter + " failed");
+        }
+    }
+
+    static boolean allOk = true;
+    static int checkCounter = 0;
 }
