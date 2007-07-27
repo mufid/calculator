@@ -2,6 +2,15 @@
 // Available under the MIT License (see COPYING).
 
 class Util {
+    /* returns a number which is an approximation of v (within maxError)
+       and which is simpler (has fewer digits in base-10).
+    */
+    static double shortApprox(double v, double maxError) {
+        final double tail = MoreMath.intExp10(MoreMath.intLog10(Math.abs(maxError)));
+        //return v - v % tail;
+        return ((int)(v/tail +.5))*tail;
+    }
+
     static String doubleToString(double v, int roundingDigits) {
         if (roundingDigits > 13) {
             roundingDigits = 0;
