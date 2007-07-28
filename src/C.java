@@ -39,7 +39,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         CMD_ROUND_NO = 8, CMD_ROUND_YES = 9;
 
     static final Command cmdOk
-        = new Cmd("OK", CMD_OK, Command.BACK, 1);
+        = new Cmd("OK", CMD_OK, Command.BACK);
 
     Menu menu = new Menu("Menu", new Cmd[] {
             new Menu("Setup", new Cmd[] {
@@ -94,7 +94,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         thread.start();
 
         display.setCurrent(calcCanvas);
-        menu.setParent(display, calcCanvas, this);
+        menu.setParent(this, calcCanvas);
     }
 
     void displayMenu() {
