@@ -16,10 +16,10 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         KEY_CLEAR =  -8, 
         KEY_END   = -11, 
         KEY_POWER = -12;
-    private static final String arityParens[] = {"", "()", "(,)", "(,,)"};
-    private static final String params[] = {"(x)", "(x,y)", "(x,y,z)"};
+    private static final String arityParens[] = {"", "()", "(,)", "(,,)", "(,,,)", "(,,,,)"};
+    private static final String params[] = {"(x)", "(x,y)", "(x,y,z)" /* user-def fns have <= 3 params */ };
 
-    Expr parser = new Expr();
+    Compiler compiler = new Compiler();
     History history; 
 
     int screenW, screenH;
@@ -27,8 +27,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     int cursorRow, cursorCol;
     int cursorX, cursorY, cursorW = 1, cursorH;
 
-
-    Result result = new Result();
+    Result res = new Result();
 
     Font font, historyFont;
     int lineHeight;
@@ -59,7 +58,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     CalcCanvas() {
         boolean isSmallScreen = getHeight() <= 128;
         //if (isSmallScreen) {
-        setFullScreenMode(true);
+        setFullScreenMode(true); // XXX advantage of not using full screen is user can see menus...
         //}
 
         screenW = getWidth();
@@ -80,15 +79,17 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         editLines = new int[maxEditLines + 1];
         clientW = screenW - 2*clientX;
 
-        history = new History(parser);
-        DataInputStream is = C.rs.read(2);
+        history = new History(compiler);
+        DataInputStream is = C.rs.read(C.RS_CURRENT);
         updateFromHistEntry(is == null ? new HistEntry("1+1", 0, false) : new HistEntry(is));
         if (is == null) {
-            history.enter("0.5!*2)^2");
-            history.enter("sqrt(3^2+4^2");
-            history.enter("sin(pi/2)");
+            history.enter("0.5!*2)^2", null);
+            history.enter("sqrt(3^2+4^2", null);
+            history.enter("sin(pi/2)", null);
         }
-        
+
+        Variables.load();
+
         cursorX = 20;
         cursorY = 10;
         cursorH = lineHeight;
@@ -141,19 +142,19 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         gg.setColor(bgCol[RESULT]);
         gg.fillRect(clientX, Y[RESULT], clientW, lineHeight);
 
-        if (parser.parse(String.valueOf(line, 0, len), result)) {
-            if (result.plotFunc == null) {
-                String strResult = (result.arity > 0) ? 
-                    result.name + params[result.arity-1] : format(result.value);
+        if (compiler.compile(String.valueOf(line, 0, len), res)) {
+            if (res.plotCommand == -1) {
+                CompiledFunction func = res.function;
+                String strResult = func.arity() > 0 ?
+                        line[0] + params[func.arity()-1] : format(func.evaluate(null));
                 gg.setColor(fgCol[RESULT]);
-                //gg.drawString(strResult, clientX, Y[RESULT], 0);
-                gg.drawString(strResult, clientX + clientW, Y[RESULT], Graphics.TOP|Graphics.RIGHT); //Graphics.BOTTOM|Graphics.RIGHT);
+                gg.drawString(strResult, clientX + clientW, Y[RESULT], Graphics.TOP|Graphics.RIGHT);
             }
         } else {
-            if (result.errorPos < len) {
-                markError(result.errorPos);
-            }
+            if (res.errorPos < len)
+                markError(res.errorPos);
         }
+
         repaint(clientX, Y[RESULT], clientW, lineHeight);
     }
 
@@ -290,7 +291,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         for (int p = 1; p < histSize && y <= yLimit; ++p, y+= histLineHeight/2) {
             HistEntry entry = history.get(p);            
             String base = entry.base;
-            String result = entry.hasResult ? format(entry.result) : "";
+            String result = entry.hasResult && !Util.isAssignment(base) ? format(entry.result) : "";
             base.getChars(0, base.length(), histBuf, 0);
             histBufLen = base.length();
             if (result.length() > 0) {
@@ -364,8 +365,8 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         if (p >= 0 && line[p] == '(') {
             --p;
         }
-        if (p >= 0 && Expr.isLetter(line[p])) {
-            do { --p; } while (p >= 0 && Expr.isLetter(line[p]));
+        if (p >= 0 && Lexer.isLetter(line[p])) {
+            do { --p; } while (p >= 0 && Lexer.isLetter(line[p]));
             return p;
         }
         return pos - 1;
@@ -379,10 +380,10 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             return pos + 2;
         }
         ++pos;
-        if (Expr.isLetter(line[pos])) {
+        if (Lexer.isLetter(line[pos])) {
             do {
                 ++pos;
-            } while (pos < len && Expr.isLetter(line[pos]));
+            } while (pos < len && Lexer.isLetter(line[pos]));
             if (pos < len && line[pos] == '(') ++pos;
             return pos - 1;
         }
@@ -494,15 +495,12 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 updateCursor();
             } 
             break;
-            
+
         case Canvas.FIRE:
             String str = String.valueOf(line, 0, len);
-            history.enter(str);
-            if (str.startsWith("plot(")) {
-                if (parser.parse(String.valueOf(line, 0, len), result))
-                    if (result.plotFunc != null)
-                        C.self.plotCanvas.plot(result.plotFunc, Expr.symbols, result.plotXmin, result.plotXmax);
-            }
+            history.enter(str, res);
+            if (res.plotCommand != -1)
+                C.self.plotCanvas.plot(res.plotCommand, res.function, res.plotArgs);
             updateFromHistEntry(history.getCurrent());
             doChanged(-1);
             updateHistory();
@@ -549,15 +547,14 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 s = String.valueOf((char)key);
             }
             if (s != null) {
-                Symbol symbol = Expr.symbols.get(s);
+                int sym = Lexer.getSymbol(s);
                 if (pos == -1 && s.length() == 1) {
                     if ("+-*/%^!".indexOf(s.charAt(0)) != -1) {
                         insertIntoLine("ans");
                         lastInsertLen += 3;
                     }
                     insertIntoLine(s);
-                    char c = s.charAt(0);
-                    if (symbol == null && 'a' <= c && c < 'x') {
+                    if (Lexer.isVariable(sym) && !Variables.isDefined(sym)) {
                         insertIntoLine(":=");
                         lastInsertLen += 2;
                     }
@@ -565,17 +562,25 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                     insertIntoLine(s);
                 }
                 lastInsertLen += s.length();
-                if (symbol != null && !"plot(".equals(String.valueOf(line, 0, oldPos + 1))) { // && symbol.arity > 0) {
-                    String parens = arityParens[symbol.arity];
-                    int parensLen = parens.length();
-                    if (parensLen > 0) {
-                        if (pos == len-1) {
-                            insertIntoLine(parens);
-                            pos -= parensLen - 1;
-                            lastInsertLen += parensLen;
-                        } else {
-                            insertIntoLine("(");
-                            ++lastInsertLen;
+                if (sym != -1) {
+                    String pre = String.valueOf(line, 0, oldPos + 1);
+                    if (!("plot(".equals(pre) || "map(".equals(pre))) {
+                        int arity = Lexer.isVariable(sym)
+                            ? (Variables.isFunction(sym)
+                               ? Variables.getFunction(sym).arity()
+                               : 0)
+                            : Lexer.getBuiltinArity(sym);
+                        String parens = arityParens[arity];
+                        int parensLen = parens.length();
+                        if (parensLen > 0) {
+                            if (pos == len-1) {
+                                insertIntoLine(parens);
+                                pos -= parensLen - 1;
+                                lastInsertLen += parensLen;
+                            } else {
+                                insertIntoLine("(");
+                                ++lastInsertLen;
+                            }
                         }
                     }
                 }
@@ -641,6 +646,6 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         String str = String.valueOf(line, 0, len);
         HistEntry entry = new HistEntry(str, 0, false);
         entry.write(C.rs.out);
-        C.rs.write(2);        
+        C.rs.write(C.RS_CURRENT);
     }
 }

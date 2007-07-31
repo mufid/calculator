@@ -8,7 +8,7 @@ final class KeyState {
     static int fontHeight;
     static int w, h, cellWidth, cellHeight, yPos;
     static int stepW, singleSpace;
-    static KeyState rootOp, trigs, hyps, logs, ints, vars, funcs, rootExp;
+    static KeyState rootOp, trigs, hyps, logs, ints, vars, plots, rootExp;
     static KeyState keypad, lastPainted;
 
     private static final int 
@@ -68,6 +68,13 @@ final class KeyState {
             "g",  "c",  "d",
             "h",  "m",  "n",
         });
+        
+        plots = new KeyState(new Object[] {
+            null,   null,   null,
+            "plot", "map",  null,
+            null,   null,   null,
+            null,   null,   null,
+        });
 
         rootOp = new KeyState(new Object[] {
             "(",  ",",  ")",
@@ -78,7 +85,7 @@ final class KeyState {
 
         rootExp = new KeyState(new Object[] {
             "sqrt",  "ans",  "E",
-            "plot",    vars,   ":=",
+            plots,    vars,   ":=",
             "pi",    "e",    ints,
             trigs,   logs,   ".",
 
