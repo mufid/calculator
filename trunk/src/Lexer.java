@@ -72,6 +72,10 @@ public class Lexer implements VMConstants
         return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')  || c == '\u03c0';
     }
 
+    public static boolean isAssignment(String str) {
+        return str.length() > 3 && str.charAt(1) == ':' && str.charAt(2) == '=';
+    }
+
 
     private char[] input;
     private int input_len;

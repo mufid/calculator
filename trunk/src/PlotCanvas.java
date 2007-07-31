@@ -147,7 +147,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
         double gf = 255 / (fmax - fmin);
         start = System.currentTimeMillis();
         int labelWidthPx = width / 2 - colourBoxWidth - 2;
-        String labelMin = Double.toString(fmin), labelMax = Double.toString(fmax);
+        String labelMin = Double.toString(fmin), labelMax = Double.toString(fmax); // XXX use Util.doubleToString
         labelMin = labelMin.substring(0, CalcCanvas.fitWidth(font, labelWidthPx, labelMin));
         labelMax = labelMax.substring(0, CalcCanvas.fitWidth(font, labelWidthPx, labelMax));        
         g.setColor(0x000000FF);

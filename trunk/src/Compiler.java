@@ -17,7 +17,7 @@ public class Compiler implements VMConstants
     public boolean compile(String input, Result result) {
         init();
         try {
-            if (Util.isAssignment(input)) {
+            if (Lexer.isAssignment(input)) {
                 definedSymbol = Lexer.getSymbol(input.substring(0, 1));
                 if (!(FIRST_VAR <= definedSymbol && definedSymbol <= LAST_VAR))
                     throw error;

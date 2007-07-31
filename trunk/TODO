@@ -1,6 +1,5 @@
 TODO
 ====
-- Exit application on BACK key.
 - Ability to redefine a function. Easiest way: when input line is 'f(' and user presses clear, only delete '(' not whole line.
 - When navigating to a history entry and executing it again, without first changing it, move it on top of the history instead of creating a new history entry.
 - Context-sensitive KeyState menus which only display those operations which are currently valid.
@@ -29,6 +28,7 @@ DONE
 - Rewrite Expr and Symbol to use a stack-based "virtual machine" - the speed gain should be useful especially for map().
 - plot() should accept a general expression involving x as its first parameter. Similar for map().
 - Allow expressions like '1+1)*(2+2'
+- Exit application on BACK key.
 
 IDEAS
 =====
