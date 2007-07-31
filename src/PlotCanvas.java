@@ -86,8 +86,9 @@ public class PlotCanvas extends Canvas implements VMConstants {
 
         g.setColor(0x000000FF);
         g.setFont(Font.getFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_SMALL));
-        g.drawString(format(ymin, xf), 0, height-1, Graphics.BOTTOM | Graphics.LEFT);
-        g.drawString(format(ymax, xf), 0, 0, Graphics.TOP | Graphics.LEFT);
+        // XXX Mihai: format(ymin, xf)?
+        g.drawString(Double.toString(ymin), 0, height-1, Graphics.BOTTOM | Graphics.LEFT);
+        g.drawString(Double.toString(ymax), 0, 0, Graphics.TOP | Graphics.LEFT);
 
         g.setColor(0x00000000);
         if (ymin == ymax)
@@ -106,16 +107,29 @@ public class PlotCanvas extends Canvas implements VMConstants {
     private void paintMap(Graphics g) {
         long start, end;
 
+        Font font = Font.getFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_SMALL);
+        g.setFont(font);
+        int fontHeight = font.getHeight();
+        int infoHeight = fontHeight + 2;
+        int canvasHeight = height - infoHeight;
+        int colourBoxWidth = Math.max(fontHeight, 8);
+        g.setGrayScale(180);
+        g.fillRect(0, canvasHeight, width, infoHeight);
+        g.setGrayScale(0);
+        g.fillRect(1, canvasHeight + 1, colourBoxWidth, fontHeight);
+        g.setGrayScale(0xFF);
+        g.fillRect(width / 2 + 1, canvasHeight + 1, colourBoxWidth, fontHeight);
+
         double xmin = minmax[0], xmax = minmax[1], ymin = minmax[2], ymax = minmax[3];
         double xf = (xmax - xmin) / (width - 1);
-        double yf = (ymax - ymin) / (height - 1);
+        double yf = (ymax - ymin) / (canvasHeight - 1);
         double fmin = Double.POSITIVE_INFINITY, fmax = Double.NEGATIVE_INFINITY;
 
         double[] f = new double[width*height];
         double[] xy = new double[2];
         start = System.currentTimeMillis();
         for (int x = 0; x < width; ++x)
-            for (int y = 0; y < height; ++y) {
+            for (int y = 0; y < canvasHeight; ++y) {
                 xy[0] = xmin + x * xf;
                 xy[1] = ymin + y * yf;
                 double v = func.evaluate(xy);
@@ -132,8 +146,15 @@ public class PlotCanvas extends Canvas implements VMConstants {
 
         double gf = 255 / (fmax - fmin);
         start = System.currentTimeMillis();
+        int labelWidthPx = width / 2 - colourBoxWidth - 2;
+        String labelMin = Double.toString(fmin), labelMax = Double.toString(fmax);
+        labelMin = labelMin.substring(0, CalcCanvas.fitWidth(font, labelWidthPx, labelMin));
+        labelMax = labelMax.substring(0, CalcCanvas.fitWidth(font, labelWidthPx, labelMax));        
+        g.setColor(0x000000FF);
+        g.drawString(labelMin, colourBoxWidth + 2, canvasHeight + 1, Graphics.TOP | Graphics.LEFT);
+        g.drawString(labelMax, width / 2 + colourBoxWidth + 2, canvasHeight + 1, Graphics.TOP | Graphics.LEFT);
         for (int x = 0; x < width; ++x)
-            for (int y = 0; y < height; ++y) {
+            for (int y = 0; y < canvasHeight; ++y) {
                 double v = f[x + y*width];
                 if (Double.isNaN(v))
                     g.setColor(0xFF0000);
@@ -143,7 +164,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
                     g.setColor(0x40FFFF);
                 else                
                     g.setGrayScale((int) ((v - fmin) * gf + 0.499));
-                g.drawLine(x, height - 1 - y, x, height - 1 - y);
+                g.drawLine(x, canvasHeight - 1 - y, x, canvasHeight - 1 - y);
             }
         end = System.currentTimeMillis();
         Log.log("Drawing took " + (end - start) + " ms.");
