@@ -1,0 +1,32 @@
+TODO
+====
+- Optionally leaving out the * for multiplication.
+- When navigating to a history entry and executing it again, without first changing it, move it on top of the history instead of creating a new history entry.
+- Context-sensitive KeyState menus which only display those operations which are currently valid.
+- plot() should accept a general expression involving x as its first parameter.
+- Anti-aliasing of the plotted curve to make it look smoother.
+- A two-dimensional plotter, for functions with two parameters, that maps function values to colour or grayscale values. Perhaps call it map().
+- Rewrite Expr and Symbol to use a stack-based "virtual machine" - the speed gain should be useful especially for map().
+- Make the plot screen interactive: user can move around and zoom (both plot() and map()).
+
+- Add unit tests, get good test coverage.
+- Fix bugs with function re-definition.
+- Support pointer for pushing buttons (for touch-screen mobile phones).
+- Improve usability (how?).
+- Support different key layouts (e.g. for Nokia E61).
+
+- Improve web page.
+- Setup mailing list.
+- Declare open-source status on web page, link to svn & mailing list.
+
+DONE
+====
+- Only plot when the user presses the fire button.
+- New release including the plot functionality (0.1.2).
+
+IDEAS
+=====
+- Dimensions, unit conversion (300m/s -> km/h; sin(60deg); 100ft^2 -> m^2).
+- Contextual help for functions.
+- Allow custom function and parameter names (how?) (e.g.: BMI(weight, height) := weight/height^2). 
+- Additional, optional function packages.
