@@ -137,10 +137,14 @@ public final class C extends MIDlet implements CommandListener, Runnable {
             break;
             
         case CMD_EXIT:
-            onExit();
-            notifyDestroyed();
+            terminate();
             break;
         }
+    }
+
+    public void terminate() {
+        onExit();
+        notifyDestroyed();
     }
 
     protected void startApp() {

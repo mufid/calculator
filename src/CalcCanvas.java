@@ -291,7 +291,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         for (int p = 1; p < histSize && y <= yLimit; ++p, y+= histLineHeight/2) {
             HistEntry entry = history.get(p);            
             String base = entry.base;
-            String result = entry.hasResult && !Util.isAssignment(base) ? format(entry.result) : "";
+            String result = entry.hasResult && !Lexer.isAssignment(base) ? format(entry.result) : "";
             base.getChars(0, base.length(), histBuf, 0);
             histBufLen = base.length();
             if (result.length() > 0) {
@@ -599,6 +599,8 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                  key == -202 ||      //LG?
                  key == -4)) {       //Siemens, right soft key
                 C.self.displayMenu();
+            } else if (action == 0 && key == KEY_END) {
+                C.self.terminate();
             } else {
                 if (action != 0) {
                     handleAction(action);

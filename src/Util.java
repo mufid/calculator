@@ -93,8 +93,4 @@ class Util {
         }
         return buf.toString();
     }
-    
-    static boolean isAssignment(String str) {
-        return str.length() > 3 && str.charAt(1) == ':' && str.charAt(2) == '=';
-    }
 }
