@@ -6,8 +6,7 @@ import java.io.*;
 import javax.microedition.midlet.*;
 
 public final class C extends MIDlet implements CommandListener, Runnable {
-    static C self;
-        
+    static C self;        
     static Display display;
     CalcCanvas calcCanvas;
     PlotCanvas plotCanvas;
@@ -32,12 +31,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
 "Use plot(f, xmin, xmax) to see a graph of function f(x) with " +
 "x running from xmin to xmax. f can be user-defined (see above) or built-in " +
-"(like sin, sqrt) or any expression involving x (like x^2/2), " +
-"and xmin,xmax can be numbers or expressions.\n\n" +
-
-"Use map(f, xmin, xmax, ymin, ymax) to see a two-dimensional map " +
-"of the values of a function f(x,y), with x running from xmin to xmax " +
-"and y from ymin to ymax.";
+"(like sin, sqrt), and xmin,xmax can be numbers or expressions.";
 
 
     static final int CMD_OK=1, CMD_HELP=3, CMD_ABOUT=4, CMD_EXIT=5,
@@ -67,7 +61,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     Thread thread;
 
     static final int RS_CONFIG = 1;
-    static final int RS_CURRENT = 2, RS_HIST_START = 3, RS_MAX_HIST = 32; //32;
+    static final int RS_HIST_START = 3, RS_MAX_HIST = 32; //32;
     static final int RS_SYMB_START = RS_HIST_START + RS_MAX_HIST;
     static RMS rs;
     static CalcConfig cfg;
@@ -142,14 +136,10 @@ public final class C extends MIDlet implements CommandListener, Runnable {
             break;
             
         case CMD_EXIT:
-            terminate();
+            onExit();
+            notifyDestroyed();
             break;
         }
-    }
-
-    public void terminate() {
-        onExit();
-        notifyDestroyed();
     }
 
     protected void startApp() {

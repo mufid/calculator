@@ -1,13 +1,13 @@
 TODO
 ====
-- Ability to redefine a function. Easiest way: when input line is 'f(' and user presses clear, only delete '(' not whole line.
+- Optionally leaving out the * for multiplication.
 - When navigating to a history entry and executing it again, without first changing it, move it on top of the history instead of creating a new history entry.
 - Context-sensitive KeyState menus which only display those operations which are currently valid.
-- Optionally rotate the plot by 90 degrees (so the user has to rotate their phone), yielding a landscape orientation which may be better suited to many plots. 
+- plot() should accept a general expression involving x as its first parameter.
 - Anti-aliasing of the plotted curve to make it look smoother.
+- A two-dimensional plotter, for functions with two parameters, that maps function values to colour or grayscale values. Perhaps call it map().
+- Rewrite Expr and Symbol to use a stack-based "virtual machine" - the speed gain should be useful especially for map().
 - Make the plot screen interactive: user can move around and zoom (both plot() and map()).
-- Differentiate, integrate, find extrema, find zeros (numerically).
-- Symbolic differentiation.
 
 - Add unit tests, get good test coverage.
 - Fix bugs with function re-definition.
@@ -21,14 +21,8 @@ TODO
 
 DONE
 ====
-- Optionally leaving out the * for multiplication.
 - Only plot when the user presses the fire button.
-- A two-dimensional plotter, for functions with two parameters, that maps function values to colour or grayscale values. Perhaps call it map().
-- map() plot should indicate values corresponding to white and black.
-- Rewrite Expr and Symbol to use a stack-based "virtual machine" - the speed gain should be useful especially for map().
-- plot() should accept a general expression involving x as its first parameter. Similar for map().
-- Allow expressions like '1+1)*(2+2'
-- Exit application on BACK key.
+- New release including the plot functionality (0.1.2).
 
 IDEAS
 =====
