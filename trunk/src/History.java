@@ -54,15 +54,15 @@ class HistEntry {
 class History {
     static double ans = 0;
 
-    private Expr parser;
+    private Compiler compiler;
     private int historyPos;
     private Vector history;
     
     int posMaxSeq = -1;
     int maxSeq = 0;
 
-    History(Expr iniParser) {
-        parser = iniParser;
+    History(Compiler iniCompiler) {
+        compiler = iniCompiler;
         historyPos = 0;
         
         Vector v = new Vector(C.RS_MAX_HIST);
@@ -125,20 +125,23 @@ class History {
     }
     
     private Result result = new Result();
-    void enter(String str) {
-        if (parser.parse(str, result)) {
-            if (result.name != null) {
-                Expr.define(result);
-            }
-        }
+    void enter(String str, Result res)
+    {
+        if (res == null)
+            compiler.compile(str, result);
+        else
+            result = res;
 
         boolean hasValue = result.hasValue();
-        if (hasValue) {
-            ans = result.value;
-        }
+        if (hasValue)
+            ans = result.function.evaluate(null);
+
+        if (result.errorPos == -1 && result.definedSymbol != -1)
+            Variables.persistDefine(result, ans);
+
         ((HistEntry)history.elementAt(historyPos)).flush();
         if (str.length() > 0) {
-            HistEntry newEntry = new HistEntry(str, result.value, hasValue);
+            HistEntry newEntry = new HistEntry(str, ans, hasValue);
             try {
                 C.rs.out.writeInt(++maxSeq);
             } catch (IOException e) {
