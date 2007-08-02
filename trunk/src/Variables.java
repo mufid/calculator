@@ -42,7 +42,15 @@ public class Variables implements VMConstants
     public static CompiledFunction getFunction(int symbol) {
         return funcs[symbol - FIRST_VAR];
     }
+    
+    public static char getType(int symbol) {
+        return types[symbol - FIRST_VAR];
+    }
 
+    public static boolean isNumber(int symbol) {
+        return types[symbol - FIRST_VAR] == TYPE_NUM;
+    }
+    
     public static boolean isFunction(int symbol) {
         return types[symbol - FIRST_VAR] == TYPE_FUNC;
     }

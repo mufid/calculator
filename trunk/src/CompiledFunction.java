@@ -11,20 +11,20 @@ import MoreMath;
 public class CompiledFunction implements VMConstants {
     
     private static final int MAX_INST = 50, MAX_LITERALS = 50, MAX_STACKSIZE = 50;
-    
+
+    private static double[] stack = new double[MAX_STACKSIZE];
+    private static int s = -1;  // stack[s] is top stack element (-1 means stack is empty)
+
     private int arity;
     private int inst_cnt, lit_cnt;
     private int[] inst;
     private double[] literals;
-    
-    private double[] stack;
     
     private static Random rng = new Random();
     
     public CompiledFunction() {
         inst = new int[MAX_INST];
         literals = new double[MAX_LITERALS];
-        stack = new double[MAX_STACKSIZE];
         inst_cnt = lit_cnt = arity = 0;
     }
 
@@ -42,7 +42,6 @@ public class CompiledFunction implements VMConstants {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        stack = new double[MAX_STACKSIZE];
     }
 
     public void write(DataOutputStream os) {
@@ -66,7 +65,12 @@ public class CompiledFunction implements VMConstants {
     public void pushInstr(int op) {
         inst[inst_cnt++] = op;
     }
-    
+
+    public void pushInstr(int op, int arg) {
+        inst[inst_cnt++] = op;
+        inst[inst_cnt++] = arg;
+    }
+
     public void pushLiteral(double literal) {
         literals[lit_cnt++] = literal;
     }
@@ -75,8 +79,8 @@ public class CompiledFunction implements VMConstants {
 
     private double[] params;
 
-    public double evaluate(double[] pars) {
-        int s = -1, j = -1;
+    public double evaluate(final double[] pars) {
+        int litIdx = -1;
         for (int i = 0; i < inst_cnt; ++i) {
             int op = inst[i];
             if (SIN <= op && op <= ATAN) {
@@ -85,7 +89,7 @@ public class CompiledFunction implements VMConstants {
             }
             switch (op) {
             case LITERAL:
-                stack[++s] = literals[++j];
+                stack[++s] = literals[++litIdx];
                 break;
             case PAR_X: case PAR_Y: case PAR_Z:
                 stack[++s] = pars[op - FIRST_PAR];
@@ -97,8 +101,8 @@ public class CompiledFunction implements VMConstants {
             case VARFUN_A: case VARFUN_B: case VARFUN_C: case VARFUN_D:
             case VARFUN_M: case VARFUN_N: case VARFUN_F: case VARFUN_G: case VARFUN_H:
             {
-                CompiledFunction fn = Variables.getFunction(op - FIRST_VARFUN + FIRST_VAR);
-                int fn_arity = fn.arity();
+                CompiledFunction fn = Variables.getFunction(op - VARFUN_OFFSET);
+                int fn_arity = inst[++i];
                 if (params == null)
                     params = new double[3];
                 for (int k = 0; k < fn_arity; ++k)
@@ -228,9 +232,41 @@ public class CompiledFunction implements VMConstants {
  //               assert false : "unknown opcode";
             }
         }
-//        assert s == 0;
 //        assert j == lit_cnt - 1;
-        return stack[0];
+        return stack[s--];
+    }
+
+    /* This method checks for the following types of illegal behaviour:
+     * (a) a variable being referred to as a number is actually a function, or vice-versa
+     * (b) a function being called has the wrong arity
+     * (c) a function calls itself, either directly or indirectly (since we have no
+     *     conditional statements ('if'), this will always result in infinite recursion)
+     * The parameter callHistory is a bitmask of variable indices which this function is
+     * not allowed to call, because they are (direct or indirect) callers of this function,
+     * which would -- due to the absence of an 'if'-like construct -- always lead to
+     * infinite recursion.
+     */
+    public boolean check(int callHistory) {
+        for (int i = 0; i < inst_cnt; ++i) {
+            int op = inst[i];
+            if (FIRST_VAR <= op && op <= LAST_VAR) {
+                if (!Variables.isNumber(op))
+                    return false;
+            } else if (FIRST_VARFUN <= op && op <= LAST_VARFUN) {
+                op -= VARFUN_OFFSET;
+                if (!Variables.isFunction(op))
+                    return false;
+                int varBit = 1 << (op - FIRST_VAR);
+                if ((callHistory & varBit) != 0)
+                    return false;
+                CompiledFunction func = Variables.getFunction(op);
+                if (inst[++i] != func.arity)
+                    return false;
+                if (!func.check(callHistory | varBit))
+                    return false;
+            }
+        }
+        return true;
     }
 
     private double trigEval(int op, double x) {
