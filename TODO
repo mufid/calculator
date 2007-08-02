@@ -3,6 +3,8 @@ TODO
 - Ability to redefine a function. Easiest way: when input line is 'f(' and user presses clear, only delete '(' not whole line.
 - When navigating to a history entry and executing it again, without first changing it, move it on top of the history instead of creating a new history entry.
 - Context-sensitive KeyState menus which only display those operations which are currently valid.
+- Make plotting interruptible.
+- Display progress bar when plotting.
 - Optionally rotate the plot by 90 degrees (so the user has to rotate their phone), yielding a landscape orientation which may be better suited to many plots. 
 - Anti-aliasing of the plotted curve to make it look smoother.
 - Make the plot screen interactive: user can move around and zoom (both plot() and map()).
@@ -10,7 +12,6 @@ TODO
 - Symbolic differentiation.
 
 - Add unit tests, get good test coverage.
-- Fix bugs with function re-definition.
 - Support pointer for pushing buttons (for touch-screen mobile phones).
 - Improve usability (how?).
 - Support different key layouts (e.g. for Nokia E61).
@@ -29,6 +30,7 @@ DONE
 - plot() should accept a general expression involving x as its first parameter. Similar for map().
 - Allow expressions like '1+1)*(2+2'
 - Exit application on BACK key.
+- Fix bugs with function re-definition.
 
 IDEAS
 =====

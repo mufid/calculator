@@ -41,9 +41,12 @@ public class Compiler implements VMConstants
             if (lexer.peekToken() != Lexer.TOK_END)
                 throw error;
         } catch (SyntaxError e) {
+            int errorPos = lexer.lastPos();
+            if (definedSymbol != -1)
+                errorPos += 3;
             if (input.length() > 0)
-                Log.log("syntax error at " + lexer.lastPos());
-            result.init(lexer.lastPos());
+                Log.log("syntax error at " + errorPos);
+            result.init(errorPos);
             return false;
         }
         result.init(func, definedSymbol, plotCommand, plotArgs);
@@ -134,14 +137,30 @@ public class Compiler implements VMConstants
         } else if (FIRST_CONST <= c && c <= LAST_CONST) {
             func.pushInstr(c);
         } else if (FIRST_VAR <= c && c <= LAST_VAR) {
-            if (!Variables.isDefined(c))
-                throw error;
-            if (Variables.isFunction(c)) {
+            // XXX make f:=f(x) illegal (without making a:=a+1 or g:=g(1) or h:=h*x illegal)
+            // (currently, f:=f(x) will succeed but any subsequent invocation of f will fail to compile)
+            switch (Variables.getType(c)) {
+            case Variables.TYPE_FUNC:
+            {
                 CompiledFunction fn = Variables.getFunction(c);
-                compileArgList(fn.arity());
-                func.pushInstr(c + FIRST_VARFUN - FIRST_VAR);
-            } else
+                int varBits = 1 << (c - FIRST_VAR);
+                /*
+                if (definedSymbol != -1)
+                    varBits |= 1 << (definedSymbol - FIRST_VAR);
+                */
+                if (!fn.check(varBits))
+                    throw error;
+                int fn_arity = fn.arity();
+                compileArgList(fn_arity);
+                func.pushInstr(c + VARFUN_OFFSET, fn_arity);
+                break;
+            }
+            case Variables.TYPE_NUM:
                 func.pushInstr(c);
+                break;
+            default:
+                throw error;
+            }
         } else if (FIRST_FUNCTION <= c && c <= LAST_FUNCTION) {
             compileArgList(Lexer.getBuiltinArity(c));
             func.pushInstr(c);

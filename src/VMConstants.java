@@ -3,6 +3,7 @@
 
 public interface VMConstants {
 
+    // XXX change to char (saves memory but makes it messier to maintain: use script to generate this file?)
     final static int
         LITERAL = 0,
 
@@ -23,7 +24,7 @@ public interface VMConstants {
         VAR_G = 207,
         VAR_H = 208,
         LAST_VAR = 208,
-        
+
         FIRST_VARFUN = 250,
         VARFUN_A = 250,
         VARFUN_B = 251,
@@ -35,6 +36,8 @@ public interface VMConstants {
         VARFUN_G = 257,
         VARFUN_H = 258,
         LAST_VARFUN = 258,
+        
+        VARFUN_OFFSET = FIRST_VARFUN - FIRST_VAR,
 
         FIRST_CONST = 300,
         CONST_PI  = 300,
