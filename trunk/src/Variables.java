@@ -1,6 +1,8 @@
 // Copyright (c) 2007, Carlo Teubner
 // Available under the MIT License (see COPYING).
 
+// XXX persistency doesn't work
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -25,7 +27,7 @@ public class Variables implements VMConstants
                 Log.log("Saving var " + i + " = " + number);
             } else {
                 os.writeChar(types[i] = TYPE_FUNC);
-                funcs[i] = result.function;
+                funcs[i] = new CompiledFunction(result.function);
                 funcs[i].write(os);
                 Log.log("Saving var " + i + " = fn");
             }
