@@ -1,8 +1,6 @@
 // Copyright (c) 2007, Carlo Teubner
 // Available under the MIT License (see COPYING).
 
-// XXX persistency doesn't work
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -65,11 +63,15 @@ public class Variables implements VMConstants
         DataInputStream is;
         Log.log("Loading variables:");
         try {
-            for (int i = 0; i < VARS_CNT && (is = C.rs.read(C.RS_SYMB_START + i)) != null; ++i)
+            for (int i = 0; i < VARS_CNT; ++i) {
+                is = C.rs.read(C.RS_SYMB_START + i);
+                if (is == null)
+                    continue;
                 switch (types[i] = is.readChar()) {
                 case TYPE_NUM:  numbers[i] = is.readDouble(); Log.log("var " + i + " = " + numbers[i]); break;
                 case TYPE_FUNC: funcs[i] = new CompiledFunction(is); Log.log("var " + i + " = fn"); break;
                 }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
