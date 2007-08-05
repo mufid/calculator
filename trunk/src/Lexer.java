@@ -5,7 +5,13 @@ import java.util.Hashtable;
 
 public class Lexer implements VMConstants
 {
-    static Hashtable symnames;
+    public final static int
+        TOK_LPAREN = CUSTOM + 0,
+        TOK_RPAREN = CUSTOM + 1,
+        TOK_COMMA  = CUSTOM + 2,
+        TOK_END    = CUSTOM + 3;
+
+    private static Hashtable symnames;
 
     static {
         symnames = new Hashtable(50);
@@ -25,12 +31,6 @@ public class Lexer implements VMConstants
     private static void a(int code, String str) {
         symnames.put(str, new Integer(code));
     }
-
-    final static int
-        TOK_LPAREN = CUSTOM + 0,
-        TOK_RPAREN = CUSTOM + 1,
-        TOK_COMMA  = CUSTOM + 2,
-        TOK_END    = CUSTOM + 3;
 
     public static int getSymbol(String symname) {
         Integer i = (Integer) symnames.get(symname);
