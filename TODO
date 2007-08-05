@@ -2,6 +2,7 @@ TODO
 ====
 - Ability to redefine a function. Easiest way: when input line is 'f(' and user presses clear, only delete '(' not whole line.
 - When navigating to a history entry and executing it again, without first changing it, move it on top of the history instead of creating a new history entry.
+- Perhaps change the way submenus are indicated to displaying a yellow lower left corner triangle.
 - Context-sensitive KeyState menus which only display those operations which are currently valid.
 - Make plotting interruptible.
 - Display progress bar when plotting.

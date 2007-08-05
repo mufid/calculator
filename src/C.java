@@ -16,18 +16,17 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 "next press a key (1-9,*0#) to select. " +
 "Left menu * contains operators like +-*/; " +
 "right menu # contains decimal dot, functions and constants. " +
-"Yellow entries open additional sub-menus. " +
-"To obtain +, press * twice. " +
-"To obtain decimal dot, press # twice.\n\n" +
+"E.g. to obtain +, press * twice. " +
+"Yellow entries open sub-menus. " +
 
-"Use UP and DOWN to navigate history.\n\n" +
+"Use up and down keys to navigate history.\n\n" +
 
 "Use := to define new functions and constants. " +
 "E.g. a:=pi/2 is a constant; f:=sqrt(x^2+y^2) is a function with two parameters x,y. " +
-"Functions may have up to three parameters x,y,z.\n\n" +
+"Functions may have up to 3 parameters x,y,z.\n\n" +
 
 "The variable 'ans' contains the value of the most recent expression. " + 
-"'ans' is automatically added in front of an expression that starts with an operator, " +
+"'ans' is automatically added in front of an expression that starts with an operator; " +
 "e.g. typing '+2' yields 'ans+2'.\n\n" +
 
 "Use plot(f, xmin, xmax) to see a graph of function f(x) with " +
