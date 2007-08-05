@@ -27,8 +27,6 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     int cursorRow, cursorCol;
     int cursorX, cursorY, cursorW = 1, cursorH;
 
-    Result res = new Result();
-
     Font font, historyFont;
     int lineHeight;
 
@@ -83,9 +81,9 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         DataInputStream is = C.rs.read(C.RS_CURRENT);
         updateFromHistEntry(is == null ? new HistEntry("1+1", 0, false) : new HistEntry(is));
         if (is == null) {
-            history.enter("0.5!*2)^2", null);
-            history.enter("sqrt(3^2+4^2", null);
-            history.enter("sin(pi/2)", null);
+            history.enter("0.5!*2)^2");
+            history.enter("sqrt(3^2+4^2");
+            history.enter("sin(pi/2)");
         }
 
         Variables.load();
@@ -142,17 +140,17 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         gg.setColor(bgCol[RESULT]);
         gg.fillRect(clientX, Y[RESULT], clientW, lineHeight);
 
-        if (compiler.compile(String.valueOf(line, 0, len), res)) {
-            if (res.plotCommand == -1) {
-                CompiledFunction func = res.function;
+        if (compiler.compile(String.valueOf(line, 0, len))) {
+            if (Compiler.result.plotCommand == -1) {
+                CompiledFunction func = Compiler.result.function;
                 String strResult = func.arity() > 0 ?
                         line[0] + params[func.arity()-1] : format(func.evaluate(null));
                 gg.setColor(fgCol[RESULT]);
                 gg.drawString(strResult, clientX + clientW, Y[RESULT], Graphics.TOP|Graphics.RIGHT);
             }
         } else {
-            if (res.errorPos < len)
-                markError(res.errorPos);
+            if (Compiler.result.errorPos < len)
+                markError(Compiler.result.errorPos);
         }
 
         repaint(clientX, Y[RESULT], clientW, lineHeight);
@@ -291,7 +289,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         for (int p = 1; p < histSize && y <= yLimit; ++p, y+= histLineHeight/2) {
             HistEntry entry = history.get(p);            
             String base = entry.base;
-            String result = entry.hasResult && !Lexer.isAssignment(base) ? format(entry.result) : "";
+            String result = entry.hasResult ? format(entry.result) : "";
             base.getChars(0, base.length(), histBuf, 0);
             histBufLen = base.length();
             if (result.length() > 0) {
@@ -498,7 +496,8 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
 
         case Canvas.FIRE:
             String str = String.valueOf(line, 0, len);
-            history.enter(str, res);
+            history.enter(str);
+            Result res = Compiler.result;
             if (res.plotCommand != -1)
                 C.self.plotCanvas.plot(res.plotCommand, res.function, res.plotArgs);
             updateFromHistEntry(history.getCurrent());

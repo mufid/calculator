@@ -123,21 +123,18 @@ class History {
         historyPos = newPos;
         return true;
     }
-    
-    private Result result = new Result();
-    void enter(String str, Result res)
+
+    void enter(String str)
     {
-        if (res == null)
-            compiler.compile(str, result);
-        else
-            result = res;
+        compiler.compile(str);
+        Result res = Compiler.result;
 
-        boolean hasValue = result.hasValue();
+        boolean hasValue = res.hasValue();
         if (hasValue)
-            ans = result.function.evaluate(null);
+            ans = res.function.evaluate(null);
 
-        if (result.errorPos == -1 && result.definedSymbol != -1)
-            Variables.persistDefine(result, ans);
+        if (res.errorPos == -1 && res.definedSymbol != -1)
+            Variables.persistDefine(res, ans);
 
         ((HistEntry)history.elementAt(historyPos)).flush();
         if (str.length() > 0) {

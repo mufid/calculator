@@ -12,9 +12,11 @@ public class Compiler implements VMConstants
     private double[] plotArgs;
     private boolean unaryDone;
 
+    public static Result result;
+    
     static SyntaxError error = new SyntaxError();
 
-    public boolean compile(String input, Result result) {
+    public boolean compile(String input) {
         init();
         try {
             if (Lexer.isAssignment(input)) {
@@ -40,6 +42,8 @@ public class Compiler implements VMConstants
             }
             if (lexer.peekToken() != Lexer.TOK_END)
                 throw error;
+            if (!func.check(definedSymbol != -1 && arity > 0 ? 1 << (definedSymbol - FIRST_VAR) : 0))
+                throw error;
         } catch (SyntaxError e) {
             int errorPos = lexer.lastPos();
             if (definedSymbol != -1)
@@ -54,7 +58,12 @@ public class Compiler implements VMConstants
     }
 
     private void init() {
-        func = new CompiledFunction();
+        if (result == null)
+            result = new Result();
+        if (func == null)
+            func = new CompiledFunction();
+        else
+            func.init();
         arity = 0;
         definedSymbol = -1;
         parameterCallArity = -1;
@@ -120,7 +129,6 @@ public class Compiler implements VMConstants
             c = lexer.nextToken();
             if (!(c == Lexer.TOK_RPAREN || c == Lexer.TOK_END))
                 throw error;
-            return;
         } else if (c == MINUS) {
             compileUnary();
             func.pushInstr(UMINUS);
@@ -137,19 +145,10 @@ public class Compiler implements VMConstants
         } else if (FIRST_CONST <= c && c <= LAST_CONST) {
             func.pushInstr(c);
         } else if (FIRST_VAR <= c && c <= LAST_VAR) {
-            // XXX make f:=f(x) illegal (without making a:=a+1 or g:=g(1) or h:=h*x illegal)
-            // (currently, f:=f(x) will succeed but any subsequent invocation of f will fail to compile)
             switch (Variables.getType(c)) {
             case Variables.TYPE_FUNC:
             {
                 CompiledFunction fn = Variables.getFunction(c);
-                int varBits = 1 << (c - FIRST_VAR);
-                /*
-                if (definedSymbol != -1)
-                    varBits |= 1 << (definedSymbol - FIRST_VAR);
-                */
-                if (!fn.check(varBits))
-                    throw error;
                 int fn_arity = fn.arity();
                 compileArgList(fn_arity);
                 func.pushInstr(c + VARFUN_OFFSET, fn_arity);

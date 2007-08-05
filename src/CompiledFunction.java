@@ -25,7 +25,17 @@ public class CompiledFunction implements VMConstants {
     public CompiledFunction() {
         inst = new int[MAX_INST];
         literals = new double[MAX_LITERALS];
-        inst_cnt = lit_cnt = arity = 0;
+        init();
+    }
+
+    public CompiledFunction(CompiledFunction from) {
+        arity = from.arity;
+        inst_cnt = from.inst_cnt;
+        lit_cnt = from.lit_cnt;
+        inst = new int[inst_cnt];
+        literals = new double[lit_cnt];
+        System.arraycopy(from.inst, 0, inst, 0, inst_cnt);
+        System.arraycopy(from.literals, 0, literals, 0, lit_cnt);
     }
 
     public CompiledFunction(DataInputStream is) {
@@ -42,6 +52,10 @@ public class CompiledFunction implements VMConstants {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void init() {
+        inst_cnt = lit_cnt = arity = 0;
     }
 
     public void write(DataOutputStream os) {

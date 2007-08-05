@@ -120,12 +120,13 @@ public class PlotCanvas extends Canvas implements VMConstants {
         g.setGrayScale(0xFF);
         g.fillRect(width / 2 + 1, canvasHeight + 1, colourBoxWidth, fontHeight);
 
-        double xmin = minmax[0], xmax = minmax[1], ymin = minmax[2], ymax = minmax[3];
-        double xf = (xmax - xmin) / (width - 1);
-        double yf = (ymax - ymin) / (canvasHeight - 1);
+        final double xmin = minmax[0], xmax = minmax[1], ymin = minmax[2], ymax = minmax[3];
+        final double xf = (xmax - xmin) / (width - 1);
+        final double yf = (ymax - ymin) / (canvasHeight - 1);
         double fmin = Double.POSITIVE_INFINITY, fmax = Double.NEGATIVE_INFINITY;
 
-        double[] f = new double[width*height];
+        final int size = width*canvasHeight;
+        double[] f = new double[size];
         double[] xy = new double[2];
         start = System.currentTimeMillis();
         for (int x = 0; x < width; ++x)
@@ -139,13 +140,34 @@ public class PlotCanvas extends Canvas implements VMConstants {
                     if (v > fmax)
                         fmax = v;
                 }
-                f[x + y*width] = v;
+                f[x + (canvasHeight - 1 - y)*width] = v;
             }
         end = System.currentTimeMillis();
         Log.log("Calculation took " + (end - start) + " ms.");
 
         double gf = 255 / (fmax - fmin);
         start = System.currentTimeMillis();
+        int[] rgb = new int[size];
+        for (int i = 0; i < size; ++i) {
+            double v = f[i];
+            int c;
+            if (Double.isNaN(v))
+                c = 0xFF0000;
+            else if (Double.NEGATIVE_INFINITY == v)
+                c = 0x000080;
+            else if (Double.POSITIVE_INFINITY == v)
+                c = 0x40FFFF;
+            else {
+                c = (int) ((v - fmin) * gf + 0.499);
+                c |= (c << 8) | (c << 16); 
+            }
+            rgb[i] = c;
+        }
+        f = null;
+        Image im = Image.createRGBImage(rgb, width, canvasHeight, false);
+        rgb = null;
+        g.drawImage(im, 0, 0, Graphics.TOP | Graphics.LEFT);
+        im = null;
         int labelWidthPx = width / 2 - colourBoxWidth - 2;
         String labelMin = Double.toString(fmin), labelMax = Double.toString(fmax); // XXX use Util.doubleToString
         labelMin = labelMin.substring(0, CalcCanvas.fitWidth(font, labelWidthPx, labelMin));
@@ -153,19 +175,6 @@ public class PlotCanvas extends Canvas implements VMConstants {
         g.setColor(0x000000FF);
         g.drawString(labelMin, colourBoxWidth + 2, canvasHeight + 1, Graphics.TOP | Graphics.LEFT);
         g.drawString(labelMax, width / 2 + colourBoxWidth + 2, canvasHeight + 1, Graphics.TOP | Graphics.LEFT);
-        for (int x = 0; x < width; ++x)
-            for (int y = 0; y < canvasHeight; ++y) {
-                double v = f[x + y*width];
-                if (Double.isNaN(v))
-                    g.setColor(0xFF0000);
-                else if (Double.NEGATIVE_INFINITY == v)
-                    g.setColor(0x000080);
-                else if (Double.POSITIVE_INFINITY == v)
-                    g.setColor(0x40FFFF);
-                else                
-                    g.setGrayScale((int) ((v - fmin) * gf + 0.499));
-                g.drawLine(x, canvasHeight - 1 - y, x, canvasHeight - 1 - y);
-            }
         end = System.currentTimeMillis();
         Log.log("Drawing took " + (end - start) + " ms.");
     }
@@ -175,6 +184,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
     }
     
     protected void keyPressed(int keyCode) {
+        img = null;
         display.setCurrent(next);
     }
 
