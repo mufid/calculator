@@ -1,16 +1,17 @@
 TODO
 ====
+- Better error handling: in various places, NullPointerException/OutOfMemoryError/ArrayIndexOutOfBounds etc.
+  may be thrown e.g. if input is very long or device is out of memory
 - Ability to redefine a function. Easiest way: when input line is 'f(' and user presses clear, only delete '(' not whole line.
 - When navigating to a history entry and executing it again, without first changing it, move it on top of the history instead of creating a new history entry.
 - Perhaps change the way submenus are indicated to displaying a yellow lower left corner triangle.
 - Context-sensitive KeyState menus which only display those operations which are currently valid.
 - Make plotting interruptible.
 - Display progress bar when plotting.
-- Optionally rotate the plot by 90 degrees (so the user has to rotate their phone), yielding a landscape orientation which may be better suited to many plots. 
+- Optionally rotate the plot by 90 degrees (so the user has to rotate their phone), yielding a landscape orientation which may be better suited to many plots.
+- Option of unit aspect ratio for plot() and map(). For map(), this changes its arity from 5 to 3.  
 - Anti-aliasing of the plotted curve to make it look smoother.
 - Make the plot screen interactive: user can move around and zoom (both plot() and map()).
-- Differentiate, integrate, find extrema, find zeros (numerically).
-- Symbolic differentiation.
 
 - Add unit tests, get good test coverage.
 - Support pointer for pushing buttons (for touch-screen mobile phones).
@@ -24,6 +25,7 @@ TODO
 DONE
 ====
 - Optionally leaving out the * for multiplication.
+  Note, this sometimes makes things look strange - e.g. when f is a number not a function, then 'f(3)' is valid.
 - Only plot when the user presses the fire button.
 - A two-dimensional plotter, for functions with two parameters, that maps function values to colour or grayscale values. Perhaps call it map().
 - map() plot should indicate values corresponding to white and black.
@@ -39,3 +41,9 @@ IDEAS
 - Contextual help for functions.
 - Allow custom function and parameter names (how?) (e.g.: BMI(weight, height) := weight/height^2). 
 - Additional, optional function packages.
+
+- To optimize map(), write a peephole optimizer. Then, for each y, modify the program by replacing
+  each occurrence of PAR_Y by a literal with the current value of y, and optimize the program.
+  Evaluate it for each x. (In many cases, this may actually slow down things.)
+- Differentiate, integrate, find extrema, find zeros (numerically).
+- Symbolic differentiation.

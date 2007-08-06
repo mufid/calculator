@@ -25,7 +25,7 @@ public class Compiler implements VMConstants
                     throw error;
                 input = input.substring(3);
             }
-            lexer = new Lexer(input);
+            lexer.init(input);
             if (Lexer.isPlotCommand(lexer.peekToken())) {
                 if (definedSymbol != -1)
                     throw error;
@@ -64,6 +64,8 @@ public class Compiler implements VMConstants
             func = new CompiledFunction();
         else
             func.init();
+        if (lexer == null)
+            lexer = new Lexer();
         arity = 0;
         definedSymbol = -1;
         parameterCallArity = -1;

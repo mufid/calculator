@@ -10,10 +10,12 @@ public class Lexer implements VMConstants
         TOK_RPAREN = CUSTOM + 1,
         TOK_COMMA  = CUSTOM + 2,
         TOK_END    = CUSTOM + 3;
+    
+    private final static int MAX_INPUT_LEN = 200;
 
     private static Hashtable symnames;
 
-    static {
+    private static void initSymnames() {
         symnames = new Hashtable(50);
         a(PAR_X, "x"); a(PAR_Y, "y"); a(PAR_Z, "z");
         a(VAR_A, "a"); a(VAR_B, "b"); a(VAR_C, "c"); a(VAR_D, "d");
@@ -86,14 +88,19 @@ public class Lexer implements VMConstants
     private int peek_tok;
     private double peek_number;
 
-    Lexer(String str) {
+    Lexer() {
+        input = new char[MAX_INPUT_LEN];
+        if (symnames == null)
+            initSymnames();
+    }
+
+    public void init(String str) {
         input_len = str.length() + 1;
-        input = new char[input_len];
         str.getChars(0, input_len - 1, input, 0);
         input[input_len - 1] = '$';
         pos = 0;
         last_pos = -1;
-        has_peeked = false;
+        has_peeked = false;        
     }
 
     int nextToken() throws SyntaxError
