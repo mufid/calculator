@@ -145,6 +145,24 @@ public class PlotCanvas extends Canvas implements VMConstants {
         end = System.currentTimeMillis();
         Log.log("Calculation took " + (end - start) + " ms.");
 
+        /* The following straightforward method of going from the array of function values (f)
+           to the array of colour values (rgb) is quite memory-intensive. This cost could be
+           reduced by doing the following instead:
+
+           int[] f1 = new int[size];
+           double[] f2 = new int[size/2];
+
+           put the first half of the function values into f1, using MoreMath.HI and MoreMath.LO;
+           put the second half of the function values into f2;
+           convert f1 and f2 to colour values, which we store in f1(!);
+           f2 = null;
+           ... Image.createRGBImage(f1, ...);
+           f1 = null;
+           
+           If the speed penalty for the above is significant, it could be a fallback in case
+           of an OutOfMemoryError.
+         */
+
         double gf = 255 / (fmax - fmin);
         start = System.currentTimeMillis();
         int[] rgb = new int[size];

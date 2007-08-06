@@ -47,7 +47,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         = new Cmd("OK", CMD_OK, Command.BACK);
 
     Menu menu = new Menu("Menu", new Cmd[] {
-            new Menu("Setup", new Cmd[] {
+            new Menu("Settings", new Cmd[] {
                     new Menu("Angle unit", new Cmd[] {
                             new Cmd("Radians", CMD_ANG_RAD),
                             new Cmd("Degrees", CMD_ANG_DEG)
