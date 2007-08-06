@@ -1,8 +1,13 @@
 TODO
 ====
 - Better error handling: in various places, NullPointerException/OutOfMemoryError/ArrayIndexOutOfBounds etc.
-  may be thrown e.g. if input is very long or device is out of memory
+  may be thrown e.g. if input is very long or device is out of memory.
 - Ability to redefine a function. Easiest way: when input line is 'f(' and user presses clear, only delete '(' not whole line.
+- Make full screen optional.
+- Option to use unicode character for pi (unless there is some automatic way of finding out whether the Font
+  contains it).
+- Conditional (ternary) operator: f:=x<2?1:f(x-2)+f(x-1). Clearly, this makes recursive functions
+  useful, so we would need to allow those.
 - When navigating to a history entry and executing it again, without first changing it, move it on top of the history instead of creating a new history entry.
 - Perhaps change the way submenus are indicated to displaying a yellow lower left corner triangle.
 - Context-sensitive KeyState menus which only display those operations which are currently valid.
