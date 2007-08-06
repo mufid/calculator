@@ -4,6 +4,7 @@
 public interface VMConstants {
 
     // XXX change to char (saves memory but makes it messier to maintain: use script to generate this file?)
+    // (or is it faster when using int? may depend on machine architecture)
     final static int
         LITERAL = 0,
 
