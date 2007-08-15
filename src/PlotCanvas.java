@@ -56,10 +56,8 @@ public class PlotCanvas extends Canvas implements VMConstants {
         double ymax = Double.NEGATIVE_INFINITY;
         double[] y = new double[width];
 
-        double[] x = new double[1];
         for (int xp = 0; xp < width; ++xp) {
-            x[0] = xmin + xp * xf;
-            double v = func.evaluate(x);
+            double v = func.evaluate(xmin + xp * xf);
             if (isReal(v)) {
                 if (v < ymin)
                     ymin = v;
@@ -127,13 +125,10 @@ public class PlotCanvas extends Canvas implements VMConstants {
 
         final int size = width*canvasHeight;
         double[] f = new double[size];
-        double[] xy = new double[2];
         start = System.currentTimeMillis();
         for (int x = 0; x < width; ++x)
             for (int y = 0; y < canvasHeight; ++y) {
-                xy[0] = xmin + x * xf;
-                xy[1] = ymin + y * yf;
-                double v = func.evaluate(xy);
+                double v = func.evaluate(xmin + x * xf, ymin + y * yf);
                 if (isReal(v)) {
                     if (v < fmin)
                         fmin = v;
@@ -161,6 +156,9 @@ public class PlotCanvas extends Canvas implements VMConstants {
            
            If the speed penalty for the above is significant, it could be a fallback in case
            of an OutOfMemoryError.
+           
+           A more extreme memory-saving, speed-decreasing measure would be to evaluate our function
+           twice at each pixel, once purely to determine fmin, fmax, and once to populate rgb.
          */
 
         double gf = 255 / (fmax - fmin);

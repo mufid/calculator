@@ -193,6 +193,7 @@ public class Compiler implements VMConstants
             throw error;
         parameterCallArity = Lexer.plotFunctionArity(plotCommand);
         compileExpr();
+        func.setArity(parameterCallArity);
         parameterCallArity = -1;
         CompiledFunction plotFunction = func;
         int commandArity = Lexer.getBuiltinArity(plotCommand);
@@ -202,7 +203,7 @@ public class Compiler implements VMConstants
                 throw error;
             func = new CompiledFunction();
             compileExpr();
-            plotArgs[i] = func.evaluate(null);
+            plotArgs[i] = func.evaluate();
         }
         func = plotFunction;
         int tok = lexer.nextToken();

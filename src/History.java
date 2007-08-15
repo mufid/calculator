@@ -131,7 +131,7 @@ class History {
 
         boolean hasValue = res.hasValue();
         if (hasValue)
-            ans = res.function.evaluate(null);
+            ans = res.function.evaluate();
 
         if (res.errorPos == -1 && res.definedSymbol != -1)
             Variables.persistDefine(res, ans);

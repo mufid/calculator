@@ -89,12 +89,50 @@ public class CompiledFunction implements VMConstants {
 
     public int arity() { return arity; }
 
-    private double[] params;
+    public double evaluate() {
+        // assert arity == 0;
+        evaluate0();
+        s = -1;
+        return stack[0];
+    }
 
-    public double evaluate(final double[] pars) {
+    public double evaluate(double x) {
+        // assert arity == 1;
+        stack[s = 0] = x;
+        //System.out.print("At start: ");
+        //printStack();
+        evaluate0();
+        s = -1;
+        return stack[1];
+    }
+
+    public double evaluate(double x, double y) {
+        // assert arity == 2;
+        stack[0] = x;
+        stack[s = 1] = y;
+        evaluate0();
+        s = -1;
+        return stack[2];
+    }
+
+    /*
+    private void printStack() {
+        System.out.print("Stack: ");
+        for (int i = 0; i <= s; ++i) {
+            System.out.print(stack[i]);
+            if (i < s) System.out.print(", ");
+        }
+        System.out.println();
+    }
+    */
+
+    private void evaluate0() {
+        final int s0 = s;
         int litIdx = -1;
+        int op;
         for (int i = 0; i < inst_cnt; ++i) {
-            int op = inst[i];
+            op = inst[i];
+            //System.out.println("op: " + op);
             if (SIN <= op && op <= ATAN) {
                 stack[s] = trigEval(op, stack[s]);
                 continue;
@@ -104,7 +142,7 @@ public class CompiledFunction implements VMConstants {
                 stack[++s] = literals[++litIdx];
                 break;
             case PAR_X: case PAR_Y: case PAR_Z:
-                stack[++s] = pars[op - FIRST_PAR];
+                stack[++s] = stack[s0 - arity + 1 + op - FIRST_PAR];
                 break;
             case VAR_A: case VAR_B: case VAR_C: case VAR_D:
             case VAR_M: case VAR_N: case VAR_F: case VAR_G: case VAR_H:
@@ -113,14 +151,14 @@ public class CompiledFunction implements VMConstants {
             case VARFUN_A: case VARFUN_B: case VARFUN_C: case VARFUN_D:
             case VARFUN_M: case VARFUN_N: case VARFUN_F: case VARFUN_G: case VARFUN_H:
             {
-                CompiledFunction fn = Variables.getFunction(op - VARFUN_OFFSET);
-                int fn_arity = inst[++i];
-                if (params == null)
-                    params = new double[3];
-                for (int k = 0; k < fn_arity; ++k)
-                    params[k] = stack[s - fn_arity + 1 + k];
-                s -= fn_arity - 1;
-                stack[s] = fn.evaluate(params);
+                //System.out.print("Before call: ");
+                //printStack();
+                Variables.funcs[op - FIRST_VARFUN].evaluate0();  // bypass Variables.getFunction for max performance
+                int s1 = s - inst[++i];
+                stack[s1] = stack[s];
+                s = s1;
+                //System.out.print("After call: ");
+                //printStack();
                 break;
             }
             case CONST_PI:
@@ -245,7 +283,7 @@ public class CompiledFunction implements VMConstants {
             }
         }
 //        assert j == lit_cnt - 1;
-        return stack[s--];
+        //return stack[s--];
     }
 
     /* This method checks for the following types of illegal behaviour:

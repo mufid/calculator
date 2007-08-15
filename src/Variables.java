@@ -11,9 +11,9 @@ public class Variables implements VMConstants
 
     private static final int VARS_CNT = LAST_VAR - FIRST_VAR + 1;
 
-    private static char[] types             = new char[VARS_CNT]; // init'd to 0 = TYPE_UNDEF
-    private static double[] numbers         = new double[VARS_CNT];
-    private static CompiledFunction[] funcs = new CompiledFunction[VARS_CNT];
+    static char[] types             = new char[VARS_CNT]; // init'd to 0 = TYPE_UNDEF
+    static double[] numbers         = new double[VARS_CNT];
+    static CompiledFunction[] funcs = new CompiledFunction[VARS_CNT];
 
     public static void persistDefine(Result result, double number) {
         DataOutputStream os = C.rs.out;
