@@ -144,7 +144,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             if (Compiler.result.plotCommand == -1) {
                 CompiledFunction func = Compiler.result.function;
                 String strResult = func.arity() > 0 ?
-                        line[0] + params[func.arity()-1] : format(func.evaluate(null));
+                        line[0] + params[func.arity()-1] : format(func.evaluate());
                 gg.setColor(fgCol[RESULT]);
                 gg.drawString(strResult, clientX + clientW, Y[RESULT], Graphics.TOP|Graphics.RIGHT);
             }

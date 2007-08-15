@@ -9,12 +9,13 @@ TODO
 - Conditional (ternary) operator: f:=x<2?1:f(x-2)+f(x-1). Clearly, this makes recursive functions
   useful, so we would need to allow those.
 - When navigating to a history entry and executing it again, without first changing it, move it on top of the history instead of creating a new history entry.
-- Perhaps change the way submenus are indicated to displaying a yellow lower left corner triangle.
+- Perhaps change the way submenus are indicated to displaying a yellow triangle in the lower right corner.
 - Context-sensitive KeyState menus which only display those operations which are currently valid.
 - Make plotting interruptible.
 - Display progress bar when plotting.
 - Optionally rotate the plot by 90 degrees (so the user has to rotate their phone), yielding a landscape orientation which may be better suited to many plots.
-- Option of unit aspect ratio for plot() and map(). For map(), this changes its arity from 5 to 3.  
+- Option of unit aspect ratio for plot() and map(). For map(), this changes its arity from 5 to 3.
+- Parametric plot: par(f,g,t_min,t_max)  
 - Anti-aliasing of the plotted curve to make it look smoother.
 - Make the plot screen interactive: user can move around and zoom (both plot() and map()).
 
@@ -47,6 +48,7 @@ IDEAS
 - Allow custom function and parameter names (how?) (e.g.: BMI(weight, height) := weight/height^2). 
 - Additional, optional function packages.
 
+- Peephole optimizing and inlining before plot() and map()
 - To optimize map(), write a peephole optimizer. Then, for each y, modify the program by replacing
   each occurrence of PAR_Y by a literal with the current value of y, and optimize the program.
   Evaluate it for each x. (In many cases, this may actually slow down things.)
