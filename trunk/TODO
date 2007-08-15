@@ -1,7 +1,9 @@
 TODO
 ====
+- Add axes and [xy]{min,max} labels to par().
 - Better error handling: in various places, NullPointerException/OutOfMemoryError/ArrayIndexOutOfBounds etc.
   may be thrown e.g. if input is very long or device is out of memory.
+- markError should mark the whole token, not just a single character
 - Ability to redefine a function. Easiest way: when input line is 'f(' and user presses clear, only delete '(' not whole line.
 - Make full screen optional.
 - Option to use unicode character for pi (unless there is some automatic way of finding out whether the Font
@@ -14,8 +16,9 @@ TODO
 - Make plotting interruptible.
 - Display progress bar when plotting.
 - Optionally rotate the plot by 90 degrees (so the user has to rotate their phone), yielding a landscape orientation which may be better suited to many plots.
-- Option of unit aspect ratio for plot() and map(). For map(), this changes its arity from 5 to 3.
-- Parametric plot: par(f,g,t_min,t_max)  
+- Option of unit aspect ratio for plot(), map() and par(). For map(), this changes its arity from 5 to 3.
+- Make axes drawing optional in plot() and par().
+- For par(), perhaps rename x to t to avoid confusion.
 - Anti-aliasing of the plotted curve to make it look smoother.
 - Make the plot screen interactive: user can move around and zoom (both plot() and map()).
 
@@ -40,6 +43,8 @@ DONE
 - Allow expressions like '1+1)*(2+2'
 - Exit application on BACK key.
 - Fix bugs with function re-definition.
+- Parametric plot: par(f,g,t_min,t_max)  
+
 
 IDEAS
 =====

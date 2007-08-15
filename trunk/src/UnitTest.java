@@ -104,6 +104,8 @@ class UnitTest {
         } else {
             System.out.println("All tests passed ok");
         }
+        
+        System.out.println(Util.doubleToTrimmedString(Math.PI/100000, 6));
     }
 
     static void cheq(double v1, double v2) {
