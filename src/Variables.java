@@ -61,15 +61,14 @@ public class Variables implements VMConstants
 
     public static void load() {
         DataInputStream is;
-        Log.log("Loading variables:");
         try {
             for (int i = 0; i < VARS_CNT; ++i) {
                 is = C.rs.read(C.RS_SYMB_START + i);
                 if (is == null)
                     continue;
                 switch (types[i] = is.readChar()) {
-                case TYPE_NUM:  numbers[i] = is.readDouble(); Log.log("var " + i + " = " + numbers[i]); break;
-                case TYPE_FUNC: funcs[i] = new CompiledFunction(is); Log.log("var " + i + " = fn"); break;
+                case TYPE_NUM:  numbers[i] = is.readDouble(); break;
+                case TYPE_FUNC: funcs[i] = new CompiledFunction(is); break;
                 }
             }
         } catch (IOException e) {

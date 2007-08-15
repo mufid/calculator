@@ -71,9 +71,9 @@ final class KeyState {
         
         plots = new KeyState(new Object[] {
             null,   null,   null,
-            "plot", "map",  null,
-            null,   null,   null,
-            null,   null,   null,
+            "plot", null,   null,
+            "map",   null,   null,
+            "par",   null,   null,
         });
 
         rootOp = new KeyState(new Object[] {

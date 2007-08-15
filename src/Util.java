@@ -93,4 +93,73 @@ class Util {
         }
         return buf.toString();
     }
+
+    static String doubleToTrimmedString(double v, int targetChars)
+    {
+        if (Double.isInfinite(v) || Double.isNaN(v)) {
+            String str = Double.toString(v); 
+            return str.length() > targetChars ? str.substring(0, targetChars) : str;
+        }
+
+        boolean negative = v < 0;
+        if (negative)
+            --targetChars;
+        v = Math.abs(v);
+        String str = Double.toString(v);
+
+        int dotpos = str.indexOf('.'), epos = str.indexOf('E');
+        StringBuffer buf = new StringBuffer(str);
+        int exp = dotpos - 1;
+        if (epos != -1) {
+            exp += Integer.parseInt(str.substring(epos + 1));
+            buf.setLength(epos);
+        }
+        buf.deleteCharAt(dotpos);
+        --targetChars;
+
+        StringBuffer mantissa = null;
+        if (exp < -3 || exp > Math.min(6, targetChars)) {
+            mantissa = new StringBuffer("E");
+            mantissa.append(exp);
+            targetChars -= mantissa.length();
+            dotpos = 1;
+        }
+
+        boolean noDot = false;
+        if (targetChars <= 0) {
+            targetChars = 1;
+            noDot = true;
+        } else if (targetChars < dotpos) {
+            targetChars = dotpos;
+            noDot = true;
+        }
+
+        if (targetChars < buf.length()) {
+            if (buf.charAt(targetChars) >= '5') {
+                int i = targetChars - 1;
+                while (i >= 0 && buf.charAt(i) == '9') {
+                    buf.setCharAt(i, '0');
+                    --i;
+                }
+                if (i >= 0)
+                    buf.setCharAt(i, (char) (buf.charAt(i) + 1));
+                else {
+                    buf.insert(0, '1');
+                    ++dotpos;
+                }
+            }
+            buf.setLength(targetChars);
+        }
+
+        if (!noDot && dotpos <= buf.length())
+            buf.insert(dotpos, '.');
+
+        if (negative)
+            buf.insert(0, '-');
+        
+        if (mantissa != null)
+            buf.append(mantissa);
+
+        return buf.toString();
+    }
 }

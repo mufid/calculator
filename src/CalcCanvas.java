@@ -73,7 +73,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         KeyState.init(screenW, screenH);
 
         maxEditLines = (screenH - (KeyState.h + spaceTop + spaceEdit + spaceHist + 8)) / lineHeight - 1;
-        Log.log("max edit lines " + maxEditLines);
+        //Log.log("max edit lines " + maxEditLines);
         editLines = new int[maxEditLines + 1];
         clientW = screenW - 2*clientX;
 
@@ -445,7 +445,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     }
 
     void handleAction(int action) {
-        Log.log("cursorRow " + cursorRow);
+        //Log.log("cursorRow " + cursorRow);
         switch (action) {
         case Canvas.LEFT:
             pos = prevFlexPoint(pos);
@@ -499,7 +499,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             history.enter(str);
             Result res = Compiler.result;
             if (res.plotCommand != -1)
-                C.self.plotCanvas.plot(res.plotCommand, res.function, res.plotArgs);
+                C.self.plotCanvas.plot(res);
             updateFromHistEntry(history.getCurrent());
             doChanged(-1);
             updateHistory();
@@ -521,7 +521,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     
     int menuKey = 0;
     protected void keyPressed(int key) {
-        Log.log("key " + key + "; " + getKeyName(key) + "; action " + getGameAction(key));
+        //Log.log("key " + key + "; " + getKeyName(key) + "; action " + getGameAction(key));
         int saveKey = key;
         if (key > 0 && (key < 32 || key > 10000)) {
             //also handles backspace (unicode 8) -> KEY_CLEAR (-8)
@@ -563,7 +563,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 lastInsertLen += s.length();
                 if (sym != -1) {
                     String pre = String.valueOf(line, 0, oldPos + 1);
-                    if (!("plot(".equals(pre) || "map(".equals(pre))) {
+                    if (!Lexer.isPlotFunctionStart(pre)) {
                         int arity = Lexer.isVariable(sym)
                             ? (Variables.isFunction(sym)
                                ? Variables.getFunction(sym).arity()

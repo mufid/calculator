@@ -27,7 +27,7 @@ public class Lexer implements VMConstants
         a(SQRT, "sqrt"); a(CBRT, "cbrt");
         a(INT, "int"); a(FRAC, "frac"); a(ABS, "abs"); a(FLOOR, "floor"); a(CEIL, "ceil"); a(SIGN, "sign");
         a(MIN, "min"); a(MAX, "max"); a(GCD, "gcd"); a(COMB, "C"); a(PERM, "P");
-        a(PLOT, "plot"); a(MAP, "map");
+        a(PLOT, "plot"); a(MAP, "map"); a(PARPLOT, "par");
     }
 
     private static void a(int code, String str) {
@@ -54,18 +54,21 @@ public class Lexer implements VMConstants
             return 3;
         else if (symbol == MAP)
             return 5;
+        else if (symbol == PARPLOT)
+            return 4;
         else
             return 0;
     }
 
     public static boolean isPlotCommand(int symbol) {
-        return symbol == PLOT || symbol == MAP;
+        return symbol == PLOT || symbol == MAP || symbol == PARPLOT;
     }
 
     public static int plotFunctionArity(int symbol) {
         switch (symbol) {
         case PLOT: return 1;
         case MAP: return 2;
+        case PARPLOT: return 1;
         default: return -1;
         }
     }
@@ -76,6 +79,26 @@ public class Lexer implements VMConstants
 
     public static boolean isAssignment(String str) {
         return str.length() > 3 && str.charAt(1) == ':' && str.charAt(2) == '=';
+    }
+
+    public static boolean isPlotFunctionStart(String str) {
+        if ("plot(".equals(str) || "map(".equals(str) || "par(".equals(str))
+            return true;
+        else if (str.startsWith("par(")) {
+            // check that str has the form "par(F," for some F
+            final int len = str.length();
+            if (str.charAt(len - 1) != ',')
+                return false;
+            int parens = 0;
+            for (int i = 4; i < len - 1; ++i)
+                switch (str.charAt(i)) {
+                case '(': ++parens; break;
+                case ')': --parens; break;
+                case ',': if (parens == 0) return false; break;
+                }
+            return true;
+        } else
+            return false;
     }
 
 

@@ -29,14 +29,18 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 "'ans' is automatically added in front of an expression that starts with an operator; " +
 "e.g. typing '+2' yields 'ans+2'.\n\n" +
 
-"Use plot(f, xmin, xmax) to see a graph of function f(x) with " +
+"plot(f, xmin, xmax) produces a graph of function f(x) with " +
 "x running from xmin to xmax. f can be user-defined (see above) or built-in " +
 "(like sin, sqrt) or any expression involving x (like x^2/2), " +
 "and xmin,xmax can be numbers or expressions.\n\n" +
 
-"Use map(f, xmin, xmax, ymin, ymax) to see a two-dimensional map " +
+"map(f, xmin, xmax, ymin, ymax) produces a two-dimensional map " +
 "of the values of a function f(x,y), with x running from xmin to xmax " +
-"and y from ymin to ymax.";
+"and y from ymin to ymax.\n\n" +
+
+"par(f, g, xmin, xmax) produces a plot of the points (f(x),g(x)) " +
+"with x running from xmin to xmax. That is, f determines x coordinate " +
+"and g determines y coordinate.";
 
 
     static final int CMD_OK=1, CMD_HELP=3, CMD_ABOUT=4, CMD_EXIT=5,

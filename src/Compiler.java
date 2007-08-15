@@ -4,7 +4,7 @@
 public class Compiler implements VMConstants
 {
     private Lexer lexer;
-    private CompiledFunction func;
+    private CompiledFunction func, func2;
     private int arity;
     private int definedSymbol;
     private int parameterCallArity;
@@ -53,7 +53,7 @@ public class Compiler implements VMConstants
             result.init(errorPos);
             return false;
         }
-        result.init(func, definedSymbol, plotCommand, plotArgs);
+        result.init(func, func2, definedSymbol, plotCommand, plotArgs);
         return true;
     }
 
@@ -64,6 +64,7 @@ public class Compiler implements VMConstants
             func = new CompiledFunction();
         else
             func.init();
+        func2 = null;
         if (lexer == null)
             lexer = new Lexer();
         arity = 0;
@@ -181,7 +182,7 @@ public class Compiler implements VMConstants
         lexer.nextToken();
         for (int i = 0; i < fn_arity; ++i) {
             compileExpr();
-            int tok = lexer.nextToken();
+            final int tok = lexer.nextToken();
             if (!(i == fn_arity - 1 && (tok == Lexer.TOK_RPAREN || tok == Lexer.TOK_END) || i < fn_arity - 1 && tok == Lexer.TOK_COMMA))
                 throw error;
         }
@@ -194,11 +195,19 @@ public class Compiler implements VMConstants
         parameterCallArity = Lexer.plotFunctionArity(plotCommand);
         compileExpr();
         func.setArity(parameterCallArity);
-        parameterCallArity = -1;
         CompiledFunction plotFunction = func;
-        int commandArity = Lexer.getBuiltinArity(plotCommand);
-        plotArgs = new double[commandArity - 1];
-        for (int i = 0; i < commandArity - 1; ++i) {
+        if (plotCommand == PARPLOT) {
+            if (lexer.nextToken() != Lexer.TOK_COMMA)
+                throw error;
+            func = new CompiledFunction();
+            compileExpr();
+            func.setArity(parameterCallArity);
+            func2 = func;
+        }
+        parameterCallArity = -1;
+        final int remainingArity = Lexer.getBuiltinArity(plotCommand) - (plotCommand == PARPLOT ? 2 : 1);
+        plotArgs = new double[remainingArity];
+        for (int i = 0; i < remainingArity; ++i) {
             if (lexer.nextToken() != Lexer.TOK_COMMA)
                 throw error;
             func = new CompiledFunction();
@@ -206,7 +215,7 @@ public class Compiler implements VMConstants
             plotArgs[i] = func.evaluate();
         }
         func = plotFunction;
-        int tok = lexer.nextToken();
+        final int tok = lexer.nextToken();
         if (!(tok == Lexer.TOK_RPAREN || tok == Lexer.TOK_END))
             throw error;
     }
