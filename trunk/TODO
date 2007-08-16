@@ -1,6 +1,6 @@
 TODO
 ====
-- Add axes and [xy]{min,max} labels to par().
+- Add [xy]{min,max} labels to par().
 - Better error handling: in various places, NullPointerException/OutOfMemoryError/ArrayIndexOutOfBounds etc.
   may be thrown e.g. if input is very long or device is out of memory.
 - markError should mark the whole token, not just a single character
