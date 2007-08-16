@@ -288,12 +288,27 @@ public class PlotCanvas extends Canvas implements VMConstants {
                 distantPts.insert((int) dist, j);
         }
 
+        xf = (width - 1) / (xmax - xmin);
+        yf = (height - 1) / (ymax - ymin);
+
         Log.log("Plotting " + n + " points");
+
+        /* Fill background and draw axes */
+        g.setColor(0x00FFFFFF);
+        g.fillRect(0, 0, width, height);
+
+        g.setGrayScale(180);
+        if (xmin <= 0 && 0 <= xmax) {
+            int xx = (int) (-xmin * xf + 0.5);
+            g.drawLine(xx, 0, xx, height-1);
+        }
+        if (ymin <= 0 && 0 <= ymax) {
+            int yy = (int) (-ymin * yf + 0.5);
+            g.drawLine(0, height - 1 - yy, width-1, height - 1 - yy);
+        }
 
         /* Draw lines between the points */
         g.setColor(0x00000000);
-        xf = (width - 1) / (xmax - xmin);
-        yf = (height - 1) / (ymax - ymin);
         x1 = fx[0];
         y1 = fy[0];
         for (i = 1; i <= PARPLOT_MAX_POINTS; ++i) {
