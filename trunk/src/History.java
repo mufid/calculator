@@ -135,7 +135,7 @@ class History {
         if (hasValue)
             ans = res.function.evaluate();
 
-        if (res.errorPos == -1 && res.definedSymbol != -1)
+        if (res.errorStart == -1 && res.definedSymbol != -1)
             Variables.persistDefine(res, ans);
 
         ((HistEntry)history.elementAt(historyPos)).flush();

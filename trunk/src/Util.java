@@ -110,7 +110,6 @@ class Util {
         boolean negative = v < 0;
         if (negative)
             --targetChars;
-        v = Math.abs(v);
 
         int dotpos = str.indexOf('.'), epos = str.indexOf('E');
         StringBuffer buf = new StringBuffer(str);

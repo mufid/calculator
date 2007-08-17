@@ -46,12 +46,14 @@ public class Compiler implements VMConstants
             if (!func.check(definedSymbol != -1 && arity > 0 ? 1 << (definedSymbol - FIRST_VAR) : 0))
                 throw error;
         } catch (SyntaxError e) {
-            int errorPos = lexer.lastPos();
-            if (definedSymbol != -1)
-                errorPos += 3;
+            int errorStart = lexer.lastPos(), errorEnd = lexer.curPos() - 1;
+            if (definedSymbol != -1) {
+                errorStart += 3;
+                errorEnd += 3;
+            }
             if (input.length() > 0)
-                Log.log("syntax error at " + errorPos);
-            result.init(errorPos);
+                Log.log("syntax error at " + errorStart + '-' + errorEnd);
+            result.init(errorStart, errorEnd);
             return false;
         }
         result.init(func, func2, definedSymbol, plotCommand, plotArgs);

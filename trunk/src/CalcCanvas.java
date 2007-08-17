@@ -149,8 +149,8 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 gg.drawString(strResult, clientX + clientW, Y[RESULT], Graphics.TOP|Graphics.RIGHT);
             }
         } else {
-            if (Compiler.result.errorPos < len)
-                markError(Compiler.result.errorPos);
+            if (Compiler.result.errorStart < len)
+                markError();
         }
 
         repaint(clientX, Y[RESULT], clientW, lineHeight);
@@ -232,19 +232,27 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             gg.drawChars(line, start, end-start, clientX, y, 0); //Graphics.BOTTOM|Graphics.LEFT);
         }
     }
-    
-    void markError(int errorPos) {
-        //int errorPos = result.errorPos;
-        //if (errorPos != -1) {
-        int errLine = posToLine(editLines, errorPos);
-        int startOfLine = errLine==0 ? 0 : editLines[errLine-1];
-        int posInLine = errorPos - startOfLine;
-        int w = clientX + font.charsWidth(line, startOfLine, posInLine);
-        int y = Y[EDIT] + errLine*lineHeight;
-        gg.setColor(0xff0000);
-        gg.drawChar(line[errorPos], w, y, 0);
-        repaint(w, y, font.charWidth(line[errorPos]), lineHeight);
-        //} 
+
+    void markError() {
+        final int start = Compiler.result.errorStart, end = Compiler.result.errorEnd;
+        int errLine, startOfLine, w, y, w2, y2,
+            minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE,
+            maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
+        gg.setColor(0xFF0000);
+        for (int epos = start; epos <= end; ++epos) {
+            errLine = posToLine(editLines, epos);
+            startOfLine = errLine==0 ? 0 : editLines[errLine-1];
+            w = clientX + font.charsWidth(line, startOfLine, epos - startOfLine);
+            y = Y[EDIT] + errLine*lineHeight;
+            gg.drawChar(line[epos], w, y, 0);
+            w2 = w + font.charWidth(line[epos]);
+            y2 = y + lineHeight;
+            if (w < minX) minX = w;
+            if (y < minY) minY = y;
+            if (w2 > maxX) maxX = w2;
+            if (y2 > maxY) maxY = y2;
+        }
+        repaint(minX, minY, maxX - minX, maxY - minY);
     }
 
     boolean drawCursor = true;
@@ -387,18 +395,6 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         }
         return pos;
     }
-
-    /*
-    final boolean isDigitAt(int p) {
-        return Character.isDigit(line[p]);
-    }
-    */
-
-    /*
-    final boolean isLetterAt(int p) {
-        return Expr.isLetter(line[p]);
-    }
-    */
 
     void delFromLine(int p, int size) {
         int p2 = p + size + 1;
