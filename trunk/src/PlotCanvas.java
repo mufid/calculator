@@ -82,20 +82,24 @@ public class PlotCanvas extends Canvas implements VMConstants {
         g.setColor(0x00FFFFFF);
         g.fillRect(0, 0, width, height);
 
-        g.setGrayScale(180);
-        if (xmin <= 0 && 0 <= xmax) {
-            int xx = (int) (-xmin / xf + 0.5);
-            g.drawLine(xx, 0, xx, height-1);
-        }
-        if (ymin <= 0 && 0 <= ymax) {
-            int yy = (int) (-ymin / yf + 0.5);
-            g.drawLine(0, height - 1 - yy, width-1, height - 1 - yy);
+        if (C.cfg.axes) {
+            g.setGrayScale(180);
+            if (xmin <= 0 && 0 <= xmax) {
+                int xx = (int) (-xmin / xf + 0.5);
+                g.drawLine(xx, 0, xx, height-1);
+            }
+            if (ymin <= 0 && 0 <= ymax) {
+                int yy = (int) (-ymin / yf + 0.5);
+                g.drawLine(0, height - 1 - yy, width-1, height - 1 - yy);
+            }
         }
 
-        g.setColor(0x007070FF);
-        // XXX Mihai: format(ymin, xf)?
-        g.drawString(Double.toString(ymin), 0, height-1, Graphics.BOTTOM | Graphics.LEFT);
-        g.drawString(Double.toString(ymax), 0, 0, Graphics.TOP | Graphics.LEFT);
+        if (C.cfg.labels) {
+            g.setColor(0x007070FF);
+            // XXX Mihai: format(ymin, xf)?
+            g.drawString(Double.toString(ymin), 0, height-1, Graphics.BOTTOM | Graphics.LEFT);
+            g.drawString(Double.toString(ymax), 0, 0, Graphics.TOP | Graphics.LEFT);
+        }
 
         g.setColor(0x00000000);
         if (ymin == ymax)
@@ -114,16 +118,14 @@ public class PlotCanvas extends Canvas implements VMConstants {
     private void paintMap(Graphics g) {
         long start, end;
 
-        final int fontHeight = smallFont.getHeight();
-        final int infoHeight = fontHeight + 2;
-        final int canvasHeight = height - infoHeight;
-        final int colourBoxWidth = Math.max(fontHeight, 8);
-        g.setGrayScale(180);
-        g.fillRect(0, canvasHeight, width, infoHeight);
-        g.setGrayScale(0);
-        g.fillRect(1, canvasHeight + 1, colourBoxWidth, fontHeight);
-        g.setGrayScale(0xFF);
-        g.fillRect(width / 2 + 1, canvasHeight + 1, colourBoxWidth, fontHeight);
+        int canvasHeight, fontHeight = 0, infoHeight = 0;
+        
+        if (C.cfg.labels) {
+            fontHeight = smallFont.getHeight();
+            infoHeight = fontHeight + 2;
+            canvasHeight = height - infoHeight;
+        } else
+            canvasHeight = height;
 
         final double xmin = minmax[0], xmax = minmax[1], ymin = minmax[2], ymax = minmax[3];
         final double xf = (xmax - xmin) / (width - 1);
@@ -192,10 +194,21 @@ public class PlotCanvas extends Canvas implements VMConstants {
         rgb = null;
         g.drawImage(im, 0, 0, Graphics.TOP | Graphics.LEFT);
         im = null;
-        final int labelWidthPx = width / 2 - colourBoxWidth - 2;
-        g.setColor(0x000000FF);
-        g.drawString(Util.fitDouble(fmin, smallFont, labelWidthPx), colourBoxWidth + 2, canvasHeight + 1, Graphics.TOP | Graphics.LEFT);
-        g.drawString(Util.fitDouble(fmax, smallFont, labelWidthPx), width / 2 + colourBoxWidth + 2, canvasHeight + 1, Graphics.TOP | Graphics.LEFT);
+        
+        if (C.cfg.labels) {
+            final int colourBoxWidth = Math.max(fontHeight, 8);
+            g.setGrayScale(180);
+            g.fillRect(0, canvasHeight, width, infoHeight);
+            g.setGrayScale(0);
+            g.fillRect(1, canvasHeight + 1, colourBoxWidth, fontHeight);
+            g.setGrayScale(0xFF);
+            g.fillRect(width / 2 + 1, canvasHeight + 1, colourBoxWidth, fontHeight);
+            final int labelWidthPx = width / 2 - colourBoxWidth - 2;
+            g.setColor(0x000000FF);
+            g.drawString(Util.fitDouble(fmin, smallFont, labelWidthPx), colourBoxWidth + 2, canvasHeight + 1, Graphics.TOP | Graphics.LEFT);
+            g.drawString(Util.fitDouble(fmax, smallFont, labelWidthPx), width / 2 + colourBoxWidth + 2, canvasHeight + 1, Graphics.TOP | Graphics.LEFT);
+        }
+
         end = System.currentTimeMillis();
         Log.log("Drawing took " + (end - start) + " ms.");
     }
@@ -295,23 +308,27 @@ public class PlotCanvas extends Canvas implements VMConstants {
         g.setColor(0x00FFFFFF);
         g.fillRect(0, 0, width, height);
 
-        g.setGrayScale(180);
-        if (xmin <= 0 && 0 <= xmax) {
-            int xx = (int) (-xmin * xf + 0.5);
-            g.drawLine(xx, 0, xx, height-1);
-        }
-        if (ymin <= 0 && 0 <= ymax) {
-            int yy = (int) (-ymin * yf + 0.5);
-            g.drawLine(0, height - 1 - yy, width-1, height - 1 - yy);
+        if (C.cfg.axes) {
+            g.setGrayScale(180);
+            if (xmin <= 0 && 0 <= xmax) {
+                int xx = (int) (-xmin * xf + 0.5);
+                g.drawLine(xx, 0, xx, height-1);
+            }
+            if (ymin <= 0 && 0 <= ymax) {
+                int yy = (int) (-ymin * yf + 0.5);
+                g.drawLine(0, height - 1 - yy, width-1, height - 1 - yy);
+            }
         }
 
-        int fontHeight = smallFont.getHeight();
-        int w = width / 2 - smallFont.stringWidth("x=") - 7;
-        g.setColor(0x007070FF);
-        g.drawString("x=" + Util.fitDouble(xmin, smallFont, w), 0, height - 1 - fontHeight, Graphics.BOTTOM | Graphics.LEFT);
-        g.drawString("x=" + Util.fitDouble(xmax, smallFont, w), width - 1, height - 1 - fontHeight, Graphics.BOTTOM | Graphics.RIGHT);
-        g.drawString("y=" + Util.fitDouble(ymin, smallFont, w), 0, height - 1, Graphics.BOTTOM | Graphics.LEFT);
-        g.drawString("y=" + Util.fitDouble(ymax, smallFont, w), 0, 0, Graphics.TOP | Graphics.LEFT);
+        if (C.cfg.labels) {
+            int fontHeight = smallFont.getHeight();
+            int w = width / 2 - smallFont.stringWidth("x=") - 7;
+            g.setColor(0x007070FF);
+            g.drawString("x=" + Util.fitDouble(xmin, smallFont, w), 0, height - 1 - fontHeight, Graphics.BOTTOM | Graphics.LEFT);
+            g.drawString("x=" + Util.fitDouble(xmax, smallFont, w), width - 1, height - 1 - fontHeight, Graphics.BOTTOM | Graphics.RIGHT);
+            g.drawString("y=" + Util.fitDouble(ymin, smallFont, w), 0, height - 1, Graphics.BOTTOM | Graphics.LEFT);
+            g.drawString("y=" + Util.fitDouble(ymax, smallFont, w), 0, 0, Graphics.TOP | Graphics.LEFT);
+        }
 
         /* Draw lines between the points */
         g.setColor(0x00000000);

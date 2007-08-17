@@ -46,13 +46,15 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
     static final int CMD_OK=1, CMD_HELP=3, CMD_ABOUT=4, CMD_EXIT=5,
         CMD_ANG_RAD  = 6, CMD_ANG_DEG   = 7,
-        CMD_ROUND_NO = 8, CMD_ROUND_YES = 9;
+        CMD_ROUND_NO = 8, CMD_ROUND_YES = 9,
+        CMD_AXES_NO = 10, CMD_AXES_YES = 11,
+        CMD_LABELS_YES = 12, CMD_LABELS_NO = 13;
 
     static final Command cmdOk
         = new Cmd("OK", CMD_OK, Command.BACK);
 
     Menu menu = new Menu("Menu", new Cmd[] {
-            new Menu("Settings", new Cmd[] {
+            new Menu("General settings", new Cmd[] {
                     new Menu("Angle unit", new Cmd[] {
                             new Cmd("Radians", CMD_ANG_RAD),
                             new Cmd("Degrees", CMD_ANG_DEG)
@@ -62,6 +64,16 @@ public final class C extends MIDlet implements CommandListener, Runnable {
                             new Cmd("No rounding",     CMD_ROUND_NO),
                         })
                 }),
+            new Menu("Plot settings", new Cmd[] {
+                    new Menu("Axes (plot, par)", new Cmd[] {
+                            new Cmd("Draw axes", CMD_AXES_YES),
+                            new Cmd("No axes", CMD_AXES_NO)
+                    }),
+                    new Menu("Labels (plot, par, map)", new Cmd[] {
+                            new Cmd("Draw labels", CMD_LABELS_YES),
+                            new Cmd("No labels", CMD_LABELS_NO)
+                    })
+            }),
             new Cmd("Help",  CMD_HELP),
             new Cmd("About", CMD_ABOUT),
             new Cmd("Exit",  CMD_EXIT)
@@ -137,6 +149,22 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
         case CMD_ROUND_NO:
             cfg.setRoundingDigits(0);
+            break;
+
+        case CMD_AXES_YES:
+            cfg.setAxes(true);
+            break;
+
+        case CMD_AXES_NO:
+            cfg.setAxes(false);
+            break;
+
+        case CMD_LABELS_YES:
+            cfg.setLabels(true);
+            break;
+
+        case CMD_LABELS_NO:
+            cfg.setLabels(false);
             break;
 
         case CMD_HELP:
