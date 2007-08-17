@@ -8,7 +8,7 @@ class CalcConfig {
         kAngleDeg = "deg",
         kRoundKey = "roundDigits";
        
-    CalcConfig(RMS rs, int recId) {
+    CalcConfig(Store rs, int recId) {
         cfg = new Config(rs, recId);
         angleInRadians = cfg.get(kAngleKey, kAngleRad).equals(kAngleRad);
         roundingDigits = Integer.parseInt(cfg.get(kRoundKey, "1"));
