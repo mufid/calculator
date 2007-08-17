@@ -6,7 +6,7 @@ public class Result {
     public int definedSymbol;
     public int plotCommand;
     public double[] plotArgs;
-    public int errorPos;
+    public int errorStart, errorEnd;
 
     public void init(CompiledFunction function, CompiledFunction function2, int definedSymbol, int plotCommand, double[] plotArgs) {
         this.function = function;
@@ -14,11 +14,13 @@ public class Result {
         this.definedSymbol = definedSymbol;
         this.plotCommand = plotCommand;
         this.plotArgs = plotArgs;
-        this.errorPos = -1;
+        this.errorStart = -1;
+        this.errorEnd = -1;
     }
     
-    public void init(int errorPos) {
-        this.errorPos = errorPos;
+    public void init(int errorStart, int errorEnd) {
+        this.errorStart = errorStart;
+        this.errorEnd = errorEnd;
         this.function = null;
         this.function = null;
         this.definedSymbol = -1;
@@ -27,6 +29,6 @@ public class Result {
     }
 
     public boolean hasValue() {
-        return errorPos == -1 && plotCommand == -1 && function.arity() == 0; 
+        return errorStart == -1 && plotCommand == -1 && function.arity() == 0; 
     }    
 }

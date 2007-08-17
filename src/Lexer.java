@@ -67,10 +67,13 @@ public class Lexer implements VMConstants
 
     public static int plotFunctionArity(int symbol) {
         switch (symbol) {
-        case PLOT: return 1;
-        case MAP: return 2;
-        case PARPLOT: return 1;
-        default: return -1;
+        case PLOT:
+        case PARPLOT:
+            return 1;
+        case MAP:
+            return 2;
+        default:
+            return -1;
         }
     }
 
@@ -167,6 +170,10 @@ public class Lexer implements VMConstants
         return peek_number;
     }
 
+    int curPos() {
+        return pos;
+    }
+    
     int lastPos() {
         return last_pos;
     }
@@ -215,7 +222,8 @@ public class Lexer implements VMConstants
             if (input[start] == '.' && 
                        (end == start+1  ||
                         end >= start+2 && input[start+1] == 'E')) {
-                tok_number = 0.;
+                // tok_number = 0.;
+                throw Compiler.error;
             } else try {
                 tok_number = Double.parseDouble(String.valueOf(input, start, pos - start));
             } catch (NumberFormatException e) {
