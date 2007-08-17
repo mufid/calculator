@@ -643,10 +643,11 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         return -1;
     }
 
+    DataOut dataOut = new DataOut();
     void saveOnExit() {
         String str = String.valueOf(line, 0, len);
         HistEntry entry = new HistEntry(str, 0, false);
-        entry.write(C.rs.out);
-        C.rs.write(C.RS_CURRENT);
+        entry.write(dataOut);
+        C.rs.write(C.RS_CURRENT, dataOut.getBytesAndReset());
     }
 }

@@ -6,17 +6,12 @@ import javax.microedition.rms.*;
 
 class Store {
     private RecordStore rs;
-    private byte buf[] = new byte[300];
-    private ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    DataOutputStream out = new DataOutputStream(bos);
     
-    Store(String name) {
+    Store(String name, int formatVersion) {
         try {
-            rs = RecordStore.openRecordStore("calc", true);
-            if (rs.getNextRecordID() == 1) {
-                //init rs
-                buf[0] = 0;
-                rs.addRecord(buf, 0, 1); //rec 1
+            rs = RecordStore.openRecordStore(name, true);
+            if (rs.getNextRecordID() == 1) { //init rs
+                write(1, new byte[]{(byte)formatVersion});
             }
         } catch (Exception e) {
             Log.log("creation err " + e);
@@ -25,36 +20,40 @@ class Store {
     }
     
     DataInputStream read(int recId) {
+        byte buf[] = null;
         try {
             insureRecord(recId);
-            int recSize = rs.getRecord(recId, buf, 0);
-            if (recSize > 0) {
-                return new DataInputStream(new ByteArrayInputStream(buf, 0, recSize));
-            }
-        } catch (InvalidRecordIDException e) { //to get out of the while()
+            buf = rs.getRecord(recId);
+        } catch (InvalidRecordIDException e) {
         } catch (Exception e) { //IOException, RecordStoreException
             Log.log("read err " + e);
             throw new Error(e.toString());
         }
-        return null;
+        return buf==null ? null : new DataInputStream(new ByteArrayInputStream(buf));
     }
 
-    private void insureRecord(int recId) throws RecordStoreException {
-        for (int i = rs.getNextRecordID(); i <= recId; ++i) {
-            rs.addRecord(null, 0, 0);
+    void write(int recId, byte[] data) {
+        insureRecord(recId);
+        setRecord(recId, data);
+    }
+
+    private void insureRecord(int recId) {
+        try {
+            for (int i = rs.getNextRecordID(); i <= recId; ++i) {
+                rs.addRecord(null, 0, 0);
+            }
+        } catch (Exception e) {
+            Log.log(e);
+            throw new Error(e.toString());
         }
     }
 
-    void write(int recId) {
+    private void setRecord(int recId, byte[] data) {
         try {
-            insureRecord(recId);
-            int size = bos.size();
-            rs.setRecord(recId, size==0 ? null : bos.toByteArray(), 0, size);
+            rs.setRecord(recId, data, 0, data.length);
         } catch (Exception e) {
-            Log.log("write err " + e);
+            Log.log(e);
             throw new Error(e.toString());
-        } finally {
-            bos.reset();
         }
     }
 }
