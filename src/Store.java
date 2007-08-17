@@ -1,16 +1,16 @@
 // Copyright (c) 2006-2007, Mihai Preda.
-// Available under the MIT License (see COPYING).
+// Licensed under the MIT License (see COPYING).
 
 import java.io.*;
 import javax.microedition.rms.*;
 
-class RMS {
+class Store {
     private RecordStore rs;
     private byte buf[] = new byte[300];
     private ByteArrayOutputStream bos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(bos);
     
-    RMS(String name) {
+    Store(String name) {
         try {
             rs = RecordStore.openRecordStore("calc", true);
             if (rs.getNextRecordID() == 1) {

@@ -6,6 +6,7 @@ import java.io.*;
 import javax.microedition.midlet.*;
 
 public final class C extends MIDlet implements CommandListener, Runnable {
+    static UnitTest dummy;
     static C self;
         
     static Display display;
@@ -72,12 +73,12 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     static final int RS_CONFIG = 1;
     static final int RS_CURRENT = 2, RS_HIST_START = 3, RS_MAX_HIST = 32; //32;
     static final int RS_SYMB_START = RS_HIST_START + RS_MAX_HIST;
-    static RMS rs;
+    static Store rs;
     static CalcConfig cfg;
 
     public C() {
         self = this;
-        rs = new RMS("calc");
+        rs = new Store("calc");
         cfg = new CalcConfig(rs, RS_CONFIG);
         display = Display.getDisplay(this);
         plotCanvas = new PlotCanvas(display);
