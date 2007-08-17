@@ -19,7 +19,8 @@ public class PlotCanvas extends Canvas implements VMConstants {
 
     private Image img;
     private int width, height;
-    
+    private Font smallFont;
+
     private Display display;
     private Displayable next;
     
@@ -38,9 +39,12 @@ public class PlotCanvas extends Canvas implements VMConstants {
         minmax = result.plotArgs;
         width = getWidth();
         height = getHeight();
+        if (smallFont == null)
+            smallFont = Font.getFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_SMALL);
 
         img = Image.createImage(width, height);
         Graphics g = img.getGraphics();
+        g.setFont(smallFont);
         switch (result.plotCommand)
         {
         case PLOT: paintPlot(g); break;
@@ -88,8 +92,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
             g.drawLine(0, height - 1 - yy, width-1, height - 1 - yy);
         }
 
-        g.setColor(0x000000FF);
-        g.setFont(Font.getFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_SMALL));
+        g.setColor(0x007070FF);
         // XXX Mihai: format(ymin, xf)?
         g.drawString(Double.toString(ymin), 0, height-1, Graphics.BOTTOM | Graphics.LEFT);
         g.drawString(Double.toString(ymax), 0, 0, Graphics.TOP | Graphics.LEFT);
@@ -111,9 +114,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
     private void paintMap(Graphics g) {
         long start, end;
 
-        Font font = Font.getFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_SMALL);
-        g.setFont(font);
-        final int fontHeight = font.getHeight();
+        final int fontHeight = smallFont.getHeight();
         final int infoHeight = fontHeight + 2;
         final int canvasHeight = height - infoHeight;
         final int colourBoxWidth = Math.max(fontHeight, 8);
@@ -192,12 +193,9 @@ public class PlotCanvas extends Canvas implements VMConstants {
         g.drawImage(im, 0, 0, Graphics.TOP | Graphics.LEFT);
         im = null;
         final int labelWidthPx = width / 2 - colourBoxWidth - 2;
-        String labelMin, labelMax;
-        for (int i = 15; font.stringWidth(labelMin = Util.doubleToTrimmedString(fmin, i)) > labelWidthPx; --i) ;
-        for (int i = 15; font.stringWidth(labelMax = Util.doubleToTrimmedString(fmax, i)) > labelWidthPx; --i) ;
         g.setColor(0x000000FF);
-        g.drawString(labelMin, colourBoxWidth + 2, canvasHeight + 1, Graphics.TOP | Graphics.LEFT);
-        g.drawString(labelMax, width / 2 + colourBoxWidth + 2, canvasHeight + 1, Graphics.TOP | Graphics.LEFT);
+        g.drawString(Util.fitDouble(fmin, smallFont, labelWidthPx), colourBoxWidth + 2, canvasHeight + 1, Graphics.TOP | Graphics.LEFT);
+        g.drawString(Util.fitDouble(fmax, smallFont, labelWidthPx), width / 2 + colourBoxWidth + 2, canvasHeight + 1, Graphics.TOP | Graphics.LEFT);
         end = System.currentTimeMillis();
         Log.log("Drawing took " + (end - start) + " ms.");
     }
@@ -293,7 +291,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
 
         Log.log("Plotting " + n + " points");
 
-        /* Fill background and draw axes */
+        /* Fill background, draw axes and labels */
         g.setColor(0x00FFFFFF);
         g.fillRect(0, 0, width, height);
 
@@ -306,6 +304,14 @@ public class PlotCanvas extends Canvas implements VMConstants {
             int yy = (int) (-ymin * yf + 0.5);
             g.drawLine(0, height - 1 - yy, width-1, height - 1 - yy);
         }
+
+        int fontHeight = smallFont.getHeight();
+        int w = width / 2 - smallFont.stringWidth("x=") - 7;
+        g.setColor(0x007070FF);
+        g.drawString("x=" + Util.fitDouble(xmin, smallFont, w), 0, height - 1 - fontHeight, Graphics.BOTTOM | Graphics.LEFT);
+        g.drawString("x=" + Util.fitDouble(xmax, smallFont, w), width - 1, height - 1 - fontHeight, Graphics.BOTTOM | Graphics.RIGHT);
+        g.drawString("y=" + Util.fitDouble(ymin, smallFont, w), 0, height - 1, Graphics.BOTTOM | Graphics.LEFT);
+        g.drawString("y=" + Util.fitDouble(ymax, smallFont, w), 0, 0, Graphics.TOP | Graphics.LEFT);
 
         /* Draw lines between the points */
         g.setColor(0x00000000);
