@@ -3,7 +3,7 @@
 
 import javax.microedition.lcdui.*;
 
-final class KeyState {
+/*final*/ class KeyState implements VMConstants {
     static Font font;
     static int fontHeight;
     static int w, h, cellWidth, cellHeight, yPos;
@@ -63,12 +63,36 @@ final class KeyState {
         });
 
         vars = new KeyState(new Object[] {
-            "x",  "y",  "z",
+            null, null, null,
             "f",  "a",  "b",
             "g",  "c",  "d",
             "h",  "m",  "n",
-        });
-        
+        }) {
+          void init() {
+              keys[0] = keys[1] = keys[2] = null;
+              changed = true;
+              String pre = C.self.calcCanvas.preCursorLine();
+              if (Lexer.isAssignment(pre)) {
+                  keys[0] = "x";
+                  keys[1] = "y";
+                  keys[2] = "z";
+                  return;
+              }
+              switch (Lexer.getFunctionPlotCommand(pre)) {
+              case PLOT:
+                  keys[0] = "x";
+                  break;
+              case MAP:
+                  keys[0] = "x";
+                  keys[1] = "y";
+                  break;
+              case PARPLOT:
+                  keys[0] = "t";
+                  break;
+              }
+          }
+        };
+
         plots = new KeyState(new Object[] {
             null,   null,   null,
             "plot", null,   null,
@@ -102,11 +126,14 @@ final class KeyState {
 
     Object keys[];
     Image img = null;
+    boolean changed;
     Graphics g;
 
     KeyState(Object keys[]) {
         this.keys = keys;
     }
+
+    void init() { }
 
     private static final String base[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
     static String handleKey(int pos) {
@@ -130,6 +157,8 @@ final class KeyState {
             return (String)o;
         } else {
             keypad = (KeyState)o;
+            if (keypad != null)
+                keypad.init();
             return null;
         }
     }
@@ -158,7 +187,8 @@ final class KeyState {
     }
 
     void doPaint(Graphics destG) {
-        if (img == null) {
+        if (img == null || changed) {
+            changed = false;
             img = Image.createImage(w, h);
             g = img.getGraphics();
             g.setFont(font);

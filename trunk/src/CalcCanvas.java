@@ -562,13 +562,13 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                 }
                 lastInsertLen += s.length();
                 if (sym != -1) {
+                    int arity = Lexer.isVariable(sym)
+                    ? (Variables.isFunction(sym)
+                       ? Variables.getFunction(sym).arity()
+                       : 0)
+                    : Lexer.getBuiltinArity(sym);
                     String pre = String.valueOf(line, 0, oldPos + 1);
-                    if (!Lexer.isPlotFunctionStart(pre)) {
-                        int arity = Lexer.isVariable(sym)
-                            ? (Variables.isFunction(sym)
-                               ? Variables.getFunction(sym).arity()
-                               : 0)
-                            : Lexer.getBuiltinArity(sym);
+                    if (arity != Lexer.plotFunctionArity(Lexer.getFunctionPlotCommand(pre))) {
                         String parens = arityParens[arity];
                         int parensLen = parens.length();
                         if (parensLen > 0) {
@@ -649,5 +649,9 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         HistEntry entry = new HistEntry(str, 0, false);
         entry.write(dataOut);
         C.rs.write(C.RS_CURRENT, dataOut.getBytesAndReset());
+    }
+    
+    public String preCursorLine() {
+        return String.valueOf(line, 0, pos + 1);
     }
 }

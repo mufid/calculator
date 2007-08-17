@@ -10,6 +10,7 @@ public class Compiler implements VMConstants
     private int parameterCallArity;
     private int plotCommand;
     private double[] plotArgs;
+    private boolean x_is_t;
     private boolean unaryDone;
 
     public static Result result;
@@ -72,6 +73,7 @@ public class Compiler implements VMConstants
         parameterCallArity = -1;
         plotCommand = -1;
         plotArgs = null;
+        x_is_t = false;
         unaryDone = false;
     }
 
@@ -143,8 +145,15 @@ public class Compiler implements VMConstants
         } else if (FIRST_PAR <= c && c <= LAST_PAR) {
             if (definedSymbol == -1 && c - FIRST_PAR > parameterCallArity - 1)
                 throw error;
+            if (x_is_t && c == PAR_X)
+                throw error;
             arity = Math.max(arity, c - FIRST_PAR + 1);
             func.pushInstr(c);
+        } else if (c == Lexer.TOK_PAR_T) {
+            if (!x_is_t)
+                throw error;
+            arity = 1;
+            func.pushInstr(PAR_X);
         } else if (FIRST_CONST <= c && c <= LAST_CONST) {
             func.pushInstr(c);
         } else if (FIRST_VAR <= c && c <= LAST_VAR) {
@@ -193,6 +202,8 @@ public class Compiler implements VMConstants
         if (lexer.nextToken() != Lexer.TOK_LPAREN)
             throw error;
         parameterCallArity = Lexer.plotFunctionArity(plotCommand);
+        if (plotCommand == PARPLOT)
+            x_is_t = true;
         compileExpr();
         func.setArity(parameterCallArity);
         CompiledFunction plotFunction = func;
@@ -203,6 +214,7 @@ public class Compiler implements VMConstants
             compileExpr();
             func.setArity(parameterCallArity);
             func2 = func;
+            x_is_t = false;
         }
         parameterCallArity = -1;
         final int remainingArity = Lexer.getBuiltinArity(plotCommand) - (plotCommand == PARPLOT ? 2 : 1);
