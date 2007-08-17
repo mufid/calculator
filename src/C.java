@@ -39,8 +39,8 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 "of the values of a function f(x,y), with x running from xmin to xmax " +
 "and y from ymin to ymax.\n\n" +
 
-"par(f, g, xmin, xmax) produces a plot of the points (f(x),g(x)) " +
-"with x running from xmin to xmax. That is, f determines x coordinate " +
+"par(f, g, tmin, tmax) produces a plot of the points (f(t),g(t)) " +
+"with t running from tmin to tmax. That is, f determines x coordinate " +
 "and g determines y coordinate.";
 
 

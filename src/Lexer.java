@@ -9,7 +9,8 @@ public class Lexer implements VMConstants
         TOK_LPAREN = CUSTOM + 0,
         TOK_RPAREN = CUSTOM + 1,
         TOK_COMMA  = CUSTOM + 2,
-        TOK_END    = CUSTOM + 3;
+        TOK_PAR_T  = CUSTOM + 3,
+        TOK_END    = CUSTOM + 4;
     
     private final static int MAX_INPUT_LEN = 200;
 
@@ -17,7 +18,7 @@ public class Lexer implements VMConstants
 
     private static void initSymnames() {
         symnames = new Hashtable(50);
-        a(PAR_X, "x"); a(PAR_Y, "y"); a(PAR_Z, "z");
+        a(PAR_X, "x"); a(PAR_Y, "y"); a(PAR_Z, "z"); a(TOK_PAR_T, "t");
         a(VAR_A, "a"); a(VAR_B, "b"); a(VAR_C, "c"); a(VAR_D, "d");
         a(VAR_M, "m"); a(VAR_N, "n"); a(VAR_F, "f"); a(VAR_G, "g"); a(VAR_H, "h");
         a(CONST_PI, "pi"); a(CONST_E, "e"); a(CONST_ANS, "ans"); a(CONST_RND, "rnd");
@@ -78,27 +79,38 @@ public class Lexer implements VMConstants
     }
 
     public static boolean isAssignment(String str) {
-        return str.length() > 3 && str.charAt(1) == ':' && str.charAt(2) == '=';
+        return str.length() >= 3 && str.charAt(1) == ':' && str.charAt(2) == '=';
     }
 
-    public static boolean isPlotFunctionStart(String str) {
-        if ("plot(".equals(str) || "map(".equals(str) || "par(".equals(str))
-            return true;
-        else if (str.startsWith("par(")) {
-            // check that str has the form "par(F," for some F
-            final int len = str.length();
-            if (str.charAt(len - 1) != ',')
-                return false;
-            int parens = 0;
-            for (int i = 4; i < len - 1; ++i)
-                switch (str.charAt(i)) {
-                case '(': ++parens; break;
-                case ')': --parens; break;
-                case ',': if (parens == 0) return false; break;
-                }
-            return true;
+    /* If str is the start of a plot command ending in one of the plot functions
+       -- such as "plot(sin", "par(g,1+", but not "map(x*y,1" -- then this function
+       returns the plot function (constant PLOT, MAP, PARPLOT); otherwise, returns -1
+    */
+    public static int getFunctionPlotCommand(String str) {
+        int cmd, i;
+        if (str.startsWith("plot(")) {
+            cmd = PLOT;
+            i = 5;
+        } else if (str.startsWith("map(")) {
+            cmd = MAP;
+            i = 4;
+        } else if (str.startsWith("par(")) {
+            cmd = PARPLOT;
+            i = 4;
         } else
-            return false;
+            return -1;
+        int slot = 0, parens = 0;
+        final int len = str.length();
+        for (; i < len; ++i)
+            switch (str.charAt(i)) {
+            case '(': ++parens; break;
+            case ')': --parens; break;
+            case ',': if (parens == 0) ++slot; break;
+            }
+        if (slot == 0 || slot == 1 && cmd == PARPLOT)
+            return cmd;
+        else
+            return -1;
     }
 
 
@@ -213,9 +225,9 @@ public class Lexer implements VMConstants
             return LITERAL;
         }
 
-        if ('a' <= c && c <= 'z') {
+        if (isLetter(c)) {
             int start = pos;
-            while ('a' <= c && c <= 'z')
+            while (isLetter(c))
                 c = input[++pos];
             Integer sym = (Integer) symnames.get(String.valueOf(input, start, pos - start));
             if (sym == null)
