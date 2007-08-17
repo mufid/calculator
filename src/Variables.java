@@ -2,7 +2,6 @@
 // Available under the MIT License (see COPYING).
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class Variables implements VMConstants
@@ -22,12 +21,10 @@ public class Variables implements VMConstants
             if (result.function.arity() == 0) {
                 os.writeChar(types[i] = TYPE_NUM);
                 os.writeDouble(numbers[i] = number);
-                Log.log("Saving var " + i + " = " + number);
             } else {
                 os.writeChar(types[i] = TYPE_FUNC);
                 funcs[i] = new CompiledFunction(result.function);
                 funcs[i].write(os);
-                Log.log("Saving var " + i + " = fn");
             }
             C.rs.write(C.RS_SYMB_START + i, os.getBytesAndReset());
         } catch (IOException e) {

@@ -1,3 +1,5 @@
+import javax.microedition.lcdui.Font;
+
 // Copyright 2007, Mihai Preda.
 // Available under the MIT License (see COPYING).
 
@@ -94,10 +96,14 @@ class Util {
         return buf.toString();
     }
 
-    static String doubleToTrimmedString(double v, int targetChars)
+    static String doubleToTrimmedString(double v, int targetChars) {
+        return doubleToTrimmedString(v, targetChars, Double.toString(Math.abs(v)));
+    }
+
+    private static String doubleToTrimmedString(double v, int targetChars, String str)
     {
         if (Double.isInfinite(v) || Double.isNaN(v)) {
-            String str = Double.toString(v); 
+            str = Double.toString(v);
             return str.length() > targetChars ? str.substring(0, targetChars) : str;
         }
 
@@ -105,7 +111,6 @@ class Util {
         if (negative)
             --targetChars;
         v = Math.abs(v);
-        String str = Double.toString(v);
 
         int dotpos = str.indexOf('.'), epos = str.indexOf('E');
         StringBuffer buf = new StringBuffer(str);
@@ -161,5 +166,11 @@ class Util {
             buf.append(mantissa);
 
         return buf.toString();
+    }
+
+    static String fitDouble(double d, Font font, int pxWidth) {
+        String s = null, str = Double.toString(Math.abs(d));
+        for (int i = 15; i > 0 && font.stringWidth(s = doubleToTrimmedString(d, i, str)) > pxWidth; --i) ;
+        return s;
     }
 }
