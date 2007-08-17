@@ -104,7 +104,9 @@ class History {
         history.addElement(o);
     }
 
-    int size() { return history.size(); }
+    int size() { 
+        return history.size(); 
+    }
 
     HistEntry get(int p) { 
         return (HistEntry) history.elementAt(p);
@@ -123,9 +125,9 @@ class History {
         historyPos = newPos;
         return true;
     }
-
-    void enter(String str)
-    {
+    
+    DataOut dataOut = new DataOut();
+    void enter(String str) {
         compiler.compile(str);
         Result res = Compiler.result;
 
@@ -140,16 +142,16 @@ class History {
         if (str.length() > 0) {
             HistEntry newEntry = new HistEntry(str, ans, hasValue);
             try {
-                C.rs.out.writeInt(++maxSeq);
+                dataOut.writeInt(++maxSeq);
             } catch (IOException e) {
             }
-            newEntry.write(C.rs.out);
+            newEntry.write(dataOut);
             ++posMaxSeq;
             if (posMaxSeq >= C.RS_MAX_HIST) {
                 posMaxSeq = 0;
             }
             int recId = posMaxSeq + C.RS_HIST_START;
-            C.rs.write(recId);
+            C.rs.write(recId, dataOut.getBytesAndReset());
             history.insertElementAt(newEntry, 1);
             if (history.size() > C.RS_MAX_HIST+1) {
                 history.setSize(C.RS_MAX_HIST+1);

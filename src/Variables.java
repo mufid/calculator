@@ -14,9 +14,9 @@ public class Variables implements VMConstants
     static char[] types             = new char[VARS_CNT]; // init'd to 0 = TYPE_UNDEF
     static double[] numbers         = new double[VARS_CNT];
     static CompiledFunction[] funcs = new CompiledFunction[VARS_CNT];
+    static DataOut os = new DataOut();
 
     public static void persistDefine(Result result, double number) {
-        DataOutputStream os = C.rs.out;
         int i = result.definedSymbol - FIRST_VAR;
         try {
             if (result.function.arity() == 0) {
@@ -29,7 +29,7 @@ public class Variables implements VMConstants
                 funcs[i].write(os);
                 Log.log("Saving var " + i + " = fn");
             }
-            C.rs.write(C.RS_SYMB_START + i);
+            C.rs.write(C.RS_SYMB_START + i, os.getBytesAndReset());
         } catch (IOException e) {
             e.printStackTrace();
         }
