@@ -48,7 +48,8 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         CMD_ANG_RAD  = 6, CMD_ANG_DEG   = 7,
         CMD_ROUND_NO = 8, CMD_ROUND_YES = 9,
         CMD_AXES_NO = 10, CMD_AXES_YES = 11,
-        CMD_LABELS_YES = 12, CMD_LABELS_NO = 13;
+        CMD_LABELS_YES = 12, CMD_LABELS_NO = 13,
+        CMD_AR1_YES = 14, CMD_AR1_NO = 15;
 
     static final Command cmdOk
         = new Cmd("OK", CMD_OK, Command.BACK);
@@ -65,13 +66,17 @@ public final class C extends MIDlet implements CommandListener, Runnable {
                         })
                 }),
             new Menu("Plot settings", new Cmd[] {
-                    new Menu("Axes (plot, par)", new Cmd[] {
+                    new Menu("Axes", new Cmd[] {
                             new Cmd("Draw axes", CMD_AXES_YES),
                             new Cmd("No axes", CMD_AXES_NO)
                     }),
-                    new Menu("Labels (plot, par, map)", new Cmd[] {
+                    new Menu("Labels", new Cmd[] {
                             new Cmd("Draw labels", CMD_LABELS_YES),
                             new Cmd("No labels", CMD_LABELS_NO)
+                    }),
+                    new Menu("Aspect ratio", new Cmd[] {
+                            new Cmd("Aspect ratio = 1", CMD_AR1_YES),
+                            new Cmd("Stretch to fill screen", CMD_AR1_NO)
                     })
             }),
             new Cmd("Help",  CMD_HELP),
@@ -164,6 +169,14 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
         case CMD_LABELS_NO:
             cfg.setLabels(false);
+            break;
+
+        case CMD_AR1_YES:
+            cfg.setAspectRatio(true);
+            break;
+
+        case CMD_AR1_NO:
+            cfg.setAspectRatio(false);
             break;
 
         case CMD_HELP:

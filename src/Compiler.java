@@ -43,7 +43,10 @@ public class Compiler implements VMConstants
             }
             if (lexer.peekToken() != Lexer.TOK_END)
                 throw error;
-            if (!func.check(definedSymbol != -1 && arity > 0 ? 1 << (definedSymbol - FIRST_VAR) : 0))
+            final int varmask = definedSymbol != -1 && arity > 0 ? 1 << (definedSymbol - FIRST_VAR) : 0;
+            if (!func.check(varmask))
+                throw error;
+            if (func2 != null && !func2.check(varmask))
                 throw error;
         } catch (SyntaxError e) {
             int errorStart = lexer.lastPos(), errorEnd = lexer.curPos() - 1;
@@ -226,6 +229,8 @@ public class Compiler implements VMConstants
                 throw error;
             func = new CompiledFunction();
             compileExpr();
+            if (!func.check(0))
+                throw error;
             plotArgs[i] = func.evaluate();
         }
         func = plotFunction;

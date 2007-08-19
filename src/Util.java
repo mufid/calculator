@@ -157,6 +157,8 @@ class Util {
 
         if (!noDot && dotpos <= buf.length())
             buf.insert(dotpos, '.');
+        
+        // XXX trim trailing zeros
 
         if (negative)
             buf.insert(0, '-');

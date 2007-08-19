@@ -14,7 +14,7 @@ TODO
 - Make plotting interruptible.
 - Display progress bar when plotting.
 - Optionally rotate the plot by 90 degrees (so the user has to rotate their phone), yielding a landscape orientation which may be better suited to many plots.
-- Option of unit aspect ratio for plot(), map() and par(). For map(), this changes its arity from 5 to 3.
+- Option of unit aspect ratio for plot(), map() and par(). For map(), this changes its arity from 5 to 4.
 - Anti-aliasing of the plotted curve to make it look smoother.
 - Make the plot screen interactive: user can move around and zoom (both plot() and map()).
 - The plot labels should honour the "smart rounding" setting.

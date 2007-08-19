@@ -3,21 +3,23 @@
 
 class CalcConfig {
     private static final String
-        ANGLE_KEY = "angleUnit",
-        ANGLE_RAD = "rad",
-        ANGLE_DEG = "deg",
-        ROUND_KEY = "roundDigits",
-        AXES      = "axes",
-        LABELS    = "labels",
-        TRUE      = "T",
-        FALSE     = "F";
-       
+        ANGLE_KEY    = "angleUnit",
+        ANGLE_RAD    = "rad",
+        ANGLE_DEG    = "deg",
+        ROUND_KEY    = "roundDigits",
+        AXES         = "axes",
+        LABELS       = "labels",
+        ASPECTRATIO1 = "ar1",
+        TRUE         = "T",
+        FALSE        = "F";
+
     CalcConfig(Store rs, int recId) {
         cfg = new Config(rs, recId);
         angleInRadians = cfg.get(ANGLE_KEY, ANGLE_RAD).equals(ANGLE_RAD);
         roundingDigits = Integer.parseInt(cfg.get(ROUND_KEY, "1"));
         axes = cfg.get(AXES, TRUE).equals(TRUE);
         labels = cfg.get(LABELS, TRUE).equals(TRUE);
+        aspectRatio1 = cfg.get(ASPECTRATIO1, FALSE).equals(TRUE);
     }
 
     void setAngleInRadians(boolean inRad) {
@@ -44,10 +46,17 @@ class CalcConfig {
         cfg.save();
     }
 
+    void setAspectRatio(boolean one) {
+        aspectRatio1 = one;
+        cfg.set(ASPECTRATIO1, aspectRatio1 ? TRUE : FALSE);
+        cfg.save();
+    }
+
     boolean angleInRadians;
     int roundingDigits;
     boolean axes;
     boolean labels;
+    boolean aspectRatio1;
 
     private Config cfg;
 }
