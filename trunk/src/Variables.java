@@ -60,7 +60,7 @@ public class Variables implements VMConstants
         DataInputStream is;
         try {
             for (int i = 0; i < VARS_CNT; ++i) {
-                is = C.rs.read(C.RS_SYMB_START + i);
+                is = C.rs.readIS(C.RS_SYMB_START + i);
                 if (is == null)
                     continue;
                 switch (types[i] = is.readChar()) {

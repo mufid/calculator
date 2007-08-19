@@ -68,7 +68,7 @@ class History {
         Vector v = new Vector(C.RS_MAX_HIST);
         DataInputStream is;
         int recId = C.RS_HIST_START, seq = 0;
-        while (recId < C.RS_MAX_HIST+C.RS_HIST_START && (is=C.rs.read(recId)) != null) {
+        while (recId < C.RS_MAX_HIST+C.RS_HIST_START && (is=C.rs.readIS(recId)) != null) {
             try {
                 seq = is.readInt();
             } catch (IOException e) {
