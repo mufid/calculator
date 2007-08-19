@@ -95,9 +95,8 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         rs = new Store("calc", STORE_VERSION);
         cfg = new CalcConfig(rs, RS_CONFIG);
         display = Display.getDisplay(this);
-        plotCanvas = new PlotCanvas(display);
         calcCanvas = new CalcCanvas();
-        plotCanvas.init(calcCanvas);
+        plotCanvas = new PlotCanvas(display, calcCanvas);
 
         try {
             aboutForm.append(Image.createImage("/a"));
