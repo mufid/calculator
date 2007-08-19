@@ -78,7 +78,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         clientW = screenW - 2*clientX;
 
         history = new History(compiler);
-        DataInputStream is = C.rs.read(C.RS_CURRENT);
+        DataInputStream is = C.rs.readIS(C.RS_CURRENT);
         updateFromHistEntry(is == null ? new HistEntry("1+1", 0, false) : new HistEntry(is));
         if (is == null) {
             history.enter("0.5!*2)^2");
