@@ -120,8 +120,12 @@ public class Lexer implements VMConstants
         }
     }
 
+    private static int[] getPlotCommandAndSlot(String str) {
+        return getPlotCommandAndSlot(str, str.length());
+    }
+
     private static int[] result;
-    public static int[] getPlotCommandAndSlot(String str) {
+    public static int[] getPlotCommandAndSlot(String str, int len) {
         if (result == null)
             result = new int[2];
         int i;
@@ -138,17 +142,20 @@ public class Lexer implements VMConstants
             result[0] = -1;
             return result;
         }
-        result[1] = 0;
-        int parens = 0;
-        final int len = str.length();
-        for (; i < len; ++i)
-            switch (str.charAt(i)) {
-            case '(': ++parens; break;
-            case ')': --parens; break;
-            case ',': if (parens == 0) ++result[1]; break;
-            }
-        if (parens < 0)
+        if (len >= i) {
+            result[1] = 0;
+            int parens = 0;
+            for (; i < len; ++i)
+                switch (str.charAt(i)) {
+                case '(': ++parens; break;
+                case ')': --parens; break;
+                case ',': if (parens == 0) ++result[1]; break;
+                }
+            if (parens < 0)
+                result[1] = -1;
+        } else {
             result[1] = -1;
+        }
         return result;
     }
 

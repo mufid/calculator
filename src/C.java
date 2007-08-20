@@ -72,7 +72,6 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         rs = new Store("calc", STORE_VERSION);
         cfg = new CalcConfig(rs, RS_CONFIG);
         display = Display.getDisplay(this);
-        System.out.println(display);
         calcCanvas = new CalcCanvas();
         plotCanvas = new PlotCanvas(display, calcCanvas);
 

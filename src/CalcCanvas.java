@@ -311,16 +311,16 @@ class CalcCanvas extends Canvas implements VMConstants {
         //Log.log("pos " + pos + " row " + cursorRow + " col " + cursorCol + " x " + cursorX + " y " + cursorY);
         setCursor(true);
 
-        String help = null;
-        if (pos > -1) {
-            final int[] cmdSlot = Lexer.getPlotCommandAndSlot(preCursorLine());
-            if (cmdSlot[0] != -1 && cmdSlot[1] != -1) {
+        final int[] cmdSlot = Lexer.getPlotCommandAndSlot(line(), pos + 1);
+        if (cmdSlot[0] != -1) {
+            String help = null;
+            if (cmdSlot[1] != -1) {
                 String[] helps = plotParamHelp[cmdSlot[0] - FIRST_PLOT_COMMAND];
                 if (cmdSlot[1] < helps.length)
                     help = helps[cmdSlot[1]];
             }
+            drawResultString(help);
         }
-        drawResultString(help);
     }
 
     char histBuf[] = new char[256+30];
@@ -474,7 +474,7 @@ class CalcCanvas extends Canvas implements VMConstants {
     }
     
     void historyMove(int dir) {
-        history.getCurrent().update(String.valueOf(line, 0, len), pos);
+        history.getCurrent().update(line(), pos);
         if (history.move(dir)) {
             updateFromHistEntry(history.getCurrent());
             doChanged(-1);
@@ -683,12 +683,16 @@ class CalcCanvas extends Canvas implements VMConstants {
 
     DataOut dataOut = new DataOut();
     void saveOnExit() {
-        String str = String.valueOf(line, 0, len);
+        String str = line();
         HistEntry entry = new HistEntry(str, 0, false);
         entry.write(dataOut);
         C.rs.write(C.RS_CURRENT, dataOut.getBytesAndReset());
     }
-    
+
+    public String line() {
+        return String.valueOf(line, 0, len);
+    }
+
     public String preCursorLine() {
         return String.valueOf(line, 0, pos + 1);
     }

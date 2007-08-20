@@ -8,7 +8,7 @@ import javax.microedition.lcdui.*;
     static int fontHeight;
     static int w, h, cellWidth, cellHeight, yPos;
     static int stepW, singleSpace;
-    static KeyState rootOp, trigs, hyps, logs, ints, vars, plots, rootExp;
+    static KeyState rootOp, trigs, logs, ints, vars, plots, rootExp;
     static KeyState keypad, lastPainted;
 
     private static final int BACKGR = CalcCanvas.BACKGR, DARKER = 0x808080, SUBMENU = 0xb0f000;
