@@ -12,8 +12,6 @@ public class Lexer implements VMConstants
         TOK_PAR_T  = CUSTOM + 3,
         TOK_END    = CUSTOM + 4;
     
-    private final static int MAX_INPUT_LEN = 200;
-
     private static Hashtable symnames;
 
     private static void initSymnames() {
@@ -85,6 +83,10 @@ public class Lexer implements VMConstants
         return str.length() >= 3 && str.charAt(1) == ':' && str.charAt(2) == '=';
     }
 
+    public static boolean isAssignment(char[] str, int len) {
+        return len >= 3 && str[1] == ':' && str[2] == '=';
+    }
+
 
     public static boolean matchesPlotArity(int arity, String str) {
         if (!(arity == 1 || arity == 2))
@@ -151,32 +153,32 @@ public class Lexer implements VMConstants
     }
 
     private char[] input;
-    private int input_len;
-    private int pos;
-    private int last_pos;
+    private int pos, last_pos;
     private double tok_number;
     private boolean has_peeked;
     private int peek_tok;
     private double peek_number;
+    private int peek_pos;
 
     Lexer() {
-        input = new char[MAX_INPUT_LEN];
         if (symnames == null)
             initSymnames();
     }
 
-    public void init(String str) {
-        input_len = str.length() + 1;
-        str.getChars(0, input_len - 1, input, 0);
-        input[input_len - 1] = '$';
-        pos = 0;
-        last_pos = -1;
+    public void init(char[] input, int start, int end)
+    {
+        this.input = input;
+        input[end] = '$';
+        pos = start;
+        last_pos = start - 1;
         has_peeked = false;        
     }
 
     int nextToken() throws SyntaxError
     {
         if (has_peeked) {
+            last_pos = pos;
+            pos = peek_pos;
             tok_number = peek_number;
             has_peeked = false;
             return peek_tok;
@@ -187,7 +189,11 @@ public class Lexer implements VMConstants
     int peekToken() throws SyntaxError
     {
         if (!has_peeked) {
+            int pre_last_pos = last_pos;
             peek_tok = nextToken0();
+            peek_pos = pos;
+            pos = last_pos;
+            last_pos = pre_last_pos;
             peek_number = tok_number;
             has_peeked = true;
         }

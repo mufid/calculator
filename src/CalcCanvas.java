@@ -25,6 +25,12 @@ class CalcCanvas extends Canvas implements VMConstants {
         { "function x(t)", "function y(t)", "min t-value", "max t-value" }
     };
 
+    private static final String[] initHistory = {
+        "0.5!*2)^2",
+        "sqrt(3^2+4^2",
+        "sin(pi/2)"
+    };
+
     Compiler compiler = new Compiler();
     History history; 
 
@@ -87,9 +93,13 @@ class CalcCanvas extends Canvas implements VMConstants {
         DataInputStream is = C.rs.readIS(C.RS_CURRENT);
         updateFromHistEntry(is == null ? new HistEntry("1+1", 0, false) : new HistEntry(is));
         if (is == null) {
-            history.enter("0.5!*2)^2");
-            history.enter("sqrt(3^2+4^2");
-            history.enter("sin(pi/2)");
+            for (int i = 0; i < initHistory.length; ++i) {
+                final String str = initHistory[i];
+                final int len = str.length();
+                char[] chs = new char[len + 1]; // one extra char for '$' which Lexer inserts
+                str.getChars(0, len, chs, 0);
+                history.enter(chs, len);
+            }
         }
 
         Variables.load();
@@ -142,7 +152,7 @@ class CalcCanvas extends Canvas implements VMConstants {
     }
 
     private void updateResult() {
-        if (compiler.compile(String.valueOf(line, 0, len))) {
+        if (compiler.compile(line, len)) {
             if (Compiler.result.plotCommand == -1) {
                 CompiledFunction func = Compiler.result.function;
                 String strResult = func.arity() > 0 ?
@@ -159,7 +169,6 @@ class CalcCanvas extends Canvas implements VMConstants {
 
     private boolean resultEmpty = false;
     private void drawResultString(String str) {
-        System.out.println("result: " + str);
         boolean changed = false;
         if (!resultEmpty) {
             gg.setColor(bgCol[RESULT]);
@@ -304,8 +313,7 @@ class CalcCanvas extends Canvas implements VMConstants {
 
         String help = null;
         if (pos > -1) {
-            final String pre = String.valueOf(line, 0, pos + 1);
-            final int[] cmdSlot = Lexer.getPlotCommandAndSlot(pre);
+            final int[] cmdSlot = Lexer.getPlotCommandAndSlot(preCursorLine());
             if (cmdSlot[0] != -1 && cmdSlot[1] != -1) {
                 String[] helps = plotParamHelp[cmdSlot[0] - FIRST_PLOT_COMMAND];
                 if (cmdSlot[1] < helps.length)
@@ -524,9 +532,9 @@ class CalcCanvas extends Canvas implements VMConstants {
             break;
 
         case Canvas.FIRE:
-            history.enter(String.valueOf(line, 0, len));
+            history.enter(line, len);
             Result res = Compiler.result;
-            if (res.plotCommand != -1)
+            if (res.errorStart == -1 && res.plotCommand != -1)
                 C.self.plotCanvas.plot(res);
             updateFromHistEntry(history.getCurrent());
             doChanged(-1);

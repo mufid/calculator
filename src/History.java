@@ -125,10 +125,10 @@ class History {
         historyPos = newPos;
         return true;
     }
-    
+
     DataOut dataOut = new DataOut();
-    void enter(String str) {
-        compiler.compile(str);
+    void enter(char[] str, int len) {
+        compiler.compile(str, len);
         Result res = Compiler.result;
 
         boolean hasValue = res.hasValue();
@@ -139,8 +139,8 @@ class History {
             Variables.persistDefine(res, ans);
 
         ((HistEntry)history.elementAt(historyPos)).flush();
-        if (str.length() > 0) {
-            HistEntry newEntry = new HistEntry(str, ans, hasValue);
+        if (len > 0) {
+            HistEntry newEntry = new HistEntry(String.valueOf(str, 0, len), ans, hasValue);
             try {
                 dataOut.writeInt(++maxSeq);
             } catch (IOException e) {

@@ -132,7 +132,6 @@ public class CompiledFunction implements VMConstants {
         int op;
         for (int i = 0; i < inst_cnt; ++i) {
             op = inst[i];
-            //System.out.println("op: " + op);
             if (SIN <= op && op <= ATAN) {
                 stack[s] = trigEval(op, stack[s]);
                 continue;
@@ -333,6 +332,24 @@ public class CompiledFunction implements VMConstants {
         }
         return 0;
     }
+
+/*
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < inst_cnt; ++i) {
+            sb.append(inst[i]);
+            if (i < inst_cnt - 1)
+                sb.append(", ");
+        }
+        sb.append(" ; ");
+        for (int i = 0; i < lit_cnt; ++i) {
+            sb.append(literals[i]);
+            if (i < lit_cnt - 1)
+                sb.append(", ");
+        }
+        return sb.toString();
+    }
+*/
 
 /*
     import java.lang.reflect.Field;
