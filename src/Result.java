@@ -18,13 +18,13 @@ public class Result {
         this.errorEnd = -1;
     }
     
-    public void init(int errorStart, int errorEnd) {
+    public void init(int errorStart, int errorEnd, int plotCommand) {
         this.errorStart = errorStart;
         this.errorEnd = errorEnd;
         this.function = null;
         this.function = null;
         this.definedSymbol = -1;
-        this.plotCommand = -1;
+        this.plotCommand = plotCommand;
         this.plotArgs = null;
     }
 
