@@ -16,7 +16,7 @@ public class Variables implements VMConstants
     static DataOut os = new DataOut();
 
     public static void persistDefine(Result result, double number) {
-        int i = result.definedSymbol - FIRST_VAR;
+        final int i = result.definedSymbol - FIRST_VAR;
         try {
             if (result.function.arity() == 0) {
                 os.writeChar(types[i] = TYPE_NUM);
@@ -28,7 +28,7 @@ public class Variables implements VMConstants
             }
             C.rs.write(C.RS_SYMB_START + i, os.getBytesAndReset());
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.log(e);
         }
     }
 
@@ -69,7 +69,7 @@ public class Variables implements VMConstants
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.log(e);
         }
     }
 }

@@ -85,37 +85,70 @@ public class Lexer implements VMConstants
         return str.length() >= 3 && str.charAt(1) == ':' && str.charAt(2) == '=';
     }
 
-    /* If str is the start of a plot command ending in one of the plot functions
-       -- such as "plot(sin", "par(g,1+", but not "map(x*y,1" -- then this function
-       returns the plot function (constant PLOT, MAP, PARPLOT); otherwise, returns -1
-    */
+
+    public static boolean matchesPlotArity(int arity, String str) {
+        if (!(arity == 1 || arity == 2))
+            return false;
+        int[] cmdSlot = getPlotCommandAndSlot(str);
+        if (cmdSlot[0] == -1)
+            return false;
+        if (isPlotFunctionSlot(cmdSlot))
+            return arity == plotFunctionArity(cmdSlot[0]);
+        return false;
+    }
+
     public static int getFunctionPlotCommand(String str) {
-        int cmd, i;
+        int[] cmdSlot = getPlotCommandAndSlot(str);
+        int cmd = cmdSlot[0];
+        if (cmd != -1)
+            if (!isPlotFunctionSlot(cmdSlot))
+                cmd = -1;
+        return cmd;
+    }
+
+    private static boolean isPlotFunctionSlot(int[] cmdSlot) {
+        switch (cmdSlot[0]) {
+        case PLOT:
+        case MAP:
+            return cmdSlot[1] == 0;
+        case PARPLOT:
+            return cmdSlot[1] == 0 || cmdSlot[1] == 1;
+        default:
+            return false;
+        }
+    }
+
+    private static int[] result;
+    public static int[] getPlotCommandAndSlot(String str) {
+        if (result == null)
+            result = new int[2];
+        int i;
         if (str.startsWith("plot(")) {
-            cmd = PLOT;
+            result[0] = PLOT;
             i = 5;
         } else if (str.startsWith("map(")) {
-            cmd = MAP;
+            result[0] = MAP;
             i = 4;
         } else if (str.startsWith("par(")) {
-            cmd = PARPLOT;
+            result[0] = PARPLOT;
             i = 4;
-        } else
-            return -1;
-        int slot = 0, parens = 0;
+        } else {
+            result[0] = -1;
+            return result;
+        }
+        result[1] = 0;
+        int parens = 0;
         final int len = str.length();
         for (; i < len; ++i)
             switch (str.charAt(i)) {
             case '(': ++parens; break;
             case ')': --parens; break;
-            case ',': if (parens == 0) ++slot; break;
+            case ',': if (parens == 0) ++result[1]; break;
             }
-        if (slot == 0 || slot == 1 && cmd == PARPLOT)
-            return cmd;
-        else
-            return -1;
+        if (parens < 0)
+            result[1] = -1;
+        return result;
     }
-
 
     private char[] input;
     private int input_len;

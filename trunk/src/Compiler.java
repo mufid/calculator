@@ -56,7 +56,7 @@ public class Compiler implements VMConstants
             }
             if (input.length() > 0)
                 Log.log("syntax error at " + errorStart + '-' + errorEnd);
-            result.init(errorStart, errorEnd);
+            result.init(errorStart, errorEnd, plotCommand);
             return false;
         }
         result.init(func, func2, definedSymbol, plotCommand, plotArgs);
@@ -224,18 +224,46 @@ public class Compiler implements VMConstants
         parameterCallArity = -1;
         final int remainingArity = Lexer.getBuiltinArity(plotCommand) - (plotCommand == PARPLOT ? 2 : 1);
         plotArgs = new double[remainingArity];
+        CompiledFunction tempFunc = null;
+        boolean lastMapArgMissing = false;
+        double prevPlotArg = 0; // compiler complains without initialization
         for (int i = 0; i < remainingArity; ++i) {
-            if (lexer.nextToken() != Lexer.TOK_COMMA)
-                throw error;
-            func = new CompiledFunction();
+            if (lexer.peekToken() != Lexer.TOK_COMMA) {
+                if (i == remainingArity - 1 && plotCommand == MAP) {
+                    lastMapArgMissing = true;
+                    break;
+                } else
+                    throw error;
+            } else
+                lexer.nextToken();
+            if (tempFunc == null)
+                tempFunc = new CompiledFunction();
+            else
+                tempFunc.init();
+            func = tempFunc;
             compileExpr();
             if (!func.check(0))
                 throw error;
-            plotArgs[i] = func.evaluate();
+            final double curPlotArg = func.evaluate();
+            if (!isReal(curPlotArg))
+                throw error;
+            if ((i & 1) == 0) {
+                prevPlotArg = curPlotArg;
+            } else {
+                if (curPlotArg <= prevPlotArg)
+                    throw error;
+            }
+            plotArgs[i] = curPlotArg;
         }
-        func = plotFunction;
         final int tok = lexer.nextToken();
         if (!(tok == Lexer.TOK_RPAREN || tok == Lexer.TOK_END))
             throw error;
+        if (lastMapArgMissing)
+            plotArgs[remainingArity - 1] = Double.NaN;
+        func = plotFunction;
+    }
+
+    private static boolean isReal(double d) {
+        return !(Double.isInfinite(d) || Double.isNaN(d));
     }
 }

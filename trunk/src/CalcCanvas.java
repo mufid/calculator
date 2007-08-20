@@ -6,7 +6,7 @@ import java.io.*;
 
 ///#define START_LINE(lines, n) (((n)==0)?0:lines[n-1])
 
-class CalcCanvas extends Canvas /* implements Runnable */ {
+class CalcCanvas extends Canvas implements VMConstants {
     
     private static int START_LINE(int[] lines, int n) { return n == 0 ? 0 : lines[n-1]; }
     
@@ -18,6 +18,12 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         KEY_POWER = -12;
     private static final String arityParens[] = {"", "()", "(,)", "(,,)", "(,,,)", "(,,,,)"};
     private static final String params[] = {"(x)", "(x,y)", "(x,y,z)" /* user-def fns have <= 3 params */ };
+
+    private static final String[][] plotParamHelp = {
+        { "function of x", "min x-value", "max x-value" },
+        { "function of x,y", "min x-value", "max x-value", "min y-value", "max y-value" },
+        { "function x(t)", "function y(t)", "min t-value", "max t-value" }
+    };
 
     Compiler compiler = new Compiler();
     History history; 
@@ -136,24 +142,39 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     }
 
     private void updateResult() {
-        //Graphics rg = gg[RESULT];
-        gg.setColor(bgCol[RESULT]);
-        gg.fillRect(clientX, Y[RESULT], clientW, lineHeight);
-
         if (compiler.compile(String.valueOf(line, 0, len))) {
             if (Compiler.result.plotCommand == -1) {
                 CompiledFunction func = Compiler.result.function;
                 String strResult = func.arity() > 0 ?
                         line[0] + params[func.arity()-1] : format(func.evaluate());
-                gg.setColor(fgCol[RESULT]);
-                gg.drawString(strResult, clientX + clientW, Y[RESULT], Graphics.TOP|Graphics.RIGHT);
+                        drawResultString(strResult);
             }
         } else {
             if (Compiler.result.errorStart < len)
                 markError();
+            if (Compiler.result.plotCommand == -1)
+                drawResultString(null);
         }
+    }
 
-        repaint(clientX, Y[RESULT], clientW, lineHeight);
+    private boolean resultEmpty = false;
+    private void drawResultString(String str) {
+        System.out.println("result: " + str);
+        boolean changed = false;
+        if (!resultEmpty) {
+            gg.setColor(bgCol[RESULT]);
+            gg.fillRect(clientX, Y[RESULT], clientW, lineHeight);
+            changed = true;
+        }
+        if (str != null) {
+            gg.setColor(fgCol[RESULT]);
+            gg.drawString(str, clientX + clientW, Y[RESULT], Graphics.TOP | Graphics.RIGHT);
+            resultEmpty = false;
+            changed = true;
+        } else
+            resultEmpty = true;
+        if (changed)
+            repaint(clientX, Y[RESULT], clientW, lineHeight);
     }
 
     static int fitWidth(Font font, int targetWidth, String str) {
@@ -280,6 +301,18 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
         }
         //Log.log("pos " + pos + " row " + cursorRow + " col " + cursorCol + " x " + cursorX + " y " + cursorY);
         setCursor(true);
+
+        String help = null;
+        if (pos > -1) {
+            final String pre = String.valueOf(line, 0, pos + 1);
+            final int[] cmdSlot = Lexer.getPlotCommandAndSlot(pre);
+            if (cmdSlot[0] != -1 && cmdSlot[1] != -1) {
+                String[] helps = plotParamHelp[cmdSlot[0] - FIRST_PLOT_COMMAND];
+                if (cmdSlot[1] < helps.length)
+                    help = helps[cmdSlot[1]];
+            }
+        }
+        drawResultString(help);
     }
 
     char histBuf[] = new char[256+30];
@@ -319,7 +352,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
 
     String format(double v) {
         String str = Util.doubleToString(v, C.cfg.roundingDigits);
-        int len  = str.length();
+        //int len  = str.length();
         int ePos = str.lastIndexOf('E');
         if (ePos == -1) {
             int n = fitWidth(font, clientW, str);
@@ -491,8 +524,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
             break;
 
         case Canvas.FIRE:
-            String str = String.valueOf(line, 0, len);
-            history.enter(str);
+            history.enter(String.valueOf(line, 0, len));
             Result res = Compiler.result;
             if (res.plotCommand != -1)
                 C.self.plotCanvas.plot(res);
@@ -518,7 +550,7 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
     int menuKey = 0;
     protected void keyPressed(int key) {
         //Log.log("key " + key + "; " + getKeyName(key) + "; action " + getGameAction(key));
-        int saveKey = key;
+        //int saveKey = key;
         if (key > 0 && (key < 32 || key > 10000)) {
             //also handles backspace (unicode 8) -> KEY_CLEAR (-8)
             key = -key;
@@ -564,7 +596,9 @@ class CalcCanvas extends Canvas /* implements Runnable */ {
                        : 0)
                     : Lexer.getBuiltinArity(sym);
                     String pre = String.valueOf(line, 0, oldPos + 1);
-                    if (arity != Lexer.plotFunctionArity(Lexer.getFunctionPlotCommand(pre))) {
+                    if (!Lexer.matchesPlotArity(arity, pre)) {
+                        if (sym == MAP && C.cfg.aspectRatio1)
+                            arity = 4;
                         String parens = arityParens[arity];
                         int parensLen = parens.length();
                         if (parensLen > 0) {

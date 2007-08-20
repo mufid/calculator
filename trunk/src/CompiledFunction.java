@@ -48,7 +48,7 @@ public class CompiledFunction implements VMConstants {
             for (int i = 0; i < lit_cnt; ++i)
                 literals[i] = is.readDouble();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.log(e);
         }
     }
 
@@ -66,7 +66,7 @@ public class CompiledFunction implements VMConstants {
             for (int i = 0; i < lit_cnt; ++i)
                 os.writeDouble(literals[i]);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.log(e);
         }
     }
 
@@ -137,6 +137,8 @@ public class CompiledFunction implements VMConstants {
                 stack[s] = trigEval(op, stack[s]);
                 continue;
             }
+            // XXX benchmark whether it is faster to take e.g. VAR_*, VARFUN_* cases
+            //  out of switch and put them into if's here
             switch (op) {
             case LITERAL:
                 stack[++s] = literals[++litIdx];

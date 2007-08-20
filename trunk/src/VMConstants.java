@@ -68,6 +68,7 @@ public interface VMConstants {
 
         LAST_FUNCTION = 704,
 
+        FIRST_PLOT_COMMAND = 800,
         PLOT = 800,
         MAP = 801,
         PARPLOT = 802,

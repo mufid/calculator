@@ -11,9 +11,7 @@ import javax.microedition.lcdui.*;
     static KeyState rootOp, trigs, hyps, logs, ints, vars, plots, rootExp;
     static KeyState keypad, lastPainted;
 
-    private static final int 
-        BACKGR[] = {CalcCanvas.BACKGR, CalcCanvas.BACKGR, 0xffff00},
-        DARKER[] = {0x808080,  0x808080, 0x808080};
+    private static final int BACKGR = CalcCanvas.BACKGR, DARKER = 0x808080, SUBMENU = 0xb0f000;
     private static final int FOREGR  = 0x000000, LIGHTER = 0xffffff;
     
     /*
@@ -192,22 +190,20 @@ import javax.microedition.lcdui.*;
             img = Image.createImage(w, h);
             g = img.getGraphics();
             g.setFont(font);
-            g.setColor(BACKGR[0]);
+            g.setColor(BACKGR);
             g.fillRect(0, 0, w, h);
             String txt = null;
             Object o;
-            int colIndex;
+            final int triangleSize = Math.min(8, fontHeight);
             for (int x=singleSpace, col=0; col < 3; ++col, x+=stepW) {
                 for (int pos=col, y=1; y < h; y += cellHeight, pos += 3) {
-                    //txt = null;
-                    colIndex = 0;
+                    boolean submenu = false;
                     if ((o = keys[pos]) != null) {
                         if (o instanceof String) {
                             txt = (String)o;
-                            colIndex = 1;
                         } else {
                             txt = (String) ((KeyState)o).keys[pos];
-                            colIndex = 2;
+                            submenu = true;
                         }
                     }
 
@@ -215,11 +211,15 @@ import javax.microedition.lcdui.*;
                     g.setColor(LIGHTER);
                     g.drawLine(x, y, x+cellWidth-1, y);
                     g.drawLine(x, y, x, bottom);
-                    g.setColor(DARKER[colIndex]);
+                    g.setColor(DARKER);
                     g.drawLine(x+cellWidth-1, y + 1, x+cellWidth-1, bottom);
                     g.drawLine(x+1, bottom, x+cellWidth-1, bottom);
-                    g.setColor(BACKGR[colIndex]);
+                    g.setColor(BACKGR);
                     g.fillRect(x+1, y+1, cellWidth-2, bottom-y-1);
+                    if (submenu) {
+                        g.setColor(SUBMENU);
+                        g.fillTriangle(x+cellWidth-1, bottom, x+cellWidth-1-triangleSize, bottom, x+cellWidth-1, bottom-triangleSize);
+                    }
                     if (o != null) {
                         g.setColor(FOREGR);
                         g.drawString(txt, x+cellWidth/2, y+1, Graphics.HCENTER|Graphics.TOP);

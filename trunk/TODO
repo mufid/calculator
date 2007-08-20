@@ -1,5 +1,8 @@
 TODO
 ====
+- Get rid of String.valueOf calls in CalcCanvas whenever possible, and replace by passing line, len,
+  to avoid copying of char array
+- For plot and par, do not cache whole Image but only function values
 - Better error handling: in various places, NullPointerException/OutOfMemoryError/ArrayIndexOutOfBounds etc.
   may be thrown e.g. if input is very long or device is out of memory.
 - Ability to redefine a function. Easiest way: when input line is 'f(' and user presses clear, only delete '(' not whole line.
@@ -9,12 +12,10 @@ TODO
 - Conditional (ternary) operator: f:=x<2?1:f(x-2)+f(x-1). Clearly, this makes recursive functions
   useful, so we would need to allow those.
 - When navigating to a history entry and executing it again, without first changing it, move it on top of the history instead of creating a new history entry.
-- Perhaps change the way submenus are indicated to displaying a yellow triangle in the lower right corner.
 - Context-sensitive KeyState menus which only display those operations which are currently valid.
 - Make plotting interruptible.
 - Display progress bar when plotting.
 - Optionally rotate the plot by 90 degrees (so the user has to rotate their phone), yielding a landscape orientation which may be better suited to many plots.
-- Option of unit aspect ratio for plot(), map() and par(). For map(), this changes its arity from 5 to 4.
 - Anti-aliasing of the plotted curve to make it look smoother.
 - Make the plot screen interactive: user can move around and zoom (both plot() and map()).
 - The plot labels should honour the "smart rounding" setting.
@@ -46,6 +47,9 @@ DONE
 - markError should mark the whole token, not just a single character
 - Make axes drawing optional in plot() and par().
 - Make label drawing optional in plot(), par() and map().
+- Option of unit aspect ratio for plot(), map() and par(). For map(), this changes its arity from 5 to 4.
+- Perhaps change the way submenus are indicated to displaying a green triangle in the lower right corner.
+- When cursor is inside a plot command, result line shows description of current parameter (e.g. "function of x")
 
 
 IDEAS

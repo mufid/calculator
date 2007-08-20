@@ -18,12 +18,12 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 "Left menu * contains operators like +-*/; " +
 "right menu # contains decimal dot, functions and constants. " +
 "E.g. to obtain +, press * twice. " +
-"Yellow entries open sub-menus. " +
+"Entries with green corner open sub-menus. " +
 
-"Use up and down keys to navigate history.\n\n" +
+"Up and down keys navigate through history.\n\n" +
 
 "Use := to define new functions and constants. " +
-"E.g. a:=pi/2 is a constant; f:=sqrt(x^2+y^2) is a function with two parameters x,y. " +
+"E.g. a:=pi/2 is a constant; f:=sqrt(x^2+y^2) is a function of two parameters x,y. " +
 "Functions may have up to 3 parameters x,y,z.\n\n" +
 
 "The variable 'ans' contains the value of the most recent expression. " + 
@@ -37,10 +37,11 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
 "map(f, xmin, xmax, ymin, ymax) produces a two-dimensional map " +
 "of the values of a function f(x,y), with x running from xmin to xmax " +
-"and y from ymin to ymax.\n\n" +
+"and y from ymin to ymax. If ymax is omitted, it will be chosen to make " +
+"aspect ratio equal to 1.\n\n" +
 
 "par(f, g, tmin, tmax) produces a plot of the points (f(t),g(t)) " +
-"with t running from tmin to tmax. That is, f determines x coordinate " +
+"with t running from tmin to tmax, i.e., f determines x coordinate " +
 "and g determines y coordinate.";
 
 
@@ -54,36 +55,7 @@ public final class C extends MIDlet implements CommandListener, Runnable {
     static final Command cmdOk
         = new Cmd("OK", CMD_OK, Command.BACK);
 
-    Menu menu = new Menu("Menu", new Cmd[] {
-            new Menu("General settings", new Cmd[] {
-                    new Menu("Angle unit", new Cmd[] {
-                            new Cmd("Radians", CMD_ANG_RAD),
-                            new Cmd("Degrees", CMD_ANG_DEG)
-                        }),
-                    new Menu("Rounding", new Cmd[] {
-                            new Cmd("Smart rounding", CMD_ROUND_YES),
-                            new Cmd("No rounding",     CMD_ROUND_NO),
-                        })
-                }),
-            new Menu("Plot settings", new Cmd[] {
-                    new Menu("Axes", new Cmd[] {
-                            new Cmd("Draw axes", CMD_AXES_YES),
-                            new Cmd("No axes", CMD_AXES_NO)
-                    }),
-                    new Menu("Labels", new Cmd[] {
-                            new Cmd("Draw labels", CMD_LABELS_YES),
-                            new Cmd("No labels", CMD_LABELS_NO)
-                    }),
-                    new Menu("Aspect ratio", new Cmd[] {
-                            new Cmd("Aspect ratio = 1", CMD_AR1_YES),
-                            new Cmd("Stretch to fill screen", CMD_AR1_NO)
-                    })
-            }),
-            new Cmd("Help",  CMD_HELP),
-            new Cmd("About", CMD_ABOUT),
-            new Cmd("Exit",  CMD_EXIT)
-        });
-
+    Menu menu;
     Form aboutForm = new Form("About"), helpForm = new Form("Help");
     Thread thread;
 
@@ -100,8 +72,44 @@ public final class C extends MIDlet implements CommandListener, Runnable {
         rs = new Store("calc", STORE_VERSION);
         cfg = new CalcConfig(rs, RS_CONFIG);
         display = Display.getDisplay(this);
+        System.out.println(display);
         calcCanvas = new CalcCanvas();
         plotCanvas = new PlotCanvas(display, calcCanvas);
+
+        menu = new Menu("Menu", new Cmd[] {
+                new Menu("General settings", new Cmd[] {
+                        new Menu("Angle unit", new Cmd[] {
+                                new Cmd("Radians", CMD_ANG_RAD),
+                                new Cmd("Degrees", CMD_ANG_DEG)
+                            }, cfg.angleInRadians ? 0 : 1
+                            ),
+                        new Menu("Rounding", new Cmd[] {
+                                new Cmd("Smart rounding", CMD_ROUND_YES),
+                                new Cmd("No rounding",    CMD_ROUND_NO),
+                            }, cfg.roundingDigits == 1 ? 0 : 1
+                            )
+                    }),
+                new Menu("Plot settings", new Cmd[] {
+                        new Menu("Axes", new Cmd[] {
+                                new Cmd("Draw axes", CMD_AXES_YES),
+                                new Cmd("No axes",   CMD_AXES_NO)
+                        }, cfg.axes ? 0 : 1
+                        ),
+                        new Menu("Labels", new Cmd[] {
+                                new Cmd("Draw labels", CMD_LABELS_YES),
+                                new Cmd("No labels",   CMD_LABELS_NO)
+                        }, cfg.labels ? 0 : 1
+                        ),
+                        new Menu("Aspect ratio", new Cmd[] {
+                                new Cmd("Aspect ratio = 1",       CMD_AR1_YES),
+                                new Cmd("Stretch to fill screen", CMD_AR1_NO)
+                        }, cfg.aspectRatio1 ? 0 : 1
+                        )
+                }),
+                new Cmd("Help",  CMD_HELP),
+                new Cmd("About", CMD_ABOUT),
+                new Cmd("Exit",  CMD_EXIT)
+            });
 
         try {
             aboutForm.append(Image.createImage("/a"));

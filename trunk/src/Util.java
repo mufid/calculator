@@ -155,10 +155,14 @@ class Util {
             buf.setLength(targetChars);
         }
 
-        if (!noDot && dotpos <= buf.length())
+        if (!noDot && dotpos <= buf.length()) {
             buf.insert(dotpos, '.');
-        
-        // XXX trim trailing zeros
+            int lastZero = buf.length() - 1;
+            for (; buf.charAt(lastZero) == '0'; --lastZero) ;
+            ++lastZero;  // leave one zero at the end: "1.0" looks better than "1."
+            if (lastZero + 1 < buf.length())
+                buf.setLength(lastZero + 1);
+        }
 
         if (negative)
             buf.insert(0, '-');
