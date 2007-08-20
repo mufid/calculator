@@ -148,18 +148,22 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
         case CMD_ANG_RAD:
             cfg.setAngleInRadians(true);
+            calcCanvas.updateResult();
             break;
 
         case CMD_ANG_DEG:
             cfg.setAngleInRadians(false);
+            calcCanvas.updateResult();
             break;
 
         case CMD_ROUND_YES:
             cfg.setRoundingDigits(1);
+            calcCanvas.updateResult();
             break;
 
         case CMD_ROUND_NO:
             cfg.setRoundingDigits(0);
+            calcCanvas.updateResult();
             break;
 
         case CMD_AXES_YES:

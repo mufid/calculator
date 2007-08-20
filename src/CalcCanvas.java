@@ -151,7 +151,7 @@ class CalcCanvas extends Canvas implements VMConstants {
         //repaint();
     }
 
-    private void updateResult() {
+    void updateResult() {
         if (compiler.compile(line, len)) {
             if (Compiler.result.plotCommand == -1) {
                 CompiledFunction func = Compiler.result.function;
