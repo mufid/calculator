@@ -127,7 +127,7 @@ class History {
     }
 
     DataOut dataOut = new DataOut();
-    void enter(char[] str, int len) {
+    void enter(char[] str, int len, String asString) {
         compiler.compile(str, len);
         Result res = Compiler.result;
 
@@ -140,7 +140,7 @@ class History {
 
         ((HistEntry)history.elementAt(historyPos)).flush();
         if (len > 0) {
-            HistEntry newEntry = new HistEntry(String.valueOf(str, 0, len), ans, hasValue);
+            HistEntry newEntry = new HistEntry(asString, ans, hasValue);
             try {
                 dataOut.writeInt(++maxSeq);
             } catch (IOException e) {
