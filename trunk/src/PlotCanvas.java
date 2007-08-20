@@ -383,21 +383,25 @@ public class PlotCanvas extends Canvas implements VMConstants {
 
         /* Draw lines between the points */
         g.setColor(COLOR_LINE);
-        x1 = fx[0];
-        y1 = fy[0];
-        for (i = 1; i <= PARPLOT_MAX_POINTS; ++i) {
-            if (!present[i])
-                continue;
-            x2 = fx[i];
-            y2 = fy[i];
-            if (isReal(x1) && isReal(y1) && isReal(x2) && isReal(y2))
-                g.drawLine(
-                        Math.min((int) ((x1 - xmin) * xf), width - 1),
-                        height - 1 - Math.min((int) ((y1 - ymin) * yf), height - 1),
-                        Math.min((int) ((x2 - xmin) * xf), width - 1),
-                        height - 1 - Math.min((int) ((y2 - ymin) * yf), height - 1) );
-            x1 = x2;
-            y1 = y2;
+        if (fxmin == fxmax && fymin == fymax) {
+            g.drawLine(width / 2, height / 2, width / 2, height / 2);
+        } else {
+            x1 = fx[0];
+            y1 = fy[0];
+            for (i = 1; i <= PARPLOT_MAX_POINTS; ++i) {
+                if (!present[i])
+                    continue;
+                x2 = fx[i];
+                y2 = fy[i];
+                if (isReal(x1) && isReal(y1) && isReal(x2) && isReal(y2))
+                    g.drawLine(
+                            Math.min((int) ((x1 - xmin) * xf), width - 1),
+                            height - 1 - Math.min((int) ((y1 - ymin) * yf), height - 1),
+                            Math.min((int) ((x2 - xmin) * xf), width - 1),
+                            height - 1 - Math.min((int) ((y2 - ymin) * yf), height - 1) );
+                x1 = x2;
+                y1 = y2;
+            }
         }
     }
 
