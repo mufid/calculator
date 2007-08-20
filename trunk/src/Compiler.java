@@ -12,21 +12,24 @@ public class Compiler implements VMConstants
     private double[] plotArgs;
     private boolean x_is_t;
     private boolean unaryDone;
+    private int errorStart, errorEnd;
 
     public static Result result;
     
     static SyntaxError error = new SyntaxError();
 
-    public boolean compile(String input) {
+    public boolean compile(char[] input, int len) {
         init();
         try {
-            if (Lexer.isAssignment(input)) {
-                definedSymbol = Lexer.getSymbol(input.substring(0, 1));
+            int start;
+            if (Lexer.isAssignment(input, len)) {
+                definedSymbol = Lexer.getSymbol(String.valueOf(input[0]));
                 if (!(FIRST_VAR <= definedSymbol && definedSymbol <= LAST_VAR))
                     throw error;
-                input = input.substring(3);
-            }
-            lexer.init(input);
+                start = 3;
+            } else
+                start = 0;
+            lexer.init(input, start, len);
             if (Lexer.isPlotCommand(lexer.peekToken())) {
                 if (definedSymbol != -1)
                     throw error;
@@ -49,13 +52,14 @@ public class Compiler implements VMConstants
             if (func2 != null && !func2.check(varmask))
                 throw error;
         } catch (SyntaxError e) {
-            int errorStart = lexer.lastPos(), errorEnd = lexer.curPos() - 1;
-            if (definedSymbol != -1) {
-                errorStart += 3;
-                errorEnd += 3;
+            if (errorStart == -1) {
+                errorStart = lexer.lastPos();
+                errorEnd = lexer.curPos() - 1;
             }
-            if (input.length() > 0)
+            /*
+            if (len > 0)
                 Log.log("syntax error at " + errorStart + '-' + errorEnd);
+            */
             result.init(errorStart, errorEnd, plotCommand);
             return false;
         }
@@ -80,6 +84,19 @@ public class Compiler implements VMConstants
         plotArgs = null;
         x_is_t = false;
         unaryDone = false;
+        errorStart = errorEnd = -1;
+    }
+
+    private void compileExpr(CompiledFunction cf) throws SyntaxError {
+        CompiledFunction funcOrig = func;
+        func = cf;
+        try {
+            compileExpr();
+        } catch (SyntaxError e) {
+            func = funcOrig;
+            throw e;
+        }
+        func = funcOrig;
     }
 
     private void compileExpr() throws SyntaxError {
@@ -202,6 +219,8 @@ public class Compiler implements VMConstants
         }
     }
 
+    private CompiledFunction parFunc = null;
+
     private void compilePlotCommand() throws SyntaxError {
         plotCommand = lexer.nextToken();
         if (lexer.nextToken() != Lexer.TOK_LPAREN)
@@ -211,20 +230,20 @@ public class Compiler implements VMConstants
             x_is_t = true;
         compileExpr();
         func.setArity(parameterCallArity);
-        CompiledFunction plotFunction = func;
         if (plotCommand == PARPLOT) {
             if (lexer.nextToken() != Lexer.TOK_COMMA)
                 throw error;
-            func = new CompiledFunction();
-            compileExpr();
-            func.setArity(parameterCallArity);
-            func2 = func;
+            if (func2 == null)
+                func2 = new CompiledFunction();
+            else
+                func2.init();
+            compileExpr(func2);
+            func2.setArity(parameterCallArity);
             x_is_t = false;
         }
         parameterCallArity = -1;
         final int remainingArity = Lexer.getBuiltinArity(plotCommand) - (plotCommand == PARPLOT ? 2 : 1);
         plotArgs = new double[remainingArity];
-        CompiledFunction tempFunc = null;
         boolean lastMapArgMissing = false;
         double prevPlotArg = 0; // compiler complains without initialization
         for (int i = 0; i < remainingArity; ++i) {
@@ -236,22 +255,28 @@ public class Compiler implements VMConstants
                     throw error;
             } else
                 lexer.nextToken();
-            if (tempFunc == null)
-                tempFunc = new CompiledFunction();
+            if (parFunc == null)
+                parFunc = new CompiledFunction();
             else
-                tempFunc.init();
-            func = tempFunc;
-            compileExpr();
-            if (!func.check(0))
-                throw error;
-            final double curPlotArg = func.evaluate();
+                parFunc.init();
+            int lexerStart = lexer.curPos();
+            compileExpr(parFunc);
+            final double curPlotArg = parFunc.check(0) ? parFunc.evaluate() : Double.NaN;
+            boolean throwError = false;
             if (!isReal(curPlotArg))
+                throwError = true;
+            else {
+                if ((i & 1) == 0) {
+                    prevPlotArg = curPlotArg;
+                } else {
+                    if (curPlotArg <= prevPlotArg)
+                        throwError = true;
+                }
+            }
+            if (throwError) {
+                errorStart = lexerStart;
+                errorEnd = lexer.curPos() - 1;
                 throw error;
-            if ((i & 1) == 0) {
-                prevPlotArg = curPlotArg;
-            } else {
-                if (curPlotArg <= prevPlotArg)
-                    throw error;
             }
             plotArgs[i] = curPlotArg;
         }
@@ -260,7 +285,6 @@ public class Compiler implements VMConstants
             throw error;
         if (lastMapArgMissing)
             plotArgs[remainingArity - 1] = Double.NaN;
-        func = plotFunction;
     }
 
     private static boolean isReal(double d) {
