@@ -251,8 +251,10 @@ public class Compiler implements VMConstants
                 if (i == remainingArity - 1 && plotCommand == MAP) {
                     lastMapArgMissing = true;
                     break;
-                } else
+                } else {
+                    lexer.nextToken();
                     throw error;
+                }
             } else
                 lexer.nextToken();
             if (parFunc == null)

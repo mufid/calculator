@@ -98,7 +98,7 @@ class CalcCanvas extends Canvas implements VMConstants {
                 final int len = str.length();
                 char[] chs = new char[len + 1]; // one extra char for '$' which Lexer inserts
                 str.getChars(0, len, chs, 0);
-                history.enter(chs, len);
+                history.enter(chs, len, str);
             }
         }
 
@@ -441,6 +441,7 @@ class CalcCanvas extends Canvas implements VMConstants {
         int p2 = p + size + 1;
         System.arraycopy(line, p2, line, p + 1, len - p2);
         len -= size;
+        lineStr = null;
     }
 
     void delFromLine() {
@@ -460,6 +461,7 @@ class CalcCanvas extends Canvas implements VMConstants {
             s.getChars(0, strLen, line, pos+1);
             pos += strLen;
             len += strLen;
+            lineStr = null;
         }
     }
 
@@ -532,7 +534,7 @@ class CalcCanvas extends Canvas implements VMConstants {
             break;
 
         case Canvas.FIRE:
-            history.enter(line, len);
+            history.enter(line, len, line());
             Result res = Compiler.result;
             if (res.errorStart == -1 && res.plotCommand != -1)
                 C.self.plotCanvas.plot(res);
@@ -667,6 +669,7 @@ class CalcCanvas extends Canvas implements VMConstants {
         String str = entry.edited;
         len = str.length();
         str.getChars(0, len, line, 0);
+        lineStr = null;
     }
 
     static int getKeyPos(int key) {
@@ -689,11 +692,15 @@ class CalcCanvas extends Canvas implements VMConstants {
         C.rs.write(C.RS_CURRENT, dataOut.getBytesAndReset());
     }
 
-    public String line() {
-        return String.valueOf(line, 0, len);
+    private String lineStr = null;
+
+    String line() {
+        if (lineStr == null)
+            lineStr = String.valueOf(line, 0, len);
+        return lineStr;
     }
 
-    public String preCursorLine() {
+    String preCursorLine() {
         return String.valueOf(line, 0, pos + 1);
     }
 }
