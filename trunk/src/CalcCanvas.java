@@ -28,7 +28,7 @@ class CalcCanvas extends Canvas implements VMConstants {
     private static final String[] initHistory = {
         "0.5!*2)^2",
         "sqrt(3^2+4^2",
-        "sin(pi/2)"
+        "sin({PI}/2)"
     };
 
     Compiler compiler = new Compiler();
@@ -78,6 +78,8 @@ class CalcCanvas extends Canvas implements VMConstants {
         historyFont = Font.getFont(0, 0, isSmallScreen ? Font.SIZE_SMALL  : Font.SIZE_MEDIUM);
         lineHeight  = font.getHeight(); //+1
 
+        C.cfg.initPiSymbol(new Font[] { font, historyFont });
+
         img = Image.createImage(screenW, screenH);
         gg  = img.getGraphics();
         gg.setFont(font);
@@ -94,7 +96,11 @@ class CalcCanvas extends Canvas implements VMConstants {
         updateFromHistEntry(is == null ? new HistEntry("1+1", 0, false) : new HistEntry(is));
         if (is == null) {
             for (int i = 0; i < initHistory.length; ++i) {
-                final String str = initHistory[i];
+                String str = initHistory[i];
+                int piIdx = str.indexOf("{PI}");
+                if (piIdx != -1) {
+                    str = str.substring(0, piIdx) + C.cfg.piString + str.substring(piIdx + 4, str.length());
+                }
                 final int len = str.length();
                 char[] chs = new char[len + 1]; // one extra char for '$' which Lexer inserts
                 str.getChars(0, len, chs, 0);

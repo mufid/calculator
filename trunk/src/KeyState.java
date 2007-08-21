@@ -108,7 +108,7 @@ import javax.microedition.lcdui.*;
         rootExp = new KeyState(new Object[] {
             "sqrt",  "ans",  "E",
             plots,    vars,   ":=",
-            "pi",    "e",    ints,
+            C.cfg.piString, "e", ints,
             trigs,   logs,   ".",
 
             /*

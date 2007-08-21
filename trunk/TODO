@@ -50,6 +50,9 @@ DONE
 - Option of unit aspect ratio for plot(), map() and par(). For map(), this changes its arity from 5 to 4.
 - Perhaps change the way submenus are indicated to displaying a green triangle in the lower right corner.
 - When cursor is inside a plot command, result line shows description of current parameter (e.g. "function of x")
+- A way of finding out whether font contains letter pi: draw letter pi on an image; draw letter rho on
+  an image; compare images pixel-by-pixel; if equal, pi not supported, otherwise, pi supported.
+  Do this once and store the result in config.
 
 
 IDEAS
