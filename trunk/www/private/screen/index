@@ -123,7 +123,7 @@ lg (base 10 logarithm), ln (natural logarithm), lb (base 2 logarithm), cbrt (cub
 combinations, permutations, random number generator, fractional and integer part, min, max, abs.
 </td></tr>
 <tr><th><span class="menu">plot<img src="img/green-corner.png" width="7" height="7" /></span></th><td>plotting functions:<br/>
-plot (draws the graph of a function of one variable), map (draws a grayscale "map" of a function of two variables).
+plot (draws the graph of a function of one variable), map (draws a grayscale "map" of a function of two variables), par (produces a parametric plot of two functions which prescribe x and y coordinate).
 </td></tr>
 <tr><th><span class="menu">a<img src="img/green-corner.png" width="7" height="7" /></span></th><td>names for user-defined functions and constants</td></tr>
 <tr><th>:=</th><td>function/constant definition symbol</td></tr>
