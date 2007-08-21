@@ -217,6 +217,8 @@ is chosen such that the aspect ratio of the map is 1 (i.e., scales on the x and 
 For example, to produce the map to the left, type <code>map(sin(x^2+y^2),-5,5,-5,5)</code>.
 </p>
 
+<p>Pixels corresponding to non-real values are coloured as follows: <span style="background-color: #000080; color: #FFFFFF">dark blue</span> for negative infinity; <span style="background-color: #FFFF40">bright yellow</span> for positive infinity; <span style="background-color: #FF0000">red</span> for NaN (not a number).
+
 <h2>User-defined variables and functions</h2>
 <p>
 <img class="ss" src="img/define-function.png" width="128" height="160" alt="screenshot: define function" />
