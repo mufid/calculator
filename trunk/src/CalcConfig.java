@@ -77,6 +77,10 @@ class CalcConfig {
                 if (width != font.charWidth('\u03c1')) {
                     continue;
                 }
+                if (width <= 0) {
+                    piSymbol = false;
+                    break;
+                }
                 final int size = width * height;
                 Image im = Image.createImage(width, height);
                 Graphics gr = im.getGraphics();
@@ -90,7 +94,6 @@ class CalcConfig {
                 gr.drawChar('\u03c1', 0, 0, Graphics.TOP | Graphics.LEFT);
                 int[] rgb2 = new int[size];
                 im.getRGB(rgb2, 0, width, 0, 0, width, height);
-                im = null;
                 boolean difference = false;
                 for (int j = 0; j < size; ++j) {
                     if (rgb1[j] != rgb2[j]) {
