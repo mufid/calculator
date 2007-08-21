@@ -35,8 +35,11 @@ are determined by a pair of single-parameter functions, are also supported.
 </p>
 <p>
 The most recent version is 0.1.3, released on 2007-08-21.
-Please provide feedback with suggestions and bug-reports to the original author, Mihai Preda:
-mi<!--ho-->ha&#105;&#64;&#109;<span class="invis">oop</span>enstral&#x2e;<!-- >.com-->net&#x2e;
+</p>
+
+<p>
+Suggestions and bug reports are welcome, please send them to either of the authors, Mihai Preda
+(mi<!--ho-->ha&#105;&#64;&#109;<span class="invis">oop</span>enstral&#x2e;<!-- >.com-->net) or Carlo Teubner (<a href="http://mailhide.recaptcha.net/d?k=01JoQ08g2S7mUXVds4XYqV9Q==&amp;c=jrYnqvK19yof1_5V0GLZr3-TkxhorOa0Oibul639jgw=" onclick="window.open('http://mailhide.recaptcha.net/d?k=01JoQ08g2S7mUXVds4XYqV9Q==&amp;c=jrYnqvK19yof1_5V0GLZr3-TkxhorOa0Oibul639jgw=', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal email address">click here to reveal email address</a>).
 </p>
 <p>
 If you want to enter the download link directly on your mobile phone, 
@@ -231,7 +234,12 @@ There is a limited choice of one-letter names: <i>a</i>, <i>b</i>, <i>c</i>, <i>
 
 <p>
 Next enter the <em>definition symbol</em>, <strong>:=</strong>, available by pressing <strong>6</strong>
-in the functions key-menu. Finally, enter the expression to be assigned.
+in the functions key-menu. If the variable to be defined has previously been undefined, the
+definition symbol is inserted automatically.
+</p>
+
+<p>
+Finally, enter the expression to be assigned.
 </p>
 
 <p>
@@ -261,7 +269,7 @@ Javia Calculator.
 <h2>Operations History</h2>
 <p>
 The most recent 32 expressions are saved in a <em>history</em>.
-You can easilly navigate the history using the up/down arrows.
+You can easily navigate the history using the up/down arrows.
 </p>
 
 <h2>Parentheses</h2>
@@ -295,6 +303,14 @@ to move vertically beyond the bounds of the expression
 (i.e. when the cursor is positioned on the first line and you press UP, or 
 when the cursor is positioned on the last line and you press DOWN).
 -->
+</p>
+
+<h2>Deleting</h2>
+
+<p>
+The right softkey is used to erase the token immediately to the left of the cursor, similar
+to the way the backspace key works on a computer. Other additional keys which are present on
+some mobiles (for example, a dedicated clear key) may have the same effect.
 </p>
 
 <h2>The application menu</h2>
@@ -346,13 +362,6 @@ Displays program and version information.
 Exits Javia Calculator.
 </p>
 
-<h2>Other keys</h2>
-
-<p>
-The right softkey is used to erase the token immediately to the left of the cursor, similar
-to the way the backspace key works on a computer. Other additional keys which are present on
-some mobiles (for example, a dedicated clear key) may have the same effect.
-</p>
 </div>
 
 <div class="footer">
