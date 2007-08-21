@@ -121,7 +121,7 @@ class History {
         if (newPos < 0 || newPos >= history.size()) {
             return false;
         }
-        HistEntry entry = (HistEntry) history.elementAt(newPos);
+        //HistEntry entry = (HistEntry) history.elementAt(newPos);
         historyPos = newPos;
         return true;
     }

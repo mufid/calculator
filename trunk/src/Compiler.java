@@ -47,6 +47,7 @@ public class Compiler implements VMConstants
             if (lexer.peekToken() != Lexer.TOK_END)
                 throw error;
             final int varmask = definedSymbol != -1 && arity > 0 ? 1 << (definedSymbol - FIRST_VAR) : 0;
+            // XXX the error will be marked at the last token, which won't generally be accurate
             if (!func.check(varmask))
                 throw error;
             if (func2 != null && !func2.check(varmask))
