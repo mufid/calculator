@@ -3,7 +3,7 @@
 
 import javax.microedition.lcdui.*;
 
-/*final*/ class KeyState implements VMConstants {
+class KeyState implements VMConstants {
     static Font font;
     static int fontHeight;
     static int w, h, cellWidth, cellHeight, yPos;
@@ -11,17 +11,9 @@ import javax.microedition.lcdui.*;
     static KeyState rootOp, trigs, logs, ints, vars, plots, rootExp;
     static KeyState keypad, lastPainted;
 
-    private static final int BACKGR = CalcCanvas.BACKGR, DARKER = 0x808080, SUBMENU = 0xb0f000;
+    private static final int BACKGR = CalcCanvas.BACKGR, DARKER = 0x808080, SUBMENU = 0x30f000;
     private static final int FOREGR  = 0x000000, LIGHTER = 0xffffff;
-    
-    /*
-    static String logicOp[] = {
-        "?:",  "=",  "!=", 
-        "<",   ">",  null,
-        "<=",  ">=", "NOT",
-        "AND", "OR", "XOR",
-    };
-    */
+    private static final int TRIANGLE_SIZE = 6;
 
     static void init(int sw, int sh, boolean isSmallScreen, Font fnt) {
         w = sw;
@@ -33,7 +25,7 @@ import javax.microedition.lcdui.*;
         cellWidth = Math.min(stepW, w2);
         singleSpace = (stepW - cellWidth)/2;
 
-        cellHeight = fontHeight + (isSmallScreen ? 2 : 3);
+        cellHeight = fontHeight + (isSmallScreen ? 3 : 4);
         h = cellHeight * 4 + 1;
         yPos = sh - h;
         
@@ -108,16 +100,7 @@ import javax.microedition.lcdui.*;
             plots,    vars,   ":=",
             C.cfg.piString, "e", ints,
             trigs,   logs,   ".",
-
-            /*
-            "sqrt",  "ans",  "E",
-            "pi",    "e",    null,
-            trigs,   logs,   ints,
-            ".",     vars,   ":=",
-            */
         });
-
-        //"\u03c0" == pi
     }
 
     Object keys[];
@@ -192,7 +175,7 @@ import javax.microedition.lcdui.*;
             g.fillRect(0, 0, w, h);
             String txt = null;
             Object o;
-            final int triangleSize = Math.min(8, fontHeight);
+            final int triangleSize = Math.min(TRIANGLE_SIZE, fontHeight);
             for (int x=singleSpace, col=0; col < 3; ++col, x+=stepW) {
                 for (int pos=col, y=1; y < h; y += cellHeight, pos += 3) {
                     boolean submenu = false;
@@ -205,7 +188,7 @@ import javax.microedition.lcdui.*;
                         }
                     }
 
-                    int bottom = y + fontHeight;
+                    int bottom = y + fontHeight + 1;
                     g.setColor(LIGHTER);
                     g.drawLine(x, y, x+cellWidth-1, y);
                     g.drawLine(x, y, x, bottom);
@@ -213,10 +196,10 @@ import javax.microedition.lcdui.*;
                     g.drawLine(x+cellWidth-1, y + 1, x+cellWidth-1, bottom);
                     g.drawLine(x+1, bottom, x+cellWidth-1, bottom);
                     g.setColor(BACKGR);
-                    g.fillRect(x+1, y+1, cellWidth-2, bottom-y-1);
+                    g.fillRect(x+1, y+1, cellWidth-2, fontHeight);
                     if (submenu) {
                         g.setColor(SUBMENU);
-                        g.fillTriangle(x+cellWidth-1, bottom, x+cellWidth-1-triangleSize, bottom, x+cellWidth-1, bottom-triangleSize);
+                        g.fillTriangle(x+cellWidth-1, bottom, x+cellWidth-2-triangleSize, bottom, x+cellWidth-1, bottom-triangleSize-1);
                     }
                     if (o != null) {
                         g.setColor(FOREGR);
