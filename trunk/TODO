@@ -1,5 +1,10 @@
 TODO
 ====
+- % operator can be very confusing to non-programmers, since in calculators it usually means "percent"
+  replace by "mod"?
+- Automatically insert '*' in between when inserting a name (such as "f", "sin") after another name
+- Perhaps check whether glyph for \u00d7 (×, multiplication symbol) differs from symbol for "x"
+  and also differs from box symbol; in that case use \u00d7 instead of '*' 
 - Get rid of String.valueOf calls in CalcCanvas whenever possible, and replace by passing line, len,
   to avoid copying of char array
 - For plot and par, do not cache whole Image but only function values
@@ -19,6 +24,8 @@ TODO
 - Anti-aliasing of the plotted curve to make it look smoother.
 - Make the plot screen interactive: user can move around and zoom (both plot() and map()).
 - The plot labels should honour the "smart rounding" setting.
+- Find a way of displaying "Menu" and "Backspace" commands (in non-fullscreen mode) that don't prevent
+  the Back command from working in the menus (at least in SE K310 emulator)
 
 - Add unit tests, get good test coverage.
 - Support pointer for pushing buttons (for touch-screen mobile phones).

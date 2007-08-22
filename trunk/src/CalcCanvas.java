@@ -66,13 +66,15 @@ class CalcCanvas extends Canvas implements VMConstants {
     Graphics gg;
 
     CalcCanvas() {
-        boolean isSmallScreen = getHeight() <= 128;
+        //boolean isSmallScreen = getHeight() <= 128;
         //if (isSmallScreen) {
         setFullScreenMode(true); // XXX advantage of not using full screen is user can see menus...
         //}
 
         screenW = getWidth();
         screenH = getHeight();
+
+        boolean isSmallScreen = screenH <= 160;
 
         font        = Font.getFont(0, 0, isSmallScreen ? Font.SIZE_MEDIUM : Font.SIZE_LARGE);
         historyFont = Font.getFont(0, 0, isSmallScreen ? Font.SIZE_SMALL  : Font.SIZE_MEDIUM);
@@ -83,8 +85,8 @@ class CalcCanvas extends Canvas implements VMConstants {
         img = Image.createImage(screenW, screenH);
         gg  = img.getGraphics();
         gg.setFont(font);
-        
-        KeyState.init(screenW, screenH);
+
+        KeyState.init(screenW, screenH, isSmallScreen, font);
 
         maxEditLines = (screenH - (KeyState.h + spaceTop + spaceEdit + spaceHist + 8)) / lineHeight - 1;
         //Log.log("max edit lines " + maxEditLines);

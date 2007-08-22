@@ -23,11 +23,9 @@ import javax.microedition.lcdui.*;
     };
     */
 
-    static void init(int sw, int sh) {
+    static void init(int sw, int sh, boolean isSmallScreen, Font fnt) {
         w = sw;
-        boolean isSmall = sh <= 160;
-        int size = isSmall ? Font.SIZE_SMALL : Font.SIZE_MEDIUM;
-        font = Font.getFont(0, 0, size);
+        font = fnt;
         fontHeight = font.getHeight();
 
         stepW = sw/3;
@@ -35,7 +33,7 @@ import javax.microedition.lcdui.*;
         cellWidth = Math.min(stepW, w2);
         singleSpace = (stepW - cellWidth)/2;
 
-        cellHeight = fontHeight + (isSmall ? 2 : 3);
+        cellHeight = fontHeight + (isSmallScreen ? 2 : 3);
         h = cellHeight * 4 + 1;
         yPos = sh - h;
         
