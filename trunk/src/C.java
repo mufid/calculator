@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2007, Mihai Preda.
+// Copyright (c) 2006-2007 Mihai Preda, Carlo Teubner.
 // Available under the MIT License (see COPYING).
 
 import javax.microedition.lcdui.*;
