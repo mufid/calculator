@@ -287,37 +287,48 @@ public class CompiledFunction implements VMConstants {
         //return stack[s--];
     }
 
+    public static final int PASS = 0, FLAG = 1, FAIL = 2;
+
     /* This method checks for the following types of illegal behaviour:
      * (a) a variable being referred to as a number is actually a function, or vice-versa
      * (b) a function being called has the wrong arity
      * (c) a function calls itself, either directly or indirectly (since we have no
      *     conditional statements ('if'), this will always result in infinite recursion)
-     * The parameter callHistory is a bitmask of variable indices which this function is
+     * The parameter forbidden is a bitmask of variable indices which this function is
      * not allowed to call, because they are (direct or indirect) callers of this function,
      * which would -- due to the absence of an 'if'-like construct -- always lead to
      * infinite recursion.
+     * If any of the above illegal behaviour occurs, FAIL is returned.
+     * The parameter flaggable is a bitmask of variable indices which, if this function
+     * calls, will result in a return value of FLAG (unless it returns FAIL for another reason).
+     * If none of the above applies, PASS is returned.
      */
-    public boolean check(int callHistory) {
+    public int check(int forbidden, int flaggable) {
+        int result = PASS;
         for (int i = 0; i < inst_cnt; ++i) {
             int op = inst[i];
             if (FIRST_VAR <= op && op <= LAST_VAR) {
                 if (!Variables.isNumber(op))
-                    return false;
+                    return FAIL;
             } else if (FIRST_VARFUN <= op && op <= LAST_VARFUN) {
                 op -= VARFUN_OFFSET;
                 if (!Variables.isFunction(op))
-                    return false;
-                int varBit = 1 << (op - FIRST_VAR);
-                if ((callHistory & varBit) != 0)
-                    return false;
+                    return FAIL;
+                final int varBit = 1 << (op - FIRST_VAR);
+                if ((forbidden & varBit) != 0)
+                    return FAIL;
+                if ((flaggable & varBit) != 0)
+                    result = FLAG;
                 CompiledFunction func = Variables.getFunction(op);
                 if (inst[++i] != func.arity)
-                    return false;
-                if (!func.check(callHistory | varBit))
-                    return false;
+                    return FAIL;
+                switch (func.check(forbidden | varBit, flaggable)) {
+                case FAIL: return FAIL;
+                case FLAG: result = FLAG;
+                }
             }
         }
-        return true;
+        return result;
     }
 
     private double trigEval(int op, double x) {
