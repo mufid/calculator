@@ -195,8 +195,6 @@ class KeyState implements VMConstants {
                     g.setColor(DARKER);
                     g.drawLine(x+cellWidth-1, y + 1, x+cellWidth-1, bottom);
                     g.drawLine(x+1, bottom, x+cellWidth-1, bottom);
-                    g.setColor(BACKGR);
-                    g.fillRect(x+1, y+1, cellWidth-2, fontHeight);
                     if (submenu) {
                         g.setColor(SUBMENU);
                         g.fillTriangle(x+cellWidth-1, bottom, x+cellWidth-2-triangleSize, bottom, x+cellWidth-1, bottom-triangleSize-1);
