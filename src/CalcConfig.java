@@ -1,9 +1,9 @@
+// Copyright (c) 2007 Mihai Preda, Carlo Teubner.
+// Available under the MIT License (see COPYING).
+
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
-
-// Copyright (c) 2007, Mihai Preda.
-// Available under the MIT License (see COPYING).
 
 class CalcConfig {
     private static final String

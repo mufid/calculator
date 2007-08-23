@@ -1,7 +1,7 @@
-import javax.microedition.lcdui.Font;
-
-// Copyright 2007, Mihai Preda.
+// Copyright (c) 2007 Mihai Preda.
 // Available under the MIT License (see COPYING).
+
+import javax.microedition.lcdui.Font;
 
 class Util {
     /* returns a number which is an approximation of v (within maxError)
