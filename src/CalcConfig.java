@@ -21,6 +21,7 @@ class CalcConfig {
     CalcConfig(Store rs, int recId) {
         cfg = new Config(rs, recId);
         angleInRadians = cfg.get(ANGLE_KEY, ANGLE_RAD).equals(ANGLE_RAD);
+        updateTrigFactor();
         roundingDigits = Integer.parseInt(cfg.get(ROUND_KEY, "1"));
         axes = cfg.get(AXES, TRUE).equals(TRUE);
         labels = cfg.get(LABELS, TRUE).equals(TRUE);
@@ -29,6 +30,7 @@ class CalcConfig {
 
     void setAngleInRadians(boolean inRad) {
         angleInRadians = inRad;
+        updateTrigFactor();
         cfg.set(ANGLE_KEY, angleInRadians ? ANGLE_RAD : ANGLE_DEG);
         cfg.save();
     }
@@ -55,6 +57,10 @@ class CalcConfig {
         aspectRatio1 = one;
         cfg.set(ASPECTRATIO1, aspectRatio1 ? TRUE : FALSE);
         cfg.save();
+    }
+
+    private void updateTrigFactor() {
+        trigFactor = angleInRadians ? 1. : (180. / Math.PI);        
     }
 
     // Does a pixel-by-pixel comparison of pi and rho glyphs, in each of the fonts used by CalcCanvas.
@@ -124,6 +130,7 @@ class CalcConfig {
 */
 
     boolean angleInRadians;
+    double trigFactor;
     int roundingDigits;
     boolean axes;
     boolean labels;
