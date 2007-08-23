@@ -59,7 +59,7 @@ class KeyState implements VMConstants {
           void init() {
               keys[0] = keys[1] = keys[2] = null;
               changed = true;
-              String pre = C.self.calcCanvas.preCursorLine();
+              StringWrapper pre = C.self.calcCanvas.preCursorLine();
               if (Lexer.isAssignment(pre)) {
                   keys[0] = "x";
                   keys[1] = "y";

@@ -319,7 +319,7 @@ class CalcCanvas extends Canvas implements VMConstants {
         //Log.log("pos " + pos + " row " + cursorRow + " col " + cursorCol + " x " + cursorX + " y " + cursorY);
         setCursor(true);
 
-        final int[] cmdSlot = Lexer.getPlotCommandAndSlot(line(), pos + 1);
+        final int[] cmdSlot = Lexer.getPlotCommandAndSlot(StringWrapper.getTemp(line, 0, len), pos + 1);
         if (cmdSlot[0] != -1) {
             String help = null;
             if (cmdSlot[1] != -1) {
@@ -408,7 +408,7 @@ class CalcCanvas extends Canvas implements VMConstants {
         }
         KeyState.paint(g);        
     }
-    
+
     int prevFlexPoint(int pos) {
         if (pos < 0) {
             return pos;
@@ -417,8 +417,15 @@ class CalcCanvas extends Canvas implements VMConstants {
             return pos - 2;
         }
         int p = pos;
-        if (p >= 0 && line[p] == '(') {
-            --p;
+        if (p >= 1 && line[p] == '(') {
+            do { --p; } while (p >= 0 && Lexer.isLetter(line[p]));
+            final int sym = Lexer.getSymbol(StringWrapper.getTemp(line, p + 1, pos));
+            if (Lexer.isBuiltinFunction(sym) || Lexer.isPlotCommand(sym) ||
+                Lexer.isVariable(sym) && Variables.isFunction(sym) && p > -1)
+            { pos = p; }
+            else
+                --pos;
+            return pos;
         }
         if (p >= 0 && Lexer.isLetter(line[p])) {
             do { --p; } while (p >= 0 && Lexer.isLetter(line[p]));
@@ -434,13 +441,17 @@ class CalcCanvas extends Canvas implements VMConstants {
         if (line[pos+1] == ':' && pos <= len-3 && line[pos+2] == '=') {
             return pos + 2;
         }
-        ++pos;
+        int p = ++pos;
         if (Lexer.isLetter(line[pos])) {
-            do {
+            while (pos < len && Lexer.isLetter(line[pos]))
                 ++pos;
-            } while (pos < len && Lexer.isLetter(line[pos]));
-            if (pos < len && line[pos] == '(') ++pos;
-            return pos - 1;
+            --pos;
+            if (pos + 1 < len && line[pos + 1] == '(') {
+                final int sym = Lexer.getSymbol(StringWrapper.getTemp(line, p, pos + 1));
+                if (Lexer.isBuiltinFunction(sym) || Lexer.isPlotCommand(sym) ||
+                    Lexer.isVariable(sym) && Variables.isFunction(sym) && pos > 0)
+                { ++pos; }
+            }
         }
         return pos;
     }
@@ -455,10 +466,6 @@ class CalcCanvas extends Canvas implements VMConstants {
     void delFromLine() {
         int prev = prevFlexPoint(pos);
         delFromLine(prev, pos-prev);
-        /*
-        System.arraycopy(line, pos+1, line, prev+1, len-(pos+1));
-        len -= pos-prev;
-        */
         pos = prev;
     }
 
@@ -484,7 +491,7 @@ class CalcCanvas extends Canvas implements VMConstants {
     }
     
     void historyMove(int dir) {
-        history.getCurrent().update(line(), pos);
+        history.getCurrent().update(lineStr(), pos);
         if (history.move(dir)) {
             updateFromHistEntry(history.getCurrent());
             doChanged(-1);
@@ -542,7 +549,7 @@ class CalcCanvas extends Canvas implements VMConstants {
             break;
 
         case Canvas.FIRE:
-            history.enter(line, len, line());
+            history.enter(line, len, lineStr());
             Result res = Compiler.result;
             if (res.errorStart == -1 && res.plotCommand != -1)
                 C.self.plotCanvas.plot(res);
@@ -592,11 +599,15 @@ class CalcCanvas extends Canvas implements VMConstants {
                 s = String.valueOf((char)key);
             }
             if (s != null) {
-                int sym = Lexer.getSymbol(s);
-                if (pos == -1 && s.length() == 1) {
-                    if ("+-*/%^!".indexOf(s.charAt(0)) != -1) {
+                int sym = -1;
+                final int s_len = s.length();
+                final boolean isOperator = s_len == 1 && "+-*/%^!".indexOf(s.charAt(0)) != -1;
+                if (pos == -1 && s_len == 1) {
+                    if (isOperator) {
                         insertIntoLine("ans");
                         lastInsertLen += 3;
+                    } else {
+                        sym = Lexer.getSymbol(StringWrapper.getTemp(s));
                     }
                     insertIntoLine(s);
                     if (Lexer.isVariable(sym) && !Variables.isDefined(sym)) {
@@ -604,6 +615,13 @@ class CalcCanvas extends Canvas implements VMConstants {
                         lastInsertLen += 2;
                     }
                 } else {
+                    if (!isOperator) {
+                        sym = Lexer.getSymbol(StringWrapper.getTemp(s));
+                        if (sym != -1 && pos > -1 && Lexer.isLetter(line[pos])) {
+                            insertIntoLine("*");
+                            ++lastInsertLen;
+                        }
+                    }
                     insertIntoLine(s);
                 }
                 lastInsertLen += s.length();
@@ -613,8 +631,7 @@ class CalcCanvas extends Canvas implements VMConstants {
                        ? Variables.getFunction(sym).arity()
                        : 0)
                     : Lexer.getBuiltinArity(sym);
-                    String pre = String.valueOf(line, 0, oldPos + 1);
-                    if (!Lexer.matchesPlotArity(arity, pre)) {
+                    if (!Lexer.matchesPlotArity(arity, StringWrapper.getTemp(line, 0, oldPos + 1))) {
                         if (sym == MAP && C.cfg.aspectRatio1)
                             arity = 4;
                         String parens = arityParens[arity];
@@ -694,21 +711,19 @@ class CalcCanvas extends Canvas implements VMConstants {
 
     DataOut dataOut = new DataOut();
     void saveOnExit() {
-        String str = line();
-        HistEntry entry = new HistEntry(str, 0, false);
-        entry.write(dataOut);
+        new HistEntry(lineStr(), 0, false).write(dataOut);
         C.rs.write(C.RS_CURRENT, dataOut.getBytesAndReset());
     }
 
     private String lineStr = null;
 
-    String line() {
+    String lineStr() {
         if (lineStr == null)
             lineStr = String.valueOf(line, 0, len);
         return lineStr;
     }
 
-    String preCursorLine() {
-        return String.valueOf(line, 0, pos + 1);
+    StringWrapper preCursorLine() {
+        return StringWrapper.getTemp(line, 0, pos + 1);
     }
 }

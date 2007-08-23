@@ -22,8 +22,8 @@ public class Compiler implements VMConstants
         init();
         try {
             int start;
-            if (Lexer.isAssignment(input, len)) {
-                definedSymbol = Lexer.getSymbol(String.valueOf(input[0]));
+            if (Lexer.isAssignment(StringWrapper.getTemp(input, 0, len))) {
+                definedSymbol = Lexer.getSymbol(StringWrapper.getTemp(input, 0, 1));
                 if (!(FIRST_VAR <= definedSymbol && definedSymbol <= LAST_VAR))
                     throw error;
                 start = 3;
@@ -43,14 +43,12 @@ public class Compiler implements VMConstants
                 }
                 if (definedSymbol != -1)
                     func.setArity(arity);
+                final int varmask = definedSymbol != -1 && arity > 0 ? 1 << (definedSymbol - FIRST_VAR) : 0;
+                // XXX the error will be marked at the last token, which won't generally be accurate
+                if (!func.check(varmask))
+                    throw error;
             }
             if (lexer.peekToken() != Lexer.TOK_END)
-                throw error;
-            final int varmask = definedSymbol != -1 && arity > 0 ? 1 << (definedSymbol - FIRST_VAR) : 0;
-            // XXX the error will be marked at the last token, which won't generally be accurate
-            if (!func.check(varmask))
-                throw error;
-            if (func2 != null && !func2.check(varmask))
                 throw error;
         } catch (SyntaxError e) {
             if (errorStart == -1) {
@@ -75,14 +73,12 @@ public class Compiler implements VMConstants
             func = new CompiledFunction();
         else
             func.init();
-        func2 = null;
         if (lexer == null)
             lexer = new Lexer();
         arity = 0;
         definedSymbol = -1;
         parameterCallArity = -1;
         plotCommand = -1;
-        plotArgs = null;
         x_is_t = false;
         unaryDone = false;
         errorStart = errorEnd = -1;
@@ -229,8 +225,14 @@ public class Compiler implements VMConstants
         parameterCallArity = Lexer.plotFunctionArity(plotCommand);
         if (plotCommand == PARPLOT)
             x_is_t = true;
+        int lexerStart = lexer.curPos();
         compileExpr();
         func.setArity(parameterCallArity);
+        if (!func.check(0)) {
+            errorStart = lexerStart;
+            errorEnd = lexer.curPos() - 1;
+            throw error;
+        }
         if (plotCommand == PARPLOT) {
             if (lexer.nextToken() != Lexer.TOK_COMMA)
                 throw error;
@@ -238,13 +240,20 @@ public class Compiler implements VMConstants
                 func2 = new CompiledFunction();
             else
                 func2.init();
+            lexerStart = lexer.curPos();
             compileExpr(func2);
             func2.setArity(parameterCallArity);
+            if (!func2.check(0)) {
+                errorStart = lexerStart;
+                errorEnd = lexer.curPos() - 1;
+                throw error;
+            }
             x_is_t = false;
         }
         parameterCallArity = -1;
         final int remainingArity = Lexer.getBuiltinArity(plotCommand) - (plotCommand == PARPLOT ? 2 : 1);
-        plotArgs = new double[remainingArity];
+        if (plotArgs == null)
+            plotArgs = new double[4];
         boolean lastMapArgMissing = false;
         double prevPlotArg = 0; // compiler complains without initialization
         for (int i = 0; i < remainingArity; ++i) {
@@ -262,7 +271,7 @@ public class Compiler implements VMConstants
                 parFunc = new CompiledFunction();
             else
                 parFunc.init();
-            int lexerStart = lexer.curPos();
+            lexerStart = lexer.curPos();
             compileExpr(parFunc);
             final double curPlotArg = parFunc.check(0) ? parFunc.evaluate() : Double.NaN;
             boolean throwError = false;

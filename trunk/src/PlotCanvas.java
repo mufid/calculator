@@ -46,8 +46,9 @@ public class PlotCanvas extends Canvas implements VMConstants {
     }
 
     public void plot(Result result) {
-        func = result.function;
-        func2 = result.function2;
+        func = CompiledFunction.trivialInline(result.function);
+        if (result.function2 != null)
+            func2 = CompiledFunction.trivialInline(result.function2);
         minmax = result.plotArgs;
         img = Image.createImage(width, height);
         Graphics g = img.getGraphics();
@@ -172,7 +173,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
         // The float precision is enough for plot/map.
         // We use int array in order to reuse it for createRGBImage() later.
         int[] f = new int[size];
-        long start = System.currentTimeMillis();
+        //long start = System.currentTimeMillis();
         { // This block (curly brackets) is used to limit the scope of xval.
             double xval = xmin;
             for (int x = 0; x < width; ++x, xval += xf) {
@@ -192,10 +193,10 @@ public class PlotCanvas extends Canvas implements VMConstants {
             }
         }
 
-        long end = System.currentTimeMillis();
-        Log.log("Calculation took " + (end - start) + " ms.");
+        //long end = System.currentTimeMillis();
+        //Log.log("Calculation took " + (end - start) + " ms.");
 
-        start = end;
+        //start = end;
         final double gf = (256 - 1E-6) / (fmax - fmin);
         float v;
         int c;
@@ -239,8 +240,8 @@ public class PlotCanvas extends Canvas implements VMConstants {
             }
         }
 
-        end = System.currentTimeMillis();
-        Log.log("Drawing took " + (end - start) + " ms.");
+        //end = System.currentTimeMillis();
+        //Log.log("Drawing took " + (end - start) + " ms.");
     }
 
     private void paintParPlot(Graphics g) {
@@ -356,7 +357,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
             ymax = fymax;
         }
 
-        Log.log("Plotting " + n + " points");
+        //Log.log("Plotting " + n + " points");
 
         /* Draw axes and labels */
         if (C.cfg.axes) {

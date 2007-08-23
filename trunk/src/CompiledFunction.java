@@ -321,10 +321,10 @@ public class CompiledFunction implements VMConstants {
     }
 
     private double trigEval(int op, double x) {
-        double f = C.cfg.angleInRadians ? 1. : 180. / Math.PI;
+        final double f = C.cfg.trigFactor;
         switch (op) {
-        case SIN:   return MoreMath.isPiMultiple(x/f) ? 0 : Math.sin(x/f);
-        case COS:   return MoreMath.isPiMultiple(x/f + MoreMath.PI_2) ? 0 : Math.cos(x/f);
+        case SIN:   x /= f; return MoreMath.isPiMultiple(x) ? 0 : Math.sin(x);
+        case COS:   x /= f; return MoreMath.isPiMultiple(x + MoreMath.PI_2) ? 0 : Math.cos(x);
         case TAN:   return Math.tan(x/f);
         case ASIN:  return MoreMath.asin(x) * f;
         case ACOS:  return MoreMath.acos(x) * f;
@@ -333,9 +333,22 @@ public class CompiledFunction implements VMConstants {
         return 0;
     }
 
+    public static CompiledFunction trivialInline(CompiledFunction func) {
+        if (func.inst_cnt != func.arity + 2)
+            return func;
+        int called_fn = func.inst[func.inst_cnt - 2];
+        if (!(FIRST_VARFUN <= called_fn && called_fn <= LAST_VARFUN))
+            return func;
+        for (int i = 0; i < func.arity; ++i)
+            if (func.inst[i] != FIRST_PAR + i)
+                return func;
+        return Variables.funcs[called_fn - FIRST_VARFUN];
+    }
+
 /*
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuffer sb = new StringBuffer("[");
+        sb.append(arity).append("] ");
         for (int i = 0; i < inst_cnt; ++i) {
             sb.append(inst[i]);
             if (i < inst_cnt - 1)
@@ -350,7 +363,6 @@ public class CompiledFunction implements VMConstants {
         return sb.toString();
     }
 */
-
 /*
     import java.lang.reflect.Field;
     import java.util.HashMap;

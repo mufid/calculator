@@ -2,18 +2,12 @@ TODO
 ====
 - % operator can be very confusing to non-programmers, since in calculators it usually means "percent"
   replace by "mod"?
-- Automatically insert '*' in between when inserting a name (such as "f", "sin") after another name
 - Perhaps check whether glyph for \u00d7 (×, multiplication symbol) differs from symbol for "x"
   and also differs from box symbol; in that case use \u00d7 instead of '*' 
-- Get rid of String.valueOf calls in CalcCanvas whenever possible, and replace by passing line, len,
-  to avoid copying of char array
 - For plot and par, do not cache whole Image but only function values
 - Better error handling: in various places, NullPointerException/OutOfMemoryError/ArrayIndexOutOfBounds etc.
   may be thrown e.g. if input is very long or device is out of memory.
-- Ability to redefine a function. Easiest way: when input line is 'f(' and user presses clear, only delete '(' not whole line.
 - Make full screen optional.
-- Option to use unicode character for pi (unless there is some automatic way of finding out whether the Font
-  contains it).
 - Conditional (ternary) operator: f:=x<2?1:f(x-2)+f(x-1). Clearly, this makes recursive functions
   useful, so we would need to allow those.
 - When navigating to a history entry and executing it again, without first changing it, move it on top of the history instead of creating a new history entry.
@@ -60,6 +54,10 @@ DONE
 - A way of finding out whether font contains letter pi: draw letter pi on an image; draw letter rho on
   an image; compare images pixel-by-pixel; if equal, pi not supported, otherwise, pi supported.
   Do this once and store the result in config.
+- Automatically insert '*' in between when inserting a name (such as "f", "sin") after another name
+- Get rid of String.valueOf calls in CalcCanvas whenever possible, and replace by passing line, len,
+  to avoid copying of char array
+- Ability to redefine a function. Easiest way: when input line is 'f(' and user presses clear, only delete '(' not whole line.
 
 
 IDEAS

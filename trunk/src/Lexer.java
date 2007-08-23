@@ -30,16 +30,24 @@ public class Lexer implements VMConstants
     }
 
     private static void a(int code, String str) {
-        symnames.put(str, new Integer(code));
+        symnames.put(new StringWrapper(str), new Integer(code));
     }
 
-    public static int getSymbol(String symname) {
+    public static int getSymbol(StringWrapper symname) {
         Integer i = (Integer) symnames.get(symname);
         return i == null ? -1 : i.intValue();
     }
     
     public static boolean isVariable(int symbol) {
         return FIRST_VAR <= symbol && symbol <= LAST_VAR;
+    }
+
+    public static boolean isBuiltinFunction(int symbol) {
+        return FIRST_FUNCTION <= symbol && symbol <= LAST_FUNCTION;
+    }
+
+    public static boolean isPlotCommand(int symbol) {
+        return FIRST_PLOT_COMMAND <= symbol && symbol <= LAST_PLOT_COMMAND;
     }
 
     public static int getBuiltinArity(int symbol) {
@@ -59,10 +67,6 @@ public class Lexer implements VMConstants
             return 0;
     }
 
-    public static boolean isPlotCommand(int symbol) {
-        return symbol == PLOT || symbol == MAP || symbol == PARPLOT;
-    }
-
     public static int plotFunctionArity(int symbol) {
         switch (symbol) {
         case PLOT:
@@ -79,19 +83,15 @@ public class Lexer implements VMConstants
         return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
     }
 
-    public static boolean isAssignment(String str) {
+    public static boolean isAssignment(StringWrapper str) {
         return str.length() >= 3 && str.charAt(1) == ':' && str.charAt(2) == '=';
     }
 
-    public static boolean isAssignment(char[] str, int len) {
-        return len >= 3 && str[1] == ':' && str[2] == '=';
-    }
 
-
-    public static boolean matchesPlotArity(int arity, String str) {
+    public static boolean matchesPlotArity(int arity, StringWrapper sw) {
         if (!(arity == 1 || arity == 2))
             return false;
-        int[] cmdSlot = getPlotCommandAndSlot(str);
+        int[] cmdSlot = getPlotCommandAndSlot(sw);
         if (cmdSlot[0] == -1)
             return false;
         if (isPlotFunctionSlot(cmdSlot))
@@ -99,8 +99,8 @@ public class Lexer implements VMConstants
         return false;
     }
 
-    public static int getFunctionPlotCommand(String str) {
-        int[] cmdSlot = getPlotCommandAndSlot(str);
+    public static int getFunctionPlotCommand(StringWrapper sw) {
+        int[] cmdSlot = getPlotCommandAndSlot(sw);
         int cmd = cmdSlot[0];
         if (cmd != -1)
             if (!isPlotFunctionSlot(cmdSlot))
@@ -120,22 +120,22 @@ public class Lexer implements VMConstants
         }
     }
 
-    private static int[] getPlotCommandAndSlot(String str) {
-        return getPlotCommandAndSlot(str, str.length());
+    public static int[] getPlotCommandAndSlot(StringWrapper sw) {
+        return getPlotCommandAndSlot(sw, sw.length());
     }
 
     private static int[] result;
-    public static int[] getPlotCommandAndSlot(String str, int len) {
+    public static int[] getPlotCommandAndSlot(StringWrapper sw, int len) {
         if (result == null)
             result = new int[2];
         int i;
-        if (str.startsWith("plot(")) {
+        if (sw.startsWith("plot(")) {
             result[0] = PLOT;
             i = 5;
-        } else if (str.startsWith("map(")) {
+        } else if (sw.startsWith("map(")) {
             result[0] = MAP;
             i = 4;
-        } else if (str.startsWith("par(")) {
+        } else if (sw.startsWith("par(")) {
             result[0] = PARPLOT;
             i = 4;
         } else {
@@ -146,7 +146,7 @@ public class Lexer implements VMConstants
             result[1] = 0;
             int parens = 0;
             for (; i < len; ++i)
-                switch (str.charAt(i)) {
+                switch (sw.charAt(i)) {
                 case '(': ++parens; break;
                 case ')': --parens; break;
                 case ',': if (parens == 0) ++result[1]; break;
@@ -273,7 +273,7 @@ public class Lexer implements VMConstants
             } else try {
                 tok_number = Double.parseDouble(String.valueOf(input, start, pos - start));
             } catch (NumberFormatException e) {
-                Log.log("number: " + String.valueOf(input, start, pos - start));
+                //Log.log("number: " + String.valueOf(input, start, pos - start));
                 throw Compiler.error;
             }
             return LITERAL;
@@ -283,7 +283,7 @@ public class Lexer implements VMConstants
             int start = pos;
             while (isLetter(c))
                 c = input[++pos];
-            Integer sym = (Integer) symnames.get(String.valueOf(input, start, pos - start));
+            Integer sym = (Integer) symnames.get(StringWrapper.getTemp(input, start, pos));
             if (sym == null)
                 throw Compiler.error;
             return sym.intValue();
