@@ -2,6 +2,7 @@ TODO
 ====
 - % operator can be very confusing to non-programmers, since in calculators it usually means "percent"
   replace by "mod"?
+- Mark errors in history items (either same way as in input line, or "X" symbol next to it)
 - Perhaps check whether glyph for \u00d7 (×, multiplication symbol) differs from symbol for "x"
   and also differs from box symbol; in that case use \u00d7 instead of '*' 
 - For plot and par, do not cache whole Image but only function values

@@ -13,6 +13,7 @@ public class Compiler implements VMConstants
     private boolean x_is_t;
     private boolean unaryDone;
     private int errorStart, errorEnd;
+    private int selfRefPos;
 
     public static Result result;
     
@@ -41,12 +42,13 @@ public class Compiler implements VMConstants
                     unaryDone = true;
                     compileExpr();
                 }
-                if (definedSymbol != -1)
+                if (definedSymbol != -1) {
                     func.setArity(arity);
-                final int varmask = definedSymbol != -1 && arity > 0 ? 1 << (definedSymbol - FIRST_VAR) : 0;
-                // XXX the error will be marked at the last token, which won't generally be accurate
-                if (!func.check(varmask))
-                    throw error;
+                    if (arity > 0 && selfRefPos != -1) {
+                        errorStart = errorEnd = selfRefPos;
+                        throw error;
+                    }
+                }
             }
             if (lexer.peekToken() != Lexer.TOK_END)
                 throw error;
@@ -82,6 +84,7 @@ public class Compiler implements VMConstants
         x_is_t = false;
         unaryDone = false;
         errorStart = errorEnd = -1;
+        selfRefPos = -1;
     }
 
     private void compileExpr(CompiledFunction cf) throws SyntaxError {
@@ -162,7 +165,7 @@ public class Compiler implements VMConstants
             func.pushLiteral(lexer.number());
             func.pushInstr(LITERAL);
         } else if (FIRST_PAR <= c && c <= LAST_PAR) {
-            if (definedSymbol == -1 && c - FIRST_PAR > parameterCallArity - 1)
+            if (definedSymbol == -1 && c - FIRST_PAR + 1 > parameterCallArity)
                 throw error;
             if (x_is_t && c == PAR_X)
                 throw error;
@@ -180,7 +183,14 @@ public class Compiler implements VMConstants
             case Variables.TYPE_FUNC:
             {
                 CompiledFunction fn = Variables.getFunction(c);
-                int fn_arity = fn.arity();
+                final int forbidden = 1 << (c - FIRST_VAR),
+                          flaggable = definedSymbol != -1 ? (1 << (definedSymbol - FIRST_VAR)) : 0;
+                final int status = fn.check(forbidden, flaggable);
+                if (status == CompiledFunction.FAIL)
+                    throw error;
+                if (status == CompiledFunction.FLAG || c == definedSymbol)
+                    selfRefPos = lexer.lastPos();
+                final int fn_arity = fn.arity();
                 compileArgList(fn_arity);
                 func.pushInstr(c + VARFUN_OFFSET, fn_arity);
                 break;
@@ -225,14 +235,8 @@ public class Compiler implements VMConstants
         parameterCallArity = Lexer.plotFunctionArity(plotCommand);
         if (plotCommand == PARPLOT)
             x_is_t = true;
-        int lexerStart = lexer.curPos();
         compileExpr();
         func.setArity(parameterCallArity);
-        if (!func.check(0)) {
-            errorStart = lexerStart;
-            errorEnd = lexer.curPos() - 1;
-            throw error;
-        }
         if (plotCommand == PARPLOT) {
             if (lexer.nextToken() != Lexer.TOK_COMMA)
                 throw error;
@@ -240,14 +244,8 @@ public class Compiler implements VMConstants
                 func2 = new CompiledFunction();
             else
                 func2.init();
-            lexerStart = lexer.curPos();
             compileExpr(func2);
             func2.setArity(parameterCallArity);
-            if (!func2.check(0)) {
-                errorStart = lexerStart;
-                errorEnd = lexer.curPos() - 1;
-                throw error;
-            }
             x_is_t = false;
         }
         parameterCallArity = -1;
@@ -271,9 +269,9 @@ public class Compiler implements VMConstants
                 parFunc = new CompiledFunction();
             else
                 parFunc.init();
-            lexerStart = lexer.curPos();
+            final int lexerStart = lexer.curPos();
             compileExpr(parFunc);
-            final double curPlotArg = parFunc.check(0) ? parFunc.evaluate() : Double.NaN;
+            final double curPlotArg = parFunc.evaluate();
             boolean throwError = false;
             if (!isReal(curPlotArg))
                 throwError = true;
