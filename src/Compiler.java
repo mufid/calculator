@@ -123,8 +123,16 @@ public class Compiler implements VMConstants
             op = lexer.peekToken();
         }
     }
-    
+
     private void compilePower() throws SyntaxError {
+        boolean uminus = false;
+        while (true) {
+            switch (lexer.peekToken()) {
+            case MINUS: uminus = !uminus;  // fall through
+            case PLUS: lexer.nextToken(); continue;
+            }
+            break;
+        }
         compileFactorial();
         int op = lexer.peekToken();
         if (op == POWER) {
@@ -132,8 +140,10 @@ public class Compiler implements VMConstants
             compilePower();
             func.pushInstr(op);
         }
+        if (uminus)
+            func.pushInstr(UMINUS);
     }
-    
+
     private void compileFactorial() throws SyntaxError {
         compileUnary();
         while (lexer.peekToken() == FACTORIAL) {
@@ -156,11 +166,6 @@ public class Compiler implements VMConstants
             c = lexer.nextToken();
             if (!(c == Lexer.TOK_RPAREN || c == Lexer.TOK_END))
                 throw error;
-        } else if (c == MINUS) {
-            compileUnary();
-            func.pushInstr(UMINUS);
-        } else if (c == PLUS) {
-            compileUnary();
         } else if (c == LITERAL) {
             func.pushLiteral(lexer.number());
             func.pushInstr(LITERAL);
