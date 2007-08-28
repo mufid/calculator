@@ -165,7 +165,7 @@ class CalcCanvas extends Canvas implements VMConstants {
                 CompiledFunction func = Compiler.result.function;
                 String strResult = func.arity() > 0 ?
                         line[0] + params[func.arity()-1] : format(func.evaluate());
-                        drawResultString(strResult);
+                drawResultString(strResult);
             }
         } else {
             if (Compiler.result.errorStart < len)
@@ -601,7 +601,7 @@ class CalcCanvas extends Canvas implements VMConstants {
             if (s != null) {
                 int sym = -1;
                 final int s_len = s.length();
-                final boolean isOperator = s_len == 1 && "+-*/%^!".indexOf(s.charAt(0)) != -1;
+                final boolean isOperator = s_len == 1 && "+*/%^!".indexOf(s.charAt(0)) != -1;
                 if (pos == -1 && s_len == 1) {
                     if (isOperator) {
                         insertIntoLine("ans");
