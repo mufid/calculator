@@ -512,12 +512,12 @@ final public class CompiledFunction implements VMConstants {
 
         Util.sort(fragments, fragment_cnt);
 
+/*
         System.out.println("Before: " + this);
-        
-        for (int i = 0; i < fragment_cnt; ++i) {
+        for (int i = 0; i < fragment_cnt; ++i)
             System.out.print(fragments[i] + "  ");
-        }
         System.out.println();
+*/
 
         // Add dummy fragment at end to make sure any instructions/literals at the end are added back in.
         fragments[fragment_cnt++] = new Fragment(inst_cnt, inst_cnt, lit_cnt, lit_cnt, 0);
@@ -572,11 +572,11 @@ final public class CompiledFunction implements VMConstants {
         }
 
         lit_cnt = new_lit_cnt;
-
+/*
         System.out.println("After: " + this);
         System.out.println("X: " + fragmentsXcnt + " - " + fragmentsX);
         System.out.println("Y: " + fragmentsYcnt + " - " + fragmentsY);
-
+*/
     }
 
     /* Returns true iff this function contains a CONST_RND invocation, directly or indirectly. */
@@ -595,7 +595,7 @@ final public class CompiledFunction implements VMConstants {
         return false;
     }
 
-
+/*
     public String toString() {
         StringBuffer sb = new StringBuffer("[");
         sb.append(arity).append("] ");
@@ -612,5 +612,5 @@ final public class CompiledFunction implements VMConstants {
         }
         return sb.toString();
     }
-
+*/
 }
