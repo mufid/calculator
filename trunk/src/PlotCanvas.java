@@ -56,8 +56,13 @@ public class PlotCanvas extends Canvas implements VMConstants {
 
         switch (result.plotCommand) {
         case PLOT: paintPlot(g); break;
-        case MAP: paintMap(g); break;
         case PARPLOT: paintParPlot(g); break;
+        case MAP:
+            // paintMap will modify func (by calling xyFragment on it), so make a copy if necessary
+            if (func != result.function)
+                func = new CompiledFunction(func);
+            paintMap(g);
+            break;
         }
 
         display.setCurrent(this);
@@ -174,6 +179,8 @@ public class PlotCanvas extends Canvas implements VMConstants {
         // We use int array in order to reuse it for createRGBImage() later.
         int[] f = new int[size];
         //long start = System.currentTimeMillis();
+
+/*
         { // This block (curly brackets) is used to limit the scope of xval.
             double xval = xmin;
             for (int x = 0; x < width; ++x, xval += xf) {
@@ -192,6 +199,40 @@ public class PlotCanvas extends Canvas implements VMConstants {
                 }
             }
         }
+*/
+
+        func.xyFragment();
+        final int fxcnt = CompiledFunction.fragmentsXcnt, fycnt = CompiledFunction.fragmentsYcnt;
+
+        // Precompute X-fragments for all x-values
+        CompiledFunction.precompFragmentsX = new double[fxcnt * width];
+        double xval = xmin;
+        for (int x = 0, s = 0; x < width; ++x, s += fxcnt, xval += xf) {
+            CompiledFunction.fragmentsX.evaluate(xval);
+            System.arraycopy(CompiledFunction.stack, 1, CompiledFunction.precompFragmentsX, s, fxcnt);
+        }
+
+        // Precompute Y-fragments for each current y-value
+        CompiledFunction.precompFragmentsY = new double[fycnt];
+        double yval = ymin;
+        for (int y = 0; y < canvasHeight; ++y, yval += yf) {
+            CompiledFunction.fragmentsY.evaluate(yval);
+            System.arraycopy(CompiledFunction.stack, 1, CompiledFunction.precompFragmentsY, 0, fycnt);
+            CompiledFunction.fragmentsXidx = -1;
+            for (int x = 0; x < width; ++x) {
+                CompiledFunction.fragmentsYidx = -1;
+                float v = (float) func.evaluate();
+                if (isReal(v)) {
+                    if (v < fmin)
+                        fmin = v;
+                    if (v > fmax)
+                        fmax = v;
+                }
+                f[x + (canvasHeight - 1 - y) * width] = Float.floatToIntBits(v);
+            }
+        }
+        CompiledFunction.fragmentsX = CompiledFunction.fragmentsY = null;
+        CompiledFunction.precompFragmentsX = CompiledFunction.precompFragmentsY = null;
 
         //long end = System.currentTimeMillis();
         //Log.log("Calculation took " + (end - start) + " ms.");

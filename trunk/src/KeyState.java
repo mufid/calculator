@@ -11,7 +11,7 @@ class KeyState implements VMConstants {
     static KeyState rootOp, trigs, logs, ints, vars, plots, rootExp;
     static KeyState keypad, lastPainted;
 
-    private static final int BACKGR = CalcCanvas.BACKGR, DARKER = 0x808080, SUBMENU = 0x30f000;
+    private static final int BACKGR = CalcCanvas.BACKGR, DARKER = 0x808080, SUBMENU = 0x20f000;
     private static final int FOREGR  = 0x000000, LIGHTER = 0xffffff;
     private static final int TRIANGLE_SIZE = 6;
 

@@ -105,7 +105,32 @@ class UnitTest {
             System.out.println("All tests passed ok");
         }
         
+/*
         System.out.println(Util.doubleToTrimmedString(0.9999, 5));
+
+        Compiler compiler = new Compiler();
+        String[] defs = { "f:=x", "g:=x*y", "b:=x", "h:=x*b(x)" };
+        for (int i = 0; i < defs.length; ++i) {
+            char[] ch = new char[defs[i].length() + 1];
+            defs[i].getChars(0, defs[i].length(), ch, 0);
+            if (compiler.compile(ch, defs[i].length())) {
+                final int idx = Compiler.result.definedSymbol - VMConstants.FIRST_VAR;
+                Variables.funcs[idx] = new CompiledFunction(Compiler.result.function);
+                Variables.types[idx] = Variables.TYPE_FUNC;
+            } else
+                System.out.println("error");
+        }
+
+        String input = "a:=x+x+y*y+x^x";
+        char[] chs = new char[input.length() + 1];
+        input.getChars(0, input.length(), chs, 0);
+        System.out.println(input);
+        if (compiler.compile(chs, input.length())) {
+            System.out.println(Compiler.result.function);
+            Compiler.result.function.xyFragment();
+        } else
+            System.out.println("error " + Compiler.result.errorStart + "-" + Compiler.result.errorEnd);
+*/
     }
 
     static void cheq(double v1, double v2) {

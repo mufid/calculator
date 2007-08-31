@@ -1,7 +1,12 @@
 TODO
 ====
-- % operator can be very confusing to non-programmers, since in calculators it usually means "percent"
-  replace by "mod"?
+- Use |x| instead of abs(x), and perhaps also the usual notation for floor, ceil, int
+- Want CompiledFunction#xyFragment to use
+        "x+x+y" ==> "(x+x)+y"
+    but "x+y+y" ==> "x+(y+y)" (use associativity) 
+    and "x+y+x" ==> "(x+x)+y" (use commutativity)
+    and similarly for multiplication.
+  BUT: (1e300*1e300)*1e-300 == +Inf whereas 1e300*(1e300*1e-300) == 1e300. Ignore? 
 - Mark errors in history items (either same way as in input line, or "X" symbol next to it)
 - Perhaps check whether glyph for \u00d7 (×, multiplication symbol) differs from symbol for "x"
   and also differs from box symbol; in that case use \u00d7 instead of '*' 
@@ -59,7 +64,9 @@ DONE
 - Get rid of String.valueOf calls in CalcCanvas whenever possible, and replace by passing line, len,
   to avoid copying of char array
 - Ability to redefine a function. Easiest way: when input line is 'f(' and user presses clear, only delete '(' not whole line.
-
+- map() "fragments" the function into parts that only involve x and those that only involve y, and
+  evaluates those fragments at all the x-values respectively y-values first, thus bringing down the
+  time taken for those fragments from O(w*h) to O(w+h) where w=width, h=height.
 
 IDEAS
 =====
@@ -69,8 +76,8 @@ IDEAS
 - Additional, optional function packages.
 
 - Peephole optimizing and inlining before plot() and map()
-- To optimize map(), write a peephole optimizer. Then, for each y, modify the program by replacing
-  each occurrence of PAR_Y by a literal with the current value of y, and optimize the program.
-  Evaluate it for each x. (In many cases, this may actually slow down things.)
 - Differentiate, integrate, find extrema, find zeros (numerically).
 - Symbolic differentiation.
+- % operator can be very confusing to non-programmers, since in calculators it usually means "percent"
+  replace by "mod"?
+- Complex numbers

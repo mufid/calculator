@@ -8,6 +8,9 @@ public interface VMConstants {
     final static int
         LITERAL = 0,
 
+        PRECOMP_X_FRAG = 50,
+        PRECOMP_Y_FRAG = 51,
+
         FIRST_PAR = 100,
         PAR_X = 100,
         PAR_Y = 101,
@@ -47,10 +50,14 @@ public interface VMConstants {
         CONST_RND = 303,
         LAST_CONST = 303,
 
+        FIRST_OP1 = 400,
         UMINUS = 400,
         FACTORIAL = 401,
+        LAST_OP1 = 401,
 
+        FIRST_OP2 = 500,
         PLUS = 500, MINUS = 501, TIMES = 502, DIVIDE = 503, POWER = 504, MODULO = 505,
+        LAST_OP2 = 505,
 
         FIRST_FUNCTION = 600,
         
