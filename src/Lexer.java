@@ -22,7 +22,7 @@ public class Lexer implements VMConstants
         a(CONST_PI, "pi"); a(CONST_E, "e"); a(CONST_ANS, "ans"); a(CONST_RND, "rnd");
         a(SIN, "sin"); a(COS, "cos"); a(TAN, "tan"); a(ASIN, "asin"); a(ACOS, "acos"); a(ATAN, "atan");
         a(SINH, "sinh"); a(COSH, "cosh"); a(TANH, "tanh"); a(ASINH, "asinh"); a(ACOSH, "acosh"); a(ATANH, "atanh");
-        a(EXP, "exp"); a(LOG, "ln"); a(LOG10, "lg"); a(LOG2, "lb");
+        a(LOG, "ln"); a(LOG10, "lg"); a(LOG2, "lb");
         a(SQRT, "sqrt"); a(CBRT, "cbrt");
         a(INT, "int"); a(FRAC, "frac"); a(ABS, "abs"); a(FLOOR, "floor"); a(CEIL, "ceil"); a(SIGN, "sign");
         a(MIN, "min"); a(MAX, "max"); a(GCD, "gcd"); a(COMB, "C"); a(PERM, "P");

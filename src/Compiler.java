@@ -137,8 +137,11 @@ public class Compiler implements VMConstants
         int op = lexer.peekToken();
         if (op == POWER) {
             lexer.nextToken();
+            boolean e = func.topInstr() == CONST_E;
+            if (e)
+                func.popInstr();
             compilePower();
-            func.pushInstr(op);
+            func.pushInstr(e ? EXP : POWER);
         }
         if (uminus)
             func.pushInstr(UMINUS);

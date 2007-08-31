@@ -1,6 +1,7 @@
 TODO
 ====
 - Use |x| instead of abs(x), and perhaps also the usual notation for floor, ceil, int
+- Externalise strings and make it translatable
 - Want CompiledFunction#xyFragment to use
         "x+x+y" ==> "(x+x)+y"
     but "x+y+y" ==> "x+(y+y)" (use associativity) 
@@ -67,6 +68,8 @@ DONE
 - map() "fragments" the function into parts that only involve x and those that only involve y, and
   evaluates those fragments at all the x-values respectively y-values first, thus bringing down the
   time taken for those fragments from O(w*h) to O(w+h) where w=width, h=height.
+- e^(something) should yield code [(something); EXP] rather than [CONST_E; (something); POWER]
+  (currently, opcode EXP is never generated)
 
 IDEAS
 =====

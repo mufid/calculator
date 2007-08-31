@@ -88,6 +88,14 @@ final public class CompiledFunction implements VMConstants {
         inst[inst_cnt++] = arg;
     }
 
+    public int topInstr() {
+        return inst[inst_cnt - 1];
+    }
+
+    public void popInstr() {
+        --inst_cnt;
+    }
+
     public void pushLiteral(double literal) {
         literals[lit_cnt++] = literal;
     }
