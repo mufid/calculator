@@ -1,5 +1,6 @@
 TODO
 ====
+- Various colour gradients for map() to select from
 - Use |x| instead of abs(x), and perhaps also the usual notation for floor, ceil, int
 - Externalise strings and make it translatable
 - Want CompiledFunction#xyFragment to use
@@ -84,3 +85,4 @@ IDEAS
 - % operator can be very confusing to non-programmers, since in calculators it usually means "percent"
   replace by "mod"?
 - Complex numbers
+- Fractals (Mandelbrot, Julia)
