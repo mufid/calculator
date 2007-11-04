@@ -1,0 +1,14 @@
+DirectoryIndex index
+Options +Multiviews
+#DefaultCharset UTF-8
+DefaultType php5-cgi
+#DefaultType application/x-httpd-php
+AddCharset UTF-8 xhtml html css
+#Header append Cache-Control max-age=3600,public
+Redirect 302 /Javia-Calculator.jar http://calculator.javia.org/calculator.jar
+Redirect 302 /Javia-Calculator.jad http://calculator.javia.org/calculator.jad
+Redirect 302 /jar http://calculator.javia.org/calculator.jar
+Redirect 302 /jad http://calculator.javia.org/calculator.jad
+RewriteEngine on
+rewriterule ^calculator\.jar$ rel/last/calculator.jar [L]
+rewriterule ^calculator\.jad$ rel/last/calculator.jad [L]

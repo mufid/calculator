@@ -5,9 +5,9 @@ import javax.microedition.lcdui.*;
 import java.io.*;
 import javax.microedition.midlet.*;
 
-public final class C extends MIDlet implements CommandListener, Runnable {
+public final class Calc extends MIDlet implements CommandListener, Runnable {
     static UnitTest dummy;
-    static C self;
+    static Calc self;
         
     static Display display;
     CalcCanvas calcCanvas;
@@ -67,9 +67,12 @@ public final class C extends MIDlet implements CommandListener, Runnable {
 
     private static final int STORE_VERSION = 0;
 
-    public C() {
+    public Calc() {
         self = this;
-        rs = new Store("calc", STORE_VERSION);
+        rs = new Store("calc");
+        if (rs.getNumRecords() == 0) {
+            rs.write(1, new byte[]{(byte) STORE_VERSION});
+        }
         cfg = new CalcConfig(rs, RS_CONFIG);
         display = Display.getDisplay(this);
         calcCanvas = new CalcCanvas();

@@ -1,0 +1,88 @@
+TODO
+====
+- Various colour gradients for map() to select from
+- Use |x| instead of abs(x), and perhaps also the usual notation for floor, ceil, int
+- Externalise strings and make it translatable
+- Want CompiledFunction#xyFragment to use
+        "x+x+y" ==> "(x+x)+y"
+    but "x+y+y" ==> "x+(y+y)" (use associativity) 
+    and "x+y+x" ==> "(x+x)+y" (use commutativity)
+    and similarly for multiplication.
+  BUT: (1e300*1e300)*1e-300 == +Inf whereas 1e300*(1e300*1e-300) == 1e300. Ignore? 
+- Mark errors in history items (either same way as in input line, or "X" symbol next to it)
+- Perhaps check whether glyph for \u00d7 (×, multiplication symbol) differs from symbol for "x"
+  and also differs from box symbol; in that case use \u00d7 instead of '*' 
+- For plot and par, do not cache whole Image but only function values
+- Better error handling: in various places, NullPointerException/OutOfMemoryError/ArrayIndexOutOfBounds etc.
+  may be thrown e.g. if input is very long or device is out of memory.
+- Make full screen optional.
+- Conditional (ternary) operator: f:=x<2?1:f(x-2)+f(x-1). Clearly, this makes recursive functions
+  useful, so we would need to allow those.
+- When navigating to a history entry and executing it again, without first changing it, move it on top of the history instead of creating a new history entry.
+- Context-sensitive KeyState menus which only display those operations which are currently valid.
+- Make plotting interruptible.
+- Display progress bar when plotting.
+- Optionally rotate the plot by 90 degrees (so the user has to rotate their phone), yielding a landscape orientation which may be better suited to many plots.
+- Anti-aliasing of the plotted curve to make it look smoother.
+- Make the plot screen interactive: user can move around and zoom (both plot() and map()).
+- The plot labels should honour the "smart rounding" setting.
+- Find a way of displaying "Menu" and "Backspace" commands (in non-fullscreen mode) that don't prevent
+  the Back command from working in the menus (at least in SE K310 emulator)
+
+- Add unit tests, get good test coverage.
+- Support pointer for pushing buttons (for touch-screen mobile phones).
+- Improve usability (how?).
+- Support different key layouts (e.g. for Nokia E61).
+
+- Improve web page.
+- Setup mailing list.
+- Declare open-source status on web page, link to svn & mailing list.
+
+DONE
+====
+- Optionally leaving out the * for multiplication.
+  Note, this sometimes makes things look strange - e.g. when f is a number not a function, then 'f(3)' is valid.
+- Only plot when the user presses the fire button.
+- A two-dimensional plotter, for functions with two parameters, that maps function values to colour or grayscale values. Perhaps call it map().
+- map() plot should indicate values corresponding to white and black.
+- Rewrite Expr and Symbol to use a stack-based "virtual machine" - the speed gain should be useful especially for map().
+- plot() should accept a general expression involving x as its first parameter. Similar for map().
+- Allow expressions like '1+1)*(2+2'
+- Exit application on BACK key.
+- Fix bugs with function re-definition.
+- Parametric plot: par(f,g,t_min,t_max)  
+- For par(), perhaps rename x to t to avoid confusion.
+- Add [xy]{min,max} labels to par().
+- markError should mark the whole token, not just a single character
+- Make axes drawing optional in plot() and par().
+- Make label drawing optional in plot(), par() and map().
+- Option of unit aspect ratio for plot(), map() and par(). For map(), this changes its arity from 5 to 4.
+- Perhaps change the way submenus are indicated to displaying a green triangle in the lower right corner.
+- When cursor is inside a plot command, result line shows description of current parameter (e.g. "function of x")
+- A way of finding out whether font contains letter pi: draw letter pi on an image; draw letter rho on
+  an image; compare images pixel-by-pixel; if equal, pi not supported, otherwise, pi supported.
+  Do this once and store the result in config.
+- Automatically insert '*' in between when inserting a name (such as "f", "sin") after another name
+- Get rid of String.valueOf calls in CalcCanvas whenever possible, and replace by passing line, len,
+  to avoid copying of char array
+- Ability to redefine a function. Easiest way: when input line is 'f(' and user presses clear, only delete '(' not whole line.
+- map() "fragments" the function into parts that only involve x and those that only involve y, and
+  evaluates those fragments at all the x-values respectively y-values first, thus bringing down the
+  time taken for those fragments from O(w*h) to O(w+h) where w=width, h=height.
+- e^(something) should yield code [(something); EXP] rather than [CONST_E; (something); POWER]
+  (currently, opcode EXP is never generated)
+
+IDEAS
+=====
+- Dimensions, unit conversion (300m/s -> km/h; sin(60deg); 100ft^2 -> m^2).
+- Contextual help for functions.
+- Allow custom function and parameter names (how?) (e.g.: BMI(weight, height) := weight/height^2). 
+- Additional, optional function packages.
+
+- Peephole optimizing and inlining before plot() and map()
+- Differentiate, integrate, find extrema, find zeros (numerically).
+- Symbolic differentiation.
+- % operator can be very confusing to non-programmers, since in calculators it usually means "percent"
+  replace by "mod"?
+- Complex numbers
+- Fractals (Mandelbrot, Julia)

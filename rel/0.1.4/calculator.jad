@@ -1,0 +1,9 @@
+MIDlet-1: Javia Calculator,/a,Calc
+MIDlet-Name: Javia Calculator
+MIDlet-Vendor: Mihai Preda
+MIDlet-Version: 0.1.4
+MIDlet-Info-URL: http://calculator.javia.org/
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.0
+MIDlet-Jar-URL: calculator.jar
+MIDlet-Jar-Size: 43597
