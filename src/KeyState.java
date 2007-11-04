@@ -59,7 +59,7 @@ class KeyState implements VMConstants {
           void init() {
               keys[0] = keys[1] = keys[2] = null;
               changed = true;
-              StringWrapper pre = C.self.calcCanvas.preCursorLine();
+              StringWrapper pre = Calc.self.calcCanvas.preCursorLine();
               if (Lexer.isAssignment(pre)) {
                   keys[0] = "x";
                   keys[1] = "y";
@@ -98,7 +98,7 @@ class KeyState implements VMConstants {
         rootExp = new KeyState(new Object[] {
             "sqrt",  "ans",  "E",
             plots,    vars,   ":=",
-            C.cfg.piString, "e", ints,
+            Calc.cfg.piString, "e", ints,
             trigs,   logs,   ".",
         });
     }

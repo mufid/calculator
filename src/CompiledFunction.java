@@ -340,7 +340,7 @@ final public class CompiledFunction implements VMConstants {
     }
 
     private double trigEval(int op, double x) {
-        final double f = C.cfg.trigFactor;
+        final double f = Calc.cfg.trigFactor;
         switch (op) {
         case SIN:   x /= f; return MoreMath.isPiMultiple(x) ? 0 : Math.sin(x);
         case COS:   x /= f; return MoreMath.isPiMultiple(x + MoreMath.PI_2) ? 0 : Math.cos(x);

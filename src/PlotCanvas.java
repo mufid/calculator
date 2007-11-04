@@ -99,7 +99,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
         }
 
         double yf, ymin, ymax;
-        if (C.cfg.aspectRatio1) {
+        if (Calc.cfg.aspectRatio1) {
             yf = xf;
             double ycenter = 0.5 * (fmax + fmin);
             double ydist = 0.5 * height / yf;
@@ -111,7 +111,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
             ymax = fmax;
         }
 
-        if (C.cfg.axes) {
+        if (Calc.cfg.axes) {
             g.setGrayScale(GRAY_AXES);
             if (xmin <= 0 && 0 <= xmax) {
                 int xx = (int) (-xmin * xf);
@@ -123,7 +123,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
             }
         }
 
-        if (C.cfg.labels) {
+        if (Calc.cfg.labels) {
             g.setColor(COLOR_LABEL_LT);
             final double maxError = Math.max((ymax - ymin) / height, 0.1);
             g.drawString(doubleToString(ymin, maxError), 0, height - 1, Graphics.BOTTOM | Graphics.LEFT);
@@ -148,7 +148,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
     private void paintMap(Graphics g) {
         int canvasHeight, fontHeight = 0, infoHeight = 0;
 
-        if (C.cfg.labels) {
+        if (Calc.cfg.labels) {
             fontHeight = smallFont.getHeight();
             infoHeight = fontHeight + 2;
             canvasHeight = height - infoHeight;
@@ -162,7 +162,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
         double ymax = minmax[3];
         boolean ymaxLabel = false;
         if (Double.isNaN(ymax)) {
-            if (C.cfg.labels) {
+            if (Calc.cfg.labels) {
                 canvasHeight -= infoHeight;
                 ymaxLabel = true;
             }
@@ -260,7 +260,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
         g.drawImage(im, 0, ymaxLabel ? infoHeight : 0, Graphics.TOP | Graphics.LEFT);
         im = null;
 
-        if (C.cfg.labels) {
+        if (Calc.cfg.labels) {
             final int yoff = ymaxLabel ? infoHeight + canvasHeight : canvasHeight;
             final int colourBoxWidth = Math.max(fontHeight, 8);
             g.setColor(COLOR_INFOBG);
@@ -319,7 +319,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
         double xf = width / (fxmax - fxmin),
                yf = height / (fymax - fymin);
 
-        if (C.cfg.aspectRatio1) {
+        if (Calc.cfg.aspectRatio1) {
             xf = yf = Math.min(xf, yf);
         }
 
@@ -381,7 +381,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
         yf = height / (fymax - fymin);
 
         double xmin, xmax, ymin, ymax;
-        if (C.cfg.aspectRatio1 || fxmin == fxmax || fymin == fymax) {
+        if (Calc.cfg.aspectRatio1 || fxmin == fxmax || fymin == fymax) {
             xf = yf = Math.min(xf, yf);
             double xcenter = 0.5 * (fxmin + fxmax),
                    ycenter = 0.5 * (fymin + fymax);
@@ -401,7 +401,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
         //Log.log("Plotting " + n + " points");
 
         /* Draw axes and labels */
-        if (C.cfg.axes) {
+        if (Calc.cfg.axes) {
             g.setGrayScale(GRAY_AXES);
             if (xmin <= 0 && 0 <= xmax) {
                 int xx = (int) (-xmin * xf);
@@ -413,7 +413,7 @@ public class PlotCanvas extends Canvas implements VMConstants {
             }
         }
 
-        if (C.cfg.labels) {
+        if (Calc.cfg.labels) {
             int fontHeight = smallFont.getHeight();
             int w = width / 2 - smallFont.stringWidth("x=") - 7;
             g.setColor(COLOR_LABEL_LT);

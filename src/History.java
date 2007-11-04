@@ -65,10 +65,10 @@ class History {
         compiler = iniCompiler;
         historyPos = 0;
         
-        Vector v = new Vector(C.RS_MAX_HIST);
+        Vector v = new Vector(Calc.RS_MAX_HIST);
         DataInputStream is;
-        int recId = C.RS_HIST_START, seq = 0;
-        while (recId < C.RS_MAX_HIST+C.RS_HIST_START && (is=C.rs.readIS(recId)) != null) {
+        int recId = Calc.RS_HIST_START, seq = 0;
+        while (recId < Calc.RS_MAX_HIST+Calc.RS_HIST_START && (is=Calc.rs.readIS(recId)) != null) {
             try {
                 seq = is.readInt();
             } catch (IOException e) {
@@ -147,14 +147,14 @@ class History {
             }
             newEntry.write(dataOut);
             ++posMaxSeq;
-            if (posMaxSeq >= C.RS_MAX_HIST) {
+            if (posMaxSeq >= Calc.RS_MAX_HIST) {
                 posMaxSeq = 0;
             }
-            int recId = posMaxSeq + C.RS_HIST_START;
-            C.rs.write(recId, dataOut.getBytesAndReset());
+            int recId = posMaxSeq + Calc.RS_HIST_START;
+            Calc.rs.write(recId, dataOut.getBytesAndReset());
             history.insertElementAt(newEntry, 1);
-            if (history.size() > C.RS_MAX_HIST+1) {
-                history.setSize(C.RS_MAX_HIST+1);
+            if (history.size() > Calc.RS_MAX_HIST+1) {
+                history.setSize(Calc.RS_MAX_HIST+1);
             }
         }
         historyPos = 0;

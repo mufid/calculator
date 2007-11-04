@@ -26,7 +26,7 @@ public class Variables implements VMConstants
                 funcs[i] = new CompiledFunction(result.function);
                 funcs[i].write(os);
             }
-            C.rs.write(C.RS_SYMB_START + i, os.getBytesAndReset());
+            Calc.rs.write(Calc.RS_SYMB_START + i, os.getBytesAndReset());
         } catch (IOException e) {
             Log.log(e);
         }
@@ -60,7 +60,7 @@ public class Variables implements VMConstants
         DataInputStream is;
         try {
             for (int i = 0; i < VARS_CNT; ++i) {
-                is = C.rs.readIS(C.RS_SYMB_START + i);
+                is = Calc.rs.readIS(Calc.RS_SYMB_START + i);
                 if (is == null)
                     continue;
                 switch (types[i] = is.readChar()) {

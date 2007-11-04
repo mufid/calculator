@@ -80,7 +80,7 @@ class CalcCanvas extends Canvas implements VMConstants {
         historyFont = Font.getFont(0, 0, isSmallScreen ? Font.SIZE_SMALL  : Font.SIZE_MEDIUM);
         lineHeight  = font.getHeight(); //+1
 
-        C.cfg.initPiSymbol(new Font[] { font, historyFont });
+        Calc.cfg.initPiSymbol(new Font[] { font, historyFont });
 
         img = Image.createImage(screenW, screenH);
         gg  = img.getGraphics();
@@ -94,14 +94,14 @@ class CalcCanvas extends Canvas implements VMConstants {
         clientW = screenW - 2*clientX;
 
         history = new History(compiler);
-        DataInputStream is = C.rs.readIS(C.RS_CURRENT);
+        DataInputStream is = Calc.rs.readIS(Calc.RS_CURRENT);
         updateFromHistEntry(is == null ? new HistEntry("1+1", 0, false) : new HistEntry(is));
         if (is == null) {
             for (int i = 0; i < initHistory.length; ++i) {
                 String str = initHistory[i];
                 int piIdx = str.indexOf("{PI}");
                 if (piIdx != -1) {
-                    str = str.substring(0, piIdx) + C.cfg.piString + str.substring(piIdx + 4, str.length());
+                    str = str.substring(0, piIdx) + Calc.cfg.piString + str.substring(piIdx + 4, str.length());
                 }
                 final int len = str.length();
                 char[] chs = new char[len + 1]; // one extra char for '$' which Lexer inserts
@@ -367,7 +367,7 @@ class CalcCanvas extends Canvas implements VMConstants {
     }
 
     String format(double v) {
-        String str = Util.doubleToString(v, C.cfg.roundingDigits);
+        String str = Util.doubleToString(v, Calc.cfg.roundingDigits);
         //int len  = str.length();
         int ePos = str.lastIndexOf('E');
         if (ePos == -1) {
@@ -552,7 +552,7 @@ class CalcCanvas extends Canvas implements VMConstants {
             history.enter(line, len, lineStr());
             Result res = Compiler.result;
             if (res.errorStart == -1 && res.plotCommand != -1)
-                C.self.plotCanvas.plot(res);
+                Calc.self.plotCanvas.plot(res);
             updateFromHistEntry(history.getCurrent());
             doChanged(-1);
             updateHistory();
@@ -560,7 +560,7 @@ class CalcCanvas extends Canvas implements VMConstants {
             
         case Canvas.GAME_A:
         case Canvas.GAME_C:
-            C.self.displayMenu();
+            Calc.self.displayMenu();
             break;
             
         case Canvas.GAME_B:
@@ -632,7 +632,7 @@ class CalcCanvas extends Canvas implements VMConstants {
                        : 0)
                     : Lexer.getBuiltinArity(sym);
                     if (!Lexer.matchesPlotArity(arity, StringWrapper.getTemp(line, 0, oldPos + 1))) {
-                        if (sym == MAP && C.cfg.aspectRatio1)
+                        if (sym == MAP && Calc.cfg.aspectRatio1)
                             arity = 4;
                         String parens = arityParens[arity];
                         int parensLen = parens.length();
@@ -662,9 +662,9 @@ class CalcCanvas extends Canvas implements VMConstants {
                  key == -57345 ||    //Qtek
                  key == -202 ||      //LG?
                  key == -4)) {       //Siemens, right soft key
-                C.self.displayMenu();
+                Calc.self.displayMenu();
             } else if (action == 0 && key == KEY_END) {
-                C.self.terminate();
+                Calc.self.terminate();
             } else {
                 if (action != 0) {
                     handleAction(action);
@@ -712,7 +712,7 @@ class CalcCanvas extends Canvas implements VMConstants {
     DataOut dataOut = new DataOut();
     void saveOnExit() {
         new HistEntry(lineStr(), 0, false).write(dataOut);
-        C.rs.write(C.RS_CURRENT, dataOut.getBytesAndReset());
+        Calc.rs.write(Calc.RS_CURRENT, dataOut.getBytesAndReset());
     }
 
     private String lineStr = null;
