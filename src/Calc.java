@@ -3,9 +3,9 @@
 
 import javax.microedition.lcdui.*;
 import java.io.*;
-import javax.microedition.midlet.*;
+import javax.microedition.midlet.MIDlet;
 
-public final class Calc extends MIDlet implements CommandListener, Runnable {
+public final class Calc extends BasicMIDlet implements CommandListener, Runnable {
     static UnitTest dummy;
     static Calc self;
         
@@ -202,27 +202,12 @@ public final class Calc extends MIDlet implements CommandListener, Runnable {
             break;
             
         case CMD_EXIT:
-            terminate();
+            exit();
             break;
         }
     }
 
-    public void terminate() {
-        onExit();
-        notifyDestroyed();
-    }
-
-    protected void startApp() {
-    }
-
-    protected void pauseApp() {
-    }
-
-    protected void destroyApp(boolean uncond) { //throws MIDletStateChangeException {
-        onExit();
-    }
-
-    private void onExit() {
+    protected void onExit() {
         calcCanvas.saveOnExit();
     }
 }
