@@ -664,7 +664,7 @@ class CalcCanvas extends Canvas implements VMConstants {
                  key == -4)) {       //Siemens, right soft key
                 Calc.self.displayMenu();
             } else if (action == 0 && key == KEY_END) {
-                Calc.self.terminate();
+                Calc.self.exit();
             } else {
                 if (action != 0) {
                     handleAction(action);
