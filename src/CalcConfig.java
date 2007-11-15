@@ -5,6 +5,8 @@ import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 
+import org.javia.lib.*;
+
 class CalcConfig {
     private static final String
         ANGLE_KEY    = "angleUnit",

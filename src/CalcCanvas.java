@@ -4,6 +4,8 @@
 import javax.microedition.lcdui.*;
 import java.io.*;
 
+import org.javia.lib.*;
+
 ///#define START_LINE(lines, n) (((n)==0)?0:lines[n-1])
 
 class CalcCanvas extends Canvas implements VMConstants {

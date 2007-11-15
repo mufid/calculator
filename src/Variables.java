@@ -4,6 +4,8 @@
 import java.io.DataInputStream;
 import java.io.IOException;
 
+import org.javia.lib.*;
+
 public class Variables implements VMConstants
 {
     public static final char TYPE_UNDEF = 0, TYPE_NUM = 1, TYPE_FUNC = 2;

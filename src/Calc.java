@@ -5,6 +5,8 @@ import javax.microedition.lcdui.*;
 import java.io.*;
 import javax.microedition.midlet.MIDlet;
 
+import org.javia.lib.*;
+
 public final class Calc extends BasicMIDlet implements CommandListener, Runnable {
     static UnitTest dummy;
     static Calc self;
@@ -145,7 +147,7 @@ public final class Calc extends BasicMIDlet implements CommandListener, Runnable
 
     public void commandAction(Command c, Displayable d) {
         display.setCurrent(calcCanvas);
-        switch (((Cmd)c).id) {
+        switch (((Cmd)c).id()) {
         case CMD_OK:
             break;
 
