@@ -1,6 +1,8 @@
 // Copyright (c) 2007 Mihai Preda.
 // Available under the MIT License (see COPYING).
 
+import org.javia.lib.*;
+
 class FormatCase {
     public FormatCase(int rounding, double v, String s) {
         this.rounding = rounding;

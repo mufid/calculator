@@ -4,6 +4,8 @@
 import java.util.*;
 import java.io.*;
 
+import org.javia.lib.*;
+
 class HistEntry {
     String base, edited;
     double result;

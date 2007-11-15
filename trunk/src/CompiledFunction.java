@@ -6,6 +6,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Random;
 
+import org.javia.lib.*;
+
 final public class CompiledFunction implements VMConstants {
 
     private static final int MAX_INST = 100, MAX_LITERALS = 50, MAX_STACKSIZE = 50;
