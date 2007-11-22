@@ -8,7 +8,7 @@ import java.util.Random;
 
 import org.javia.lib.*;
 
-final public class CompiledFunction implements VMConstants {
+final public class CompiledFunction {
 
     private static final int MAX_INST = 100, MAX_LITERALS = 50, MAX_STACKSIZE = 50;
 
@@ -146,147 +146,147 @@ final public class CompiledFunction implements VMConstants {
         for (int i = 0; i < inst_cnt; ++i) {
             op = inst[i];
             switch (op) {
-            case LITERAL:
+            case VM.LITERAL:
                 stack[++s] = literals[++litIdx];
                 break;
-            case PRECOMP_X_FRAG:
+            case VM.PRECOMP_X_FRAG:
                 stack[++s] = precompFragmentsX[++fragmentsXidx];
                 break;
-            case PRECOMP_Y_FRAG:
+            case VM.PRECOMP_Y_FRAG:
                 stack[++s] = precompFragmentsY[++fragmentsYidx];
                 break;
-            case PAR_X: case PAR_Y: case PAR_Z:
-                stack[++s] = stack[s0 - arity + 1 + op - FIRST_PAR];
+            case VM.PAR_X: case VM.PAR_Y: case VM.PAR_Z:
+                stack[++s] = stack[s0 - arity + 1 + op - VM.FIRST_PAR];
                 break;
-            case VAR_A: case VAR_B: case VAR_C: case VAR_D:
-            case VAR_M: case VAR_N: case VAR_F: case VAR_G: case VAR_H:
+            case VM.VAR_A: case VM.VAR_B: case VM.VAR_C: case VM.VAR_D:
+            case VM.VAR_M: case VM.VAR_N: case VM.VAR_F: case VM.VAR_G: case VM.VAR_H:
                 stack[++s] = Variables.getNumber(op);
                 break;
-            case VARFUN_A: case VARFUN_B: case VARFUN_C: case VARFUN_D:
-            case VARFUN_M: case VARFUN_N: case VARFUN_F: case VARFUN_G: case VARFUN_H:
+            case VM.VARFUN_A: case VM.VARFUN_B: case VM.VARFUN_C: case VM.VARFUN_D:
+            case VM.VARFUN_M: case VM.VARFUN_N: case VM.VARFUN_F: case VM.VARFUN_G: case VM.VARFUN_H:
             {
-                Variables.funcs[op - FIRST_VARFUN].evaluate0();
+                Variables.funcs[op - VM.FIRST_VARFUN].evaluate0();
                 final int s1 = s - inst[++i];
                 stack[s1] = stack[s];
                 s = s1;
                 break;
             }
-            case CONST_PI:
+            case VM.CONST_PI:
                 stack[++s] = Math.PI;
                 break;
-            case CONST_E:
+            case VM.CONST_E:
                 stack[++s] = Math.E;
                 break;
-            case CONST_RND:
+            case VM.CONST_RND:
                 stack[++s] = rng.nextDouble();
                 break;
-            case CONST_ANS:
+            case VM.CONST_ANS:
                 stack[++s] = History.ans;
                 break;
-            case UMINUS:
+            case VM.UMINUS:
                 stack[s] = -stack[s];
                 break;
-            case PLUS:
+            case VM.PLUS:
                 stack[s-1] += stack[s];
                 --s;
                 break;
-            case MINUS:
+            case VM.MINUS:
                 stack[s-1] -= stack[s];
                 --s;
                 break;
-            case TIMES:
+            case VM.TIMES:
                 stack[s-1] *= stack[s];
                 --s;
                 break;
-            case DIVIDE:
+            case VM.DIVIDE:
                 stack[s-1] /= stack[s];
                 --s;
                 break;
-            case MODULO:
+            case VM.MODULO:
                 stack[s-1] %= stack[s];
                 --s;
                 break;
-            case POWER:
+            case VM.POWER:
                 stack[s-1] = MoreMath.pow(stack[s-1], stack[s]);
                 --s;
                 break;
-            case SIN: case COS: case TAN: case ASIN: case ACOS: case ATAN:
+            case VM.SIN: case VM.COS: case VM.TAN: case VM.ASIN: case VM.ACOS: case VM.ATAN:
                 stack[s] = trigEval(op, stack[s]);
                 break;
-            case FACTORIAL:
+            case VM.FACTORIAL:
                 stack[s] = MoreMath.factorial(stack[s]);
                 break;
-            case ABS:
+            case VM.ABS:
                 stack[s] = Math.abs(stack[s]);
                 break;
-            case INT:
+            case VM.INT:
                 stack[s] = MoreMath.trunc(stack[s]);
                 break;
-            case FRAC:
+            case VM.FRAC:
                 stack[s] = stack[s] - MoreMath.trunc(stack[s]);
                 break;
-            case FLOOR:
+            case VM.FLOOR:
                 stack[s] = Math.floor(stack[s]);
                 break;
-            case CEIL:
+            case VM.CEIL:
                 stack[s] = Math.ceil(stack[s]);
                 break;
-            case SIGN:
+            case VM.SIGN:
                 stack[s] = stack[s] > 0. ? 1. : stack[s] < 0. ? -1. : 0.;
                 break;
-            case EXP:
+            case VM.EXP:
                 stack[s] = MoreMath.exp(stack[s]);
                 break;
-            case LOG:
+            case VM.LOG:
                 stack[s] = MoreMath.log(stack[s]);
                 break;
-            case LOG10:
+            case VM.LOG10:
                 stack[s] = MoreMath.log10(stack[s]);
                 break;
-            case LOG2:
+            case VM.LOG2:
                 stack[s] = MoreMath.log2(stack[s]);
                 break;
-            case SQRT:
+            case VM.SQRT:
                 stack[s] = Math.sqrt(stack[s]);
                 break;
-            case CBRT:
+            case VM.CBRT:
                 stack[s] = MoreMath.cbrt(stack[s]);
                 break;
-            case SINH:
+            case VM.SINH:
                 stack[s] = MoreMath.sinh(stack[s]);
                 break;
-            case COSH:
+            case VM.COSH:
                 stack[s] = MoreMath.cosh(stack[s]);
                 break;
-            case TANH:
+            case VM.TANH:
                 stack[s] = MoreMath.tanh(stack[s]);
                 break;
-            case ASINH:
+            case VM.ASINH:
                 stack[s] = MoreMath.asinh(stack[s]);
                 break;
-            case ACOSH:
+            case VM.ACOSH:
                 stack[s] = MoreMath.acosh(stack[s]);
                 break;
-            case ATANH:
+            case VM.ATANH:
                 stack[s] = MoreMath.atanh(stack[s]);
                 break;
-            case MIN:
+            case VM.MIN:
                 stack[s-1] = Math.min(stack[s-1], stack[s]);
                 --s;
                 break;
-            case MAX:
+            case VM.MAX:
                 stack[s-1] = Math.max(stack[s-1], stack[s]);
                 --s;
                 break;
-            case GCD:
+            case VM.GCD:
                 stack[s-1] = MoreMath.gcd(stack[s-1], stack[s]);
                 --s;
                 break;
-            case COMB:
+            case VM.COMB:
                 stack[s-1] = MoreMath.comb(stack[s-1], stack[s]);
                 --s;
                 break;
-            case PERM:
+            case VM.PERM:
                 stack[s-1] = MoreMath.perm(stack[s-1], stack[s]);
                 --s;
                 break;
@@ -317,14 +317,14 @@ final public class CompiledFunction implements VMConstants {
         int result = PASS;
         for (int i = 0; i < inst_cnt; ++i) {
             int op = inst[i];
-            if (FIRST_VAR <= op && op <= LAST_VAR) {
+            if (VM.FIRST_VAR <= op && op <= VM.LAST_VAR) {
                 if (!Variables.isNumber(op))
                     return FAIL;
-            } else if (FIRST_VARFUN <= op && op <= LAST_VARFUN) {
-                op -= VARFUN_OFFSET;
+            } else if (VM.FIRST_VARFUN <= op && op <= VM.LAST_VARFUN) {
+                op -= VM.VARFUN_OFFSET;
                 if (!Variables.isFunction(op))
                     return FAIL;
-                final int varBit = 1 << (op - FIRST_VAR);
+                final int varBit = 1 << (op - VM.FIRST_VAR);
                 if ((forbidden & varBit) != 0)
                     return FAIL;
                 if ((flaggable & varBit) != 0)
@@ -344,12 +344,12 @@ final public class CompiledFunction implements VMConstants {
     private double trigEval(int op, double x) {
         final double f = Calc.cfg.trigFactor;
         switch (op) {
-        case SIN:   x /= f; return MoreMath.isPiMultiple(x) ? 0 : Math.sin(x);
-        case COS:   x /= f; return MoreMath.isPiMultiple(x + MoreMath.PI_2) ? 0 : Math.cos(x);
-        case TAN:   return Math.tan(x/f);
-        case ASIN:  return MoreMath.asin(x) * f;
-        case ACOS:  return MoreMath.acos(x) * f;
-        case ATAN:  return MoreMath.atan(x) * f;
+        case VM.SIN:   x /= f; return MoreMath.isPiMultiple(x) ? 0 : Math.sin(x);
+        case VM.COS:   x /= f; return MoreMath.isPiMultiple(x + MoreMath.PI_2) ? 0 : Math.cos(x);
+        case VM.TAN:   return Math.tan(x/f);
+        case VM.ASIN:  return MoreMath.asin(x) * f;
+        case VM.ACOS:  return MoreMath.acos(x) * f;
+        case VM.ATAN:  return MoreMath.atan(x) * f;
         }
         return 0;
     }
@@ -358,12 +358,12 @@ final public class CompiledFunction implements VMConstants {
         if (func.inst_cnt != func.arity + 2)
             return func;
         int called_fn = func.inst[func.inst_cnt - 2];
-        if (!(FIRST_VARFUN <= called_fn && called_fn <= LAST_VARFUN))
+        if (!(VM.FIRST_VARFUN <= called_fn && called_fn <= VM.LAST_VARFUN))
             return func;
         for (int i = 0; i < func.arity; ++i)
-            if (func.inst[i] != FIRST_PAR + i)
+            if (func.inst[i] != VM.FIRST_PAR + i)
                 return func;
-        return Variables.funcs[called_fn - FIRST_VARFUN];
+        return Variables.funcs[called_fn - VM.FIRST_VARFUN];
     }
 
     private final static int DEPEND_NONE = 0, DEPEND_X = 1, DEPEND_Y = 2, DEPEND_MIX = 3;
@@ -435,10 +435,10 @@ final public class CompiledFunction implements VMConstants {
         // lit_start/end describe the range of literals used in its computation.
         for (int i = 0; i < inst_cnt; ++i) {
             int op = inst[i];
-            if (FIRST_OP1 <= op && op <= LAST_OP1 || FIRST_FUNCTION1 <= op && op <= LAST_FUNCTION1) {
+            if (VM.FIRST_OP1 <= op && op <= VM.LAST_OP1 || VM.FIRST_FUNCTION1 <= op && op <= VM.LAST_FUNCTION1) {
                 inst_end[s] = i;
                 lit_end[s] = last_lit;
-            } else if (FIRST_OP2 <= op && op <= LAST_OP2 || FIRST_FUNCTION2 <= op && op <= LAST_FUNCTION2) {
+            } else if (VM.FIRST_OP2 <= op && op <= VM.LAST_OP2 || VM.FIRST_FUNCTION2 <= op && op <= VM.LAST_FUNCTION2) {
                 final int d1 = depends[s - 1], d2 = depends[s], dx = d1 | d2;
                 if (dx == DEPEND_MIX) {
                     if (d1 == DEPEND_X || d1 == DEPEND_Y)
@@ -454,23 +454,23 @@ final public class CompiledFunction implements VMConstants {
                 lit_end[s] = last_lit;
             } else
                 switch (op) {
-                case LITERAL:
-                case CONST_PI: case CONST_E: case CONST_ANS:
-                case VAR_A: case VAR_B: case VAR_C: case VAR_D:
-                case VAR_M: case VAR_N: case VAR_F: case VAR_G: case VAR_H:
+                case VM.LITERAL:
+                case VM.CONST_PI: case VM.CONST_E: case VM.CONST_ANS:
+                case VM.VAR_A: case VM.VAR_B: case VM.VAR_C: case VM.VAR_D:
+                case VM.VAR_M: case VM.VAR_N: case VM.VAR_F: case VM.VAR_G: case VM.VAR_H:
                     depends[++s] = DEPEND_NONE;
                     inst_start[s] = inst_end[s] = i;
                     lit_start[s] = last_lit + 1;
-                    if (op == LITERAL)
+                    if (op == VM.LITERAL)
                         ++last_lit;
                     lit_end[s] = last_lit;
                     break;
-                case VARFUN_A: case VARFUN_B: case VARFUN_C: case VARFUN_D:
-                case VARFUN_M: case VARFUN_N: case VARFUN_F: case VARFUN_G: case VARFUN_H:
+                case VM.VARFUN_A: case VM.VARFUN_B: case VM.VARFUN_C: case VM.VARFUN_D:
+                case VM.VARFUN_M: case VM.VARFUN_N: case VM.VARFUN_F: case VM.VARFUN_G: case VM.VARFUN_H:
                 {
                     final int arity = inst[++i];
                     int dx;
-                    if (Variables.funcs[op - FIRST_VARFUN].isRandom())
+                    if (Variables.funcs[op - VM.FIRST_VARFUN].isRandom())
                         dx = DEPEND_MIX;
                     else {
                         dx = 0;
@@ -491,19 +491,19 @@ final public class CompiledFunction implements VMConstants {
                     lit_end[s] = last_lit;
                     break;
                 }
-                case PAR_X:
+                case VM.PAR_X:
                     depends[++s] = DEPEND_X;
                     inst_start[s] = inst_end[s] = i;
                     lit_start[s] = last_lit + 1;
                     lit_end[s] = last_lit;
                     break;
-                case PAR_Y:
+                case VM.PAR_Y:
                     depends[++s] = DEPEND_Y;
                     inst_start[s] = inst_end[s] = i;
                     lit_start[s] = last_lit + 1;
                     lit_end[s] = last_lit;
                     break;
-                case CONST_RND:
+                case VM.CONST_RND:
                     depends[++s] = DEPEND_MIX;
                     inst_start[s] = inst_end[s] = i;
                     lit_start[s] = last_lit + 1;
@@ -553,9 +553,9 @@ final public class CompiledFunction implements VMConstants {
                 inst[new_inst_cnt++] = inst[i];
             } else {
                 final CompiledFunction fn = frag.type == DEPEND_X ? fragmentsX : fragmentsY;
-                fn.inst[fn.inst_cnt++] = inst[i] == PAR_Y ? PAR_X : inst[i];
+                fn.inst[fn.inst_cnt++] = inst[i] == VM.PAR_Y ? VM.PAR_X : inst[i];
                 if (i == start)
-                    inst[new_inst_cnt++] = frag.type == DEPEND_X ? PRECOMP_X_FRAG : PRECOMP_Y_FRAG;
+                    inst[new_inst_cnt++] = frag.type == DEPEND_X ? VM.PRECOMP_X_FRAG : VM.PRECOMP_Y_FRAG;
                 if (i == end)
                     frag = fragments[++fragIdx];
             }
@@ -594,10 +594,10 @@ final public class CompiledFunction implements VMConstants {
         int op;
         for (int i = 0; i < inst_cnt; ++i) {
             switch (op = inst[i]) {
-            case CONST_RND: return true;
-            case VARFUN_A: case VARFUN_B: case VARFUN_C: case VARFUN_D:
-            case VARFUN_M: case VARFUN_N: case VARFUN_F: case VARFUN_G: case VARFUN_H:
-                if (Variables.funcs[op - FIRST_VARFUN].isRandom())
+            case VM.CONST_RND: return true;
+            case VM.VARFUN_A: case VM.VARFUN_B: case VM.VARFUN_C: case VM.VARFUN_D:
+            case VM.VARFUN_M: case VM.VARFUN_N: case VM.VARFUN_F: case VM.VARFUN_G: case VM.VARFUN_H:
+                if (Variables.funcs[op - VM.FIRST_VARFUN].isRandom())
                     return true;
                 ++i;
             }

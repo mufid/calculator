@@ -8,7 +8,7 @@ import org.javia.lib.*;
 
 ///#define START_LINE(lines, n) (((n)==0)?0:lines[n-1])
 
-class CalcCanvas extends Canvas implements VMConstants {
+class CalcCanvas extends Canvas {
     
     private static int START_LINE(int[] lines, int n) { return n == 0 ? 0 : lines[n-1]; }
     
@@ -325,7 +325,7 @@ class CalcCanvas extends Canvas implements VMConstants {
         if (cmdSlot[0] != -1) {
             String help = null;
             if (cmdSlot[1] != -1) {
-                String[] helps = plotParamHelp[cmdSlot[0] - FIRST_PLOT_COMMAND];
+                String[] helps = plotParamHelp[cmdSlot[0] - VM.FIRST_PLOT_COMMAND];
                 if (cmdSlot[1] < helps.length)
                     help = helps[cmdSlot[1]];
             }
@@ -634,7 +634,7 @@ class CalcCanvas extends Canvas implements VMConstants {
                        : 0)
                     : Lexer.getBuiltinArity(sym);
                     if (!Lexer.matchesPlotArity(arity, StringWrapper.getTemp(line, 0, oldPos + 1))) {
-                        if (sym == MAP && Calc.cfg.aspectRatio1)
+                        if (sym == VM.MAP && Calc.cfg.aspectRatio1)
                             arity = 4;
                         String parens = arityParens[arity];
                         int parensLen = parens.length();
