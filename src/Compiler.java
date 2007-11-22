@@ -1,8 +1,7 @@
 // Copyright (c) 2007 Carlo Teubner.
 // Available under the MIT License (see COPYING).
 
-public class Compiler implements VMConstants
-{
+public class Compiler {
     private Lexer lexer;
     private CompiledFunction func, func2;
     private int arity;
@@ -25,7 +24,7 @@ public class Compiler implements VMConstants
             int start;
             if (Lexer.isAssignment(StringWrapper.getTemp(input, 0, len))) {
                 definedSymbol = Lexer.getSymbol(StringWrapper.getTemp(input, 0, 1));
-                if (!(FIRST_VAR <= definedSymbol && definedSymbol <= LAST_VAR))
+                if (!(VM.FIRST_VAR <= definedSymbol && definedSymbol <= VM.LAST_VAR))
                     throw error;
                 start = 3;
             } else
@@ -102,7 +101,7 @@ public class Compiler implements VMConstants
     private void compileExpr() throws SyntaxError {
         compileProduct();
         int op = lexer.peekToken();
-        while (op == PLUS || op == MINUS) {
+        while (op == VM.PLUS || op == VM.MINUS) {
             lexer.nextToken();
             compileProduct();
             func.pushInstr(op);
@@ -113,11 +112,11 @@ public class Compiler implements VMConstants
     private void compileProduct() throws SyntaxError {
         compilePower();
         int op = lexer.peekToken();
-        while (op != PLUS && op != MINUS && op != Lexer.TOK_COMMA && op != Lexer.TOK_RPAREN && op != Lexer.TOK_END) {
-            if (op == TIMES || op == DIVIDE || op == MODULO)
+        while (op != VM.PLUS && op != VM.MINUS && op != Lexer.TOK_COMMA && op != Lexer.TOK_RPAREN && op != Lexer.TOK_END) {
+            if (op == VM.TIMES || op == VM.DIVIDE || op == VM.MODULO)
                 lexer.nextToken();
             else
-                op = TIMES;
+                op = VM.TIMES;
             compilePower();
             func.pushInstr(op);
             op = lexer.peekToken();
@@ -128,30 +127,30 @@ public class Compiler implements VMConstants
         boolean uminus = false;
         while (true) {
             switch (lexer.peekToken()) {
-            case MINUS: uminus = !uminus;  // fall through
-            case PLUS: lexer.nextToken(); continue;
+            case VM.MINUS: uminus = !uminus;  // fall through
+            case VM.PLUS: lexer.nextToken(); continue;
             }
             break;
         }
         compileFactorial();
         int op = lexer.peekToken();
-        if (op == POWER) {
+        if (op == VM.POWER) {
             lexer.nextToken();
-            boolean e = func.topInstr() == CONST_E;
+            boolean e = func.topInstr() == VM.CONST_E;
             if (e)
                 func.popInstr();
             compilePower();
-            func.pushInstr(e ? EXP : POWER);
+            func.pushInstr(e ? VM.EXP : VM.POWER);
         }
         if (uminus)
-            func.pushInstr(UMINUS);
+            func.pushInstr(VM.UMINUS);
     }
 
     private void compileFactorial() throws SyntaxError {
         compileUnary();
-        while (lexer.peekToken() == FACTORIAL) {
+        while (lexer.peekToken() == VM.FACTORIAL) {
             lexer.nextToken();
-            func.pushInstr(FACTORIAL);
+            func.pushInstr(VM.FACTORIAL);
         }
     }
 
@@ -169,30 +168,30 @@ public class Compiler implements VMConstants
             c = lexer.nextToken();
             if (!(c == Lexer.TOK_RPAREN || c == Lexer.TOK_END))
                 throw error;
-        } else if (c == LITERAL) {
+        } else if (c == VM.LITERAL) {
             func.pushLiteral(lexer.number());
-            func.pushInstr(LITERAL);
-        } else if (FIRST_PAR <= c && c <= LAST_PAR) {
-            if (definedSymbol == -1 && c - FIRST_PAR + 1 > parameterCallArity)
+            func.pushInstr(VM.LITERAL);
+        } else if (VM.FIRST_PAR <= c && c <= VM.LAST_PAR) {
+            if (definedSymbol == -1 && c - VM.FIRST_PAR + 1 > parameterCallArity)
                 throw error;
-            if (x_is_t && c == PAR_X)
+            if (x_is_t && c == VM.PAR_X)
                 throw error;
-            arity = Math.max(arity, c - FIRST_PAR + 1);
+            arity = Math.max(arity, c - VM.FIRST_PAR + 1);
             func.pushInstr(c);
         } else if (c == Lexer.TOK_PAR_T) {
             if (!x_is_t)
                 throw error;
             arity = 1;
-            func.pushInstr(PAR_X);
-        } else if (FIRST_CONST <= c && c <= LAST_CONST) {
+            func.pushInstr(VM.PAR_X);
+        } else if (VM.FIRST_CONST <= c && c <= VM.LAST_CONST) {
             func.pushInstr(c);
-        } else if (FIRST_VAR <= c && c <= LAST_VAR) {
+        } else if (VM.FIRST_VAR <= c && c <= VM.LAST_VAR) {
             switch (Variables.getType(c)) {
             case Variables.TYPE_FUNC:
             {
                 CompiledFunction fn = Variables.getFunction(c);
-                final int forbidden = 1 << (c - FIRST_VAR),
-                          flaggable = definedSymbol != -1 ? (1 << (definedSymbol - FIRST_VAR)) : 0;
+                final int forbidden = 1 << (c - VM.FIRST_VAR),
+                          flaggable = definedSymbol != -1 ? (1 << (definedSymbol - VM.FIRST_VAR)) : 0;
                 final int status = fn.check(forbidden, flaggable);
                 if (status == CompiledFunction.FAIL)
                     throw error;
@@ -200,7 +199,7 @@ public class Compiler implements VMConstants
                     selfRefPos = lexer.lastPos();
                 final int fn_arity = fn.arity();
                 compileArgList(fn_arity);
-                func.pushInstr(c + VARFUN_OFFSET, fn_arity);
+                func.pushInstr(c + VM.VARFUN_OFFSET, fn_arity);
                 break;
             }
             case Variables.TYPE_NUM:
@@ -209,7 +208,7 @@ public class Compiler implements VMConstants
             default:
                 throw error;
             }
-        } else if (FIRST_FUNCTION <= c && c <= LAST_FUNCTION) {
+        } else if (VM.FIRST_FUNCTION <= c && c <= VM.LAST_FUNCTION) {
             compileArgList(Lexer.getBuiltinArity(c));
             func.pushInstr(c);
         } else
@@ -220,7 +219,7 @@ public class Compiler implements VMConstants
         if (lexer.peekToken() != Lexer.TOK_LPAREN) {
             if (fn_arity == parameterCallArity) {
                 for (int i = 0; i < fn_arity; ++i)
-                    func.pushInstr(FIRST_PAR + i);
+                    func.pushInstr(VM.FIRST_PAR + i);
                 return;
             }
             throw error;
@@ -241,11 +240,11 @@ public class Compiler implements VMConstants
         if (lexer.nextToken() != Lexer.TOK_LPAREN)
             throw error;
         parameterCallArity = Lexer.plotFunctionArity(plotCommand);
-        if (plotCommand == PARPLOT)
+        if (plotCommand == VM.PARPLOT)
             x_is_t = true;
         compileExpr();
         func.setArity(parameterCallArity);
-        if (plotCommand == PARPLOT) {
+        if (plotCommand == VM.PARPLOT) {
             if (lexer.nextToken() != Lexer.TOK_COMMA)
                 throw error;
             if (func2 == null)
@@ -257,14 +256,14 @@ public class Compiler implements VMConstants
             x_is_t = false;
         }
         parameterCallArity = -1;
-        final int remainingArity = Lexer.getBuiltinArity(plotCommand) - (plotCommand == PARPLOT ? 2 : 1);
+        final int remainingArity = Lexer.getBuiltinArity(plotCommand) - (plotCommand == VM.PARPLOT ? 2 : 1);
         if (plotArgs == null)
             plotArgs = new double[4];
         boolean lastMapArgMissing = false;
         double prevPlotArg = 0; // compiler complains without initialization
         for (int i = 0; i < remainingArity; ++i) {
             if (lexer.peekToken() != Lexer.TOK_COMMA) {
-                if (i == remainingArity - 1 && plotCommand == MAP) {
+                if (i == remainingArity - 1 && plotCommand == VM.MAP) {
                     lastMapArgMissing = true;
                     break;
                 } else {

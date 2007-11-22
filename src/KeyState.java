@@ -3,7 +3,7 @@
 
 import javax.microedition.lcdui.*;
 
-class KeyState implements VMConstants {
+class KeyState {
     static Font font;
     static int fontHeight;
     static int w, h, cellWidth, cellHeight, yPos;
@@ -67,14 +67,14 @@ class KeyState implements VMConstants {
                   return;
               }
               switch (Lexer.getFunctionPlotCommand(pre)) {
-              case PLOT:
+              case VM.PLOT:
                   keys[0] = "x";
                   break;
-              case MAP:
+              case VM.MAP:
                   keys[0] = "x";
                   keys[1] = "y";
                   break;
-              case PARPLOT:
+              case VM.PARPLOT:
                   keys[0] = "t";
                   break;
               }
