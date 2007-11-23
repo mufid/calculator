@@ -321,7 +321,7 @@ class CalcCanvas extends Canvas {
         //Log.log("pos " + pos + " row " + cursorRow + " col " + cursorCol + " x " + cursorX + " y " + cursorY);
         setCursor(true);
 
-        final int[] cmdSlot = Lexer.getPlotCommandAndSlot(StringWrapper.getTemp(line, 0, len), pos + 1);
+        final int[] cmdSlot = Lexer.getPlotCommandAndSlot(new String(line, 0, len), pos + 1);
         if (cmdSlot[0] != -1) {
             String help = null;
             if (cmdSlot[1] != -1) {
@@ -421,7 +421,7 @@ class CalcCanvas extends Canvas {
         int p = pos;
         if (p >= 1 && line[p] == '(') {
             do { --p; } while (p >= 0 && Lexer.isLetter(line[p]));
-            final int sym = Lexer.getSymbol(StringWrapper.getTemp(line, p + 1, pos));
+            final int sym = Lexer.getSymbol(new String(line, p + 1, pos));
             if (Lexer.isBuiltinFunction(sym) || Lexer.isPlotCommand(sym) ||
                 Lexer.isVariable(sym) && Variables.isFunction(sym) && p > -1)
             { pos = p; }
@@ -449,7 +449,7 @@ class CalcCanvas extends Canvas {
                 ++pos;
             --pos;
             if (pos + 1 < len && line[pos + 1] == '(') {
-                final int sym = Lexer.getSymbol(StringWrapper.getTemp(line, p, pos + 1));
+                final int sym = Lexer.getSymbol(new String(line, p, pos + 1));
                 if (Lexer.isBuiltinFunction(sym) || Lexer.isPlotCommand(sym) ||
                     Lexer.isVariable(sym) && Variables.isFunction(sym) && pos > 0)
                 { ++pos; }
@@ -609,7 +609,7 @@ class CalcCanvas extends Canvas {
                         insertIntoLine("ans");
                         lastInsertLen += 3;
                     } else {
-                        sym = Lexer.getSymbol(StringWrapper.getTemp(s));
+                        sym = Lexer.getSymbol(s);
                     }
                     insertIntoLine(s);
                     if (Lexer.isVariable(sym) && !Variables.isDefined(sym)) {
@@ -618,7 +618,7 @@ class CalcCanvas extends Canvas {
                     }
                 } else {
                     if (!isOperator) {
-                        sym = Lexer.getSymbol(StringWrapper.getTemp(s));
+                        sym = Lexer.getSymbol(s);
                         if (sym != -1 && pos > -1 && Lexer.isLetter(line[pos])) {
                             insertIntoLine("*");
                             ++lastInsertLen;
@@ -633,7 +633,7 @@ class CalcCanvas extends Canvas {
                        ? Variables.getFunction(sym).arity()
                        : 0)
                     : Lexer.getBuiltinArity(sym);
-                    if (!Lexer.matchesPlotArity(arity, StringWrapper.getTemp(line, 0, oldPos + 1))) {
+                    if (!Lexer.matchesPlotArity(arity, new String(line, 0, oldPos + 1))) {
                         if (sym == VM.MAP && Calc.cfg.aspectRatio1)
                             arity = 4;
                         String parens = arityParens[arity];
@@ -725,7 +725,7 @@ class CalcCanvas extends Canvas {
         return lineStr;
     }
 
-    StringWrapper preCursorLine() {
-        return StringWrapper.getTemp(line, 0, pos + 1);
+    String preCursorLine() {
+        return new String(line, 0, pos + 1);
     }
 }

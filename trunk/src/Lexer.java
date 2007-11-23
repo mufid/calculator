@@ -29,10 +29,10 @@ public class Lexer {
     }
 
     private static void a(int code, String str) {
-        symnames.put(new StringWrapper(str), new Integer(code));
+        symnames.put(str, new Integer(code));
     }
 
-    public static int getSymbol(StringWrapper symname) {
+    public static int getSymbol(String symname) {
         Integer i = (Integer) symnames.get(symname);
         return i == null ? -1 : i.intValue();
     }
@@ -82,12 +82,12 @@ public class Lexer {
         return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
     }
 
-    public static boolean isAssignment(StringWrapper str) {
+    public static boolean isAssignment(String str) {
         return str.length() >= 3 && str.charAt(1) == ':' && str.charAt(2) == '=';
     }
 
 
-    public static boolean matchesPlotArity(int arity, StringWrapper sw) {
+    public static boolean matchesPlotArity(int arity, String sw) {
         if (!(arity == 1 || arity == 2))
             return false;
         int[] cmdSlot = getPlotCommandAndSlot(sw);
@@ -98,7 +98,7 @@ public class Lexer {
         return false;
     }
 
-    public static int getFunctionPlotCommand(StringWrapper sw) {
+    public static int getFunctionPlotCommand(String sw) {
         int[] cmdSlot = getPlotCommandAndSlot(sw);
         int cmd = cmdSlot[0];
         if (cmd != -1)
@@ -119,12 +119,12 @@ public class Lexer {
         }
     }
 
-    public static int[] getPlotCommandAndSlot(StringWrapper sw) {
+    public static int[] getPlotCommandAndSlot(String sw) {
         return getPlotCommandAndSlot(sw, sw.length());
     }
 
     private static int[] result;
-    public static int[] getPlotCommandAndSlot(StringWrapper sw, int len) {
+    public static int[] getPlotCommandAndSlot(String sw, int len) {
         if (result == null)
             result = new int[2];
         int i;
@@ -282,7 +282,7 @@ public class Lexer {
             int start = pos;
             while (isLetter(c))
                 c = input[++pos];
-            Integer sym = (Integer) symnames.get(StringWrapper.getTemp(input, start, pos));
+            Integer sym = (Integer) symnames.get(new String(input, start, pos));
             if (sym == null)
                 throw Compiler.error;
             return sym.intValue();
