@@ -59,7 +59,7 @@ class KeyState {
           void init() {
               keys[0] = keys[1] = keys[2] = null;
               changed = true;
-              StringWrapper pre = Calc.self.calcCanvas.preCursorLine();
+              String pre = Calc.self.calcCanvas.preCursorLine();
               if (Lexer.isAssignment(pre)) {
                   keys[0] = "x";
                   keys[1] = "y";

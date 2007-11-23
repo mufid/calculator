@@ -22,8 +22,8 @@ public class Compiler {
         init();
         try {
             int start;
-            if (Lexer.isAssignment(StringWrapper.getTemp(input, 0, len))) {
-                definedSymbol = Lexer.getSymbol(StringWrapper.getTemp(input, 0, 1));
+            if (Lexer.isAssignment(new String(input, 0, len))) {
+                definedSymbol = Lexer.getSymbol(new String(input, 0, 1));
                 if (!(VM.FIRST_VAR <= definedSymbol && definedSymbol <= VM.LAST_VAR))
                     throw error;
                 start = 3;
