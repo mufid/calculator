@@ -15,7 +15,7 @@ class KeyState {
     private static final int FOREGR  = 0x000000, LIGHTER = 0xffffff;
     private static final int TRIANGLE_SIZE = 6;
 
-    static void init(int sw, int sh, boolean isSmallScreen, Font fnt) {
+    static void init(int sw, int sh, Font fnt) {
         w = sw;
         font = fnt;
         fontHeight = font.getHeight();
@@ -25,7 +25,7 @@ class KeyState {
         cellWidth = Math.min(stepW, w2);
         singleSpace = (stepW - cellWidth)/2;
 
-        cellHeight = fontHeight + (isSmallScreen ? 3 : 4);
+        cellHeight = fontHeight + 4;
         h = cellHeight * 4 + 1;
         yPos = sh - h;
         
