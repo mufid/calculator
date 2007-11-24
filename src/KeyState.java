@@ -3,7 +3,7 @@
 
 import javax.microedition.lcdui.*;
 
-class KeyState {
+class KeyState implements VMConstants {
     static Font font;
     static int fontHeight;
     static int w, h, cellWidth, cellHeight, yPos;
@@ -15,7 +15,7 @@ class KeyState {
     private static final int FOREGR  = 0x000000, LIGHTER = 0xffffff;
     private static final int TRIANGLE_SIZE = 6;
 
-    static void init(int sw, int sh, Font fnt) {
+    static void init(int sw, int sh, boolean isSmallScreen, Font fnt) {
         w = sw;
         font = fnt;
         fontHeight = font.getHeight();
@@ -25,7 +25,7 @@ class KeyState {
         cellWidth = Math.min(stepW, w2);
         singleSpace = (stepW - cellWidth)/2;
 
-        cellHeight = fontHeight + 4;
+        cellHeight = fontHeight + (isSmallScreen ? 3 : 4);
         h = cellHeight * 4 + 1;
         yPos = sh - h;
         
@@ -59,7 +59,7 @@ class KeyState {
           void init() {
               keys[0] = keys[1] = keys[2] = null;
               changed = true;
-              String pre = Calc.self.calcCanvas.preCursorLine();
+              StringWrapper pre = Calc.self.calcCanvas.preCursorLine();
               if (Lexer.isAssignment(pre)) {
                   keys[0] = "x";
                   keys[1] = "y";
@@ -67,14 +67,14 @@ class KeyState {
                   return;
               }
               switch (Lexer.getFunctionPlotCommand(pre)) {
-              case VM.PLOT:
+              case PLOT:
                   keys[0] = "x";
                   break;
-              case VM.MAP:
+              case MAP:
                   keys[0] = "x";
                   keys[1] = "y";
                   break;
-              case VM.PARPLOT:
+              case PARPLOT:
                   keys[0] = "t";
                   break;
               }

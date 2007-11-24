@@ -8,7 +8,7 @@ import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 
-public class PlotCanvas extends Canvas {
+public class PlotCanvas extends Canvas implements VMConstants {
 
     private final static int PARPLOT_INIT_POINTS = 64;   // initial number of points - must be power of 2
     private final static int PARPLOT_MAX_POINTS  = 4096; // max number of points - must be power of 2
@@ -55,9 +55,9 @@ public class PlotCanvas extends Canvas {
         g.setFont(smallFont);
 
         switch (result.plotCommand) {
-        case VM.PLOT: paintPlot(g); break;
-        case VM.PARPLOT: paintParPlot(g); break;
-        case VM.MAP:
+        case PLOT: paintPlot(g); break;
+        case PARPLOT: paintParPlot(g); break;
+        case MAP:
             // paintMap will modify func (by calling xyFragment on it), so make a copy if necessary
             if (func != result.function)
                 func = new CompiledFunction(func);

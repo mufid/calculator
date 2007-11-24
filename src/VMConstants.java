@@ -1,11 +1,11 @@
 // Copyright (c) 2007 Carlo Teubner.
 // Available under the MIT License (see COPYING).
 
-public class VM {
+public interface VMConstants {
 
     // XXX change to byte (saves memory but makes it messier to maintain: use script to generate this file?)
     // (or is it faster when using int? may depend on machine architecture)
-    public final static int
+    final static int
         LITERAL = 0,
 
         PRECOMP_X_FRAG = 50,

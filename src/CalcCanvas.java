@@ -8,7 +8,7 @@ import org.javia.lib.*;
 
 ///#define START_LINE(lines, n) (((n)==0)?0:lines[n-1])
 
-class CalcCanvas extends Canvas {
+class CalcCanvas extends Canvas implements VMConstants {
     
     private static int START_LINE(int[] lines, int n) { return n == 0 ? 0 : lines[n-1]; }
     
@@ -68,13 +68,18 @@ class CalcCanvas extends Canvas {
     Graphics gg;
 
     CalcCanvas() {
-        //setFullScreenMode(true); 
+        //boolean isSmallScreen = getHeight() <= 128;
+        //if (isSmallScreen) {
+        setFullScreenMode(true); // XXX advantage of not using full screen is user can see menus...
+        //}
 
         screenW = getWidth();
         screenH = getHeight();
 
-        font        = Font.getFont(0, 0, Font.SIZE_LARGE);
-        historyFont = Font.getFont(0, 0, Font.SIZE_MEDIUM);
+        boolean isSmallScreen = screenH <= 160;
+
+        font        = Font.getFont(0, 0, isSmallScreen ? Font.SIZE_MEDIUM : Font.SIZE_LARGE);
+        historyFont = Font.getFont(0, 0, isSmallScreen ? Font.SIZE_SMALL  : Font.SIZE_MEDIUM);
         lineHeight  = font.getHeight(); //+1
 
         Calc.cfg.initPiSymbol(new Font[] { font, historyFont });
@@ -83,7 +88,7 @@ class CalcCanvas extends Canvas {
         gg  = img.getGraphics();
         gg.setFont(font);
 
-        KeyState.init(screenW, screenH, font);
+        KeyState.init(screenW, screenH, isSmallScreen, font);
 
         maxEditLines = (screenH - (KeyState.h + spaceTop + spaceEdit + spaceHist + 8)) / lineHeight - 1;
         //Log.log("max edit lines " + maxEditLines);
@@ -316,11 +321,11 @@ class CalcCanvas extends Canvas {
         //Log.log("pos " + pos + " row " + cursorRow + " col " + cursorCol + " x " + cursorX + " y " + cursorY);
         setCursor(true);
 
-        final int[] cmdSlot = Lexer.getPlotCommandAndSlot(new String(line, 0, len), pos + 1);
+        final int[] cmdSlot = Lexer.getPlotCommandAndSlot(StringWrapper.getTemp(line, 0, len), pos + 1);
         if (cmdSlot[0] != -1) {
             String help = null;
             if (cmdSlot[1] != -1) {
-                String[] helps = plotParamHelp[cmdSlot[0] - VM.FIRST_PLOT_COMMAND];
+                String[] helps = plotParamHelp[cmdSlot[0] - FIRST_PLOT_COMMAND];
                 if (cmdSlot[1] < helps.length)
                     help = helps[cmdSlot[1]];
             }
@@ -416,7 +421,7 @@ class CalcCanvas extends Canvas {
         int p = pos;
         if (p >= 1 && line[p] == '(') {
             do { --p; } while (p >= 0 && Lexer.isLetter(line[p]));
-            final int sym = Lexer.getSymbol(new String(line, p + 1, pos));
+            final int sym = Lexer.getSymbol(StringWrapper.getTemp(line, p + 1, pos));
             if (Lexer.isBuiltinFunction(sym) || Lexer.isPlotCommand(sym) ||
                 Lexer.isVariable(sym) && Variables.isFunction(sym) && p > -1)
             { pos = p; }
@@ -444,7 +449,7 @@ class CalcCanvas extends Canvas {
                 ++pos;
             --pos;
             if (pos + 1 < len && line[pos + 1] == '(') {
-                final int sym = Lexer.getSymbol(new String(line, p, pos + 1));
+                final int sym = Lexer.getSymbol(StringWrapper.getTemp(line, p, pos + 1));
                 if (Lexer.isBuiltinFunction(sym) || Lexer.isPlotCommand(sym) ||
                     Lexer.isVariable(sym) && Variables.isFunction(sym) && pos > 0)
                 { ++pos; }
@@ -604,7 +609,7 @@ class CalcCanvas extends Canvas {
                         insertIntoLine("ans");
                         lastInsertLen += 3;
                     } else {
-                        sym = Lexer.getSymbol(s);
+                        sym = Lexer.getSymbol(StringWrapper.getTemp(s));
                     }
                     insertIntoLine(s);
                     if (Lexer.isVariable(sym) && !Variables.isDefined(sym)) {
@@ -613,7 +618,7 @@ class CalcCanvas extends Canvas {
                     }
                 } else {
                     if (!isOperator) {
-                        sym = Lexer.getSymbol(s);
+                        sym = Lexer.getSymbol(StringWrapper.getTemp(s));
                         if (sym != -1 && pos > -1 && Lexer.isLetter(line[pos])) {
                             insertIntoLine("*");
                             ++lastInsertLen;
@@ -628,8 +633,8 @@ class CalcCanvas extends Canvas {
                        ? Variables.getFunction(sym).arity()
                        : 0)
                     : Lexer.getBuiltinArity(sym);
-                    if (!Lexer.matchesPlotArity(arity, new String(line, 0, oldPos + 1))) {
-                        if (sym == VM.MAP && Calc.cfg.aspectRatio1)
+                    if (!Lexer.matchesPlotArity(arity, StringWrapper.getTemp(line, 0, oldPos + 1))) {
+                        if (sym == MAP && Calc.cfg.aspectRatio1)
                             arity = 4;
                         String parens = arityParens[arity];
                         int parensLen = parens.length();
@@ -720,7 +725,7 @@ class CalcCanvas extends Canvas {
         return lineStr;
     }
 
-    String preCursorLine() {
-        return new String(line, 0, pos + 1);
+    StringWrapper preCursorLine() {
+        return StringWrapper.getTemp(line, 0, pos + 1);
     }
 }

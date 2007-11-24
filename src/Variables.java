@@ -6,10 +6,11 @@ import java.io.IOException;
 
 import org.javia.lib.*;
 
-public class Variables {
+public class Variables implements VMConstants
+{
     public static final char TYPE_UNDEF = 0, TYPE_NUM = 1, TYPE_FUNC = 2;
 
-    private static final int VARS_CNT = VM.LAST_VAR - VM.FIRST_VAR + 1;
+    private static final int VARS_CNT = LAST_VAR - FIRST_VAR + 1;
 
     static char[] types             = new char[VARS_CNT]; // init'd to 0 = TYPE_UNDEF
     static double[] numbers         = new double[VARS_CNT];
@@ -17,7 +18,7 @@ public class Variables {
     static DataOut os = new DataOut();
 
     public static void persistDefine(Result result, double number) {
-        final int i = result.definedSymbol - VM.FIRST_VAR;
+        final int i = result.definedSymbol - FIRST_VAR;
         try {
             if (result.function.arity() == 0) {
                 os.writeChar(types[i] = TYPE_NUM);
@@ -34,27 +35,27 @@ public class Variables {
     }
 
     public static double getNumber(int symbol) {
-        return numbers[symbol - VM.FIRST_VAR];
+        return numbers[symbol - FIRST_VAR];
     }
 
     public static CompiledFunction getFunction(int symbol) {
-        return funcs[symbol - VM.FIRST_VAR];
+        return funcs[symbol - FIRST_VAR];
     }
     
     public static char getType(int symbol) {
-        return types[symbol - VM.FIRST_VAR];
+        return types[symbol - FIRST_VAR];
     }
 
     public static boolean isNumber(int symbol) {
-        return types[symbol - VM.FIRST_VAR] == TYPE_NUM;
+        return types[symbol - FIRST_VAR] == TYPE_NUM;
     }
     
     public static boolean isFunction(int symbol) {
-        return types[symbol - VM.FIRST_VAR] == TYPE_FUNC;
+        return types[symbol - FIRST_VAR] == TYPE_FUNC;
     }
 
     public static boolean isDefined(int symbol) {
-        return types[symbol - VM.FIRST_VAR] != TYPE_UNDEF;
+        return types[symbol - FIRST_VAR] != TYPE_UNDEF;
     }
 
     public static void load() {

@@ -3,64 +3,65 @@
 
 import java.util.Hashtable;
 
-public class Lexer {
+public class Lexer implements VMConstants
+{
     public final static int
-        TOK_LPAREN = VM.CUSTOM + 0,
-        TOK_RPAREN = VM.CUSTOM + 1,
-        TOK_COMMA  = VM.CUSTOM + 2,
-        TOK_PAR_T  = VM.CUSTOM + 3,
-        TOK_END    = VM.CUSTOM + 4;
+        TOK_LPAREN = CUSTOM + 0,
+        TOK_RPAREN = CUSTOM + 1,
+        TOK_COMMA  = CUSTOM + 2,
+        TOK_PAR_T  = CUSTOM + 3,
+        TOK_END    = CUSTOM + 4;
     
     private static Hashtable symnames;
 
     private static void initSymnames() {
         symnames = new Hashtable(50);
-        a(VM.PAR_X, "x"); a(VM.PAR_Y, "y"); a(VM.PAR_Z, "z"); a(TOK_PAR_T, "t");
-        a(VM.VAR_A, "a"); a(VM.VAR_B, "b"); a(VM.VAR_C, "c"); a(VM.VAR_D, "d");
-        a(VM.VAR_M, "m"); a(VM.VAR_N, "n"); a(VM.VAR_F, "f"); a(VM.VAR_G, "g"); a(VM.VAR_H, "h");
-        a(VM.CONST_PI, "pi"); a(VM.CONST_E, "e"); a(VM.CONST_ANS, "ans"); a(VM.CONST_RND, "rnd");
-        a(VM.SIN, "sin"); a(VM.COS, "cos"); a(VM.TAN, "tan"); a(VM.ASIN, "asin"); a(VM.ACOS, "acos"); a(VM.ATAN, "atan");
-        a(VM.SINH, "sinh"); a(VM.COSH, "cosh"); a(VM.TANH, "tanh"); a(VM.ASINH, "asinh"); a(VM.ACOSH, "acosh"); a(VM.ATANH, "atanh");
-        a(VM.LOG, "ln"); a(VM.LOG10, "lg"); a(VM.LOG2, "lb");
-        a(VM.SQRT, "sqrt"); a(VM.CBRT, "cbrt");
-        a(VM.INT, "int"); a(VM.FRAC, "frac"); a(VM.ABS, "abs"); a(VM.FLOOR, "floor"); a(VM.CEIL, "ceil"); a(VM.SIGN, "sign");
-        a(VM.MIN, "min"); a(VM.MAX, "max"); a(VM.GCD, "gcd"); a(VM.COMB, "C"); a(VM.PERM, "P");
-        a(VM.PLOT, "plot"); a(VM.MAP, "map"); a(VM.PARPLOT, "par");
+        a(PAR_X, "x"); a(PAR_Y, "y"); a(PAR_Z, "z"); a(TOK_PAR_T, "t");
+        a(VAR_A, "a"); a(VAR_B, "b"); a(VAR_C, "c"); a(VAR_D, "d");
+        a(VAR_M, "m"); a(VAR_N, "n"); a(VAR_F, "f"); a(VAR_G, "g"); a(VAR_H, "h");
+        a(CONST_PI, "pi"); a(CONST_E, "e"); a(CONST_ANS, "ans"); a(CONST_RND, "rnd");
+        a(SIN, "sin"); a(COS, "cos"); a(TAN, "tan"); a(ASIN, "asin"); a(ACOS, "acos"); a(ATAN, "atan");
+        a(SINH, "sinh"); a(COSH, "cosh"); a(TANH, "tanh"); a(ASINH, "asinh"); a(ACOSH, "acosh"); a(ATANH, "atanh");
+        a(LOG, "ln"); a(LOG10, "lg"); a(LOG2, "lb");
+        a(SQRT, "sqrt"); a(CBRT, "cbrt");
+        a(INT, "int"); a(FRAC, "frac"); a(ABS, "abs"); a(FLOOR, "floor"); a(CEIL, "ceil"); a(SIGN, "sign");
+        a(MIN, "min"); a(MAX, "max"); a(GCD, "gcd"); a(COMB, "C"); a(PERM, "P");
+        a(PLOT, "plot"); a(MAP, "map"); a(PARPLOT, "par");
     }
 
     private static void a(int code, String str) {
-        symnames.put(str, new Integer(code));
+        symnames.put(new StringWrapper(str), new Integer(code));
     }
 
-    public static int getSymbol(String symname) {
+    public static int getSymbol(StringWrapper symname) {
         Integer i = (Integer) symnames.get(symname);
         return i == null ? -1 : i.intValue();
     }
     
     public static boolean isVariable(int symbol) {
-        return VM.FIRST_VAR <= symbol && symbol <= VM.LAST_VAR;
+        return FIRST_VAR <= symbol && symbol <= LAST_VAR;
     }
 
     public static boolean isBuiltinFunction(int symbol) {
-        return VM.FIRST_FUNCTION <= symbol && symbol <= VM.LAST_FUNCTION;
+        return FIRST_FUNCTION <= symbol && symbol <= LAST_FUNCTION;
     }
 
     public static boolean isPlotCommand(int symbol) {
-        return VM.FIRST_PLOT_COMMAND <= symbol && symbol <= VM.LAST_PLOT_COMMAND;
+        return FIRST_PLOT_COMMAND <= symbol && symbol <= LAST_PLOT_COMMAND;
     }
 
     public static int getBuiltinArity(int symbol) {
-        if (symbol < VM.FIRST_FUNCTION)
+        if (symbol < FIRST_FUNCTION)
             return 0;
-        else if (symbol <= VM.LAST_FUNCTION1)
+        else if (symbol <= LAST_FUNCTION1)
             return 1;
-        else if (symbol <= VM.LAST_FUNCTION2)
+        else if (symbol <= LAST_FUNCTION2)
             return 2;
-        else if (symbol == VM.PLOT)
+        else if (symbol == PLOT)
             return 3;
-        else if (symbol == VM.MAP)
+        else if (symbol == MAP)
             return 5;
-        else if (symbol == VM.PARPLOT)
+        else if (symbol == PARPLOT)
             return 4;
         else
             return 0;
@@ -68,10 +69,10 @@ public class Lexer {
 
     public static int plotFunctionArity(int symbol) {
         switch (symbol) {
-        case VM.PLOT:
-        case VM.PARPLOT:
+        case PLOT:
+        case PARPLOT:
             return 1;
-        case VM.MAP:
+        case MAP:
             return 2;
         default:
             return -1;
@@ -82,12 +83,12 @@ public class Lexer {
         return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
     }
 
-    public static boolean isAssignment(String str) {
+    public static boolean isAssignment(StringWrapper str) {
         return str.length() >= 3 && str.charAt(1) == ':' && str.charAt(2) == '=';
     }
 
 
-    public static boolean matchesPlotArity(int arity, String sw) {
+    public static boolean matchesPlotArity(int arity, StringWrapper sw) {
         if (!(arity == 1 || arity == 2))
             return false;
         int[] cmdSlot = getPlotCommandAndSlot(sw);
@@ -98,7 +99,7 @@ public class Lexer {
         return false;
     }
 
-    public static int getFunctionPlotCommand(String sw) {
+    public static int getFunctionPlotCommand(StringWrapper sw) {
         int[] cmdSlot = getPlotCommandAndSlot(sw);
         int cmd = cmdSlot[0];
         if (cmd != -1)
@@ -109,33 +110,33 @@ public class Lexer {
 
     private static boolean isPlotFunctionSlot(int[] cmdSlot) {
         switch (cmdSlot[0]) {
-        case VM.PLOT:
-        case VM.MAP:
+        case PLOT:
+        case MAP:
             return cmdSlot[1] == 0;
-        case VM.PARPLOT:
+        case PARPLOT:
             return cmdSlot[1] == 0 || cmdSlot[1] == 1;
         default:
             return false;
         }
     }
 
-    public static int[] getPlotCommandAndSlot(String sw) {
+    public static int[] getPlotCommandAndSlot(StringWrapper sw) {
         return getPlotCommandAndSlot(sw, sw.length());
     }
 
     private static int[] result;
-    public static int[] getPlotCommandAndSlot(String sw, int len) {
+    public static int[] getPlotCommandAndSlot(StringWrapper sw, int len) {
         if (result == null)
             result = new int[2];
         int i;
         if (sw.startsWith("plot(")) {
-            result[0] = VM.PLOT;
+            result[0] = PLOT;
             i = 5;
         } else if (sw.startsWith("map(")) {
-            result[0] = VM.MAP;
+            result[0] = MAP;
             i = 4;
         } else if (sw.startsWith("par(")) {
-            result[0] = VM.PARPLOT;
+            result[0] = PARPLOT;
             i = 4;
         } else {
             result[0] = -1;
@@ -230,13 +231,13 @@ public class Lexer {
         char c = input[pos];
         ++pos;
         switch (c) {
-        case '+': return VM.PLUS;
-        case '-': return VM.MINUS;
-        case '*': return VM.TIMES;
-        case '/': return VM.DIVIDE;
-        case '^': return VM.POWER;
-        case '%': return VM.MODULO;
-        case '!': return VM.FACTORIAL;
+        case '+': return PLUS;
+        case '-': return MINUS;
+        case '*': return TIMES;
+        case '/': return DIVIDE;
+        case '^': return POWER;
+        case '%': return MODULO;
+        case '!': return FACTORIAL;
         case '(': return TOK_LPAREN;
         case ')': return TOK_RPAREN;
         case ',': return TOK_COMMA;
@@ -275,14 +276,14 @@ public class Lexer {
                 //Log.log("number: " + String.valueOf(input, start, pos - start));
                 throw Compiler.error;
             }
-            return VM.LITERAL;
+            return LITERAL;
         }
 
         if (isLetter(c)) {
             int start = pos;
             while (isLetter(c))
                 c = input[++pos];
-            Integer sym = (Integer) symnames.get(new String(input, start, pos));
+            Integer sym = (Integer) symnames.get(StringWrapper.getTemp(input, start, pos));
             if (sym == null)
                 throw Compiler.error;
             return sym.intValue();
@@ -290,7 +291,7 @@ public class Lexer {
 
         if (c == '\u03c0') {
             ++pos;
-            return VM.CONST_PI;
+            return CONST_PI;
         }
 
         throw Compiler.error;
