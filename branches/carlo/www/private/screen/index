@@ -1,0 +1,383 @@
+<head>
+<link rel="stylesheet" href="screen.css"  media="screen" type="text/css" />
+
+<title>Javia Calculator</title>
+<meta name="keywords" content="calculator, javia, mobile, midp, phone, cellphone" />
+<meta name="description" content="Calculator for Mobile Phones" />
+</head>
+
+<body>
+
+<div class="main">
+<h1>Javia Calculator</h1>
+<p>
+<img class="ss" src="img/javia-calculator.png" width="128" height="160" alt="screenshot: initial" />
+Javia Calculator is an <em>easy-to-use</em> calculator for mobile phones.
+It features a user interface designed for the mobile phone's keypad, which allows quick input of mathematical expressions. 
+</p>
+
+<p>
+Built-in functions include trigonometric and hyperbolic functions, logarithms and exponentiation, 
+combinations, permutations and factorial. New variables and functions may be defined by the user.
+</p>
+
+<p>
+Moreover, functions <i>f</i>(<i>x</i>) of one variable can be plotted, and functions <i>f</i>(<i>x,y</i>)
+of two variables can be visualised in a grayscale "map". Parametric plots, where x and y coordinates
+are determined by a pair of single-parameter functions, are also supported.
+</p>
+
+<h2>Download</h2>
+<p>
+The most recent version is 0.1.4, released on 2007-11-04:
+</p>
+<p>
+<a href="/calculator.jar">calculator.jar</a> (size 40 kB).<br />
+<a href="/calculator.jad">calculator.jad</a><br />
+</p>
+<p>
+If you type the download link on a mobile phone, 
+use the short form <a href="http://calc.javia.org/jad">calc.javia.org/jad</a>
+</p>
+
+<h2>Open Source</h2>
+<p>
+Javia Calculator is open source under the MIT License.
+You can access the source code (subversion repository): 
+<a href='http://svn.javia.org/calculator/'>http://svn.javia.org/calculator/</a>.
+</p>
+
+<p>
+Javia Calculator is developed by <a href='http://blog.javia.org/'>Mihai Preda</a> and <a href='http://www.cteu.de/'>Carlo Teubner</a>.
+Mihai started the project and released the first version towards the end of 2006.
+Carlo joined the project in the summer of 2007 and made very substantial contributions since; most notably, Carlo did all the graphing work (plot, map, par).
+</p>
+
+<p>
+Suggestions and bug reports are welcome, please post to <a href='http://groups.google.com/group/javia-calculator'>the discussion group</a>,<br/> 
+jav&#105;a-c<!--no-spam-->alculator&#64;googlegroups&#x2e;com<br/>
+</p>
+
+<h2>Key-Menus</h2>
+<p>
+The two keys <strong>*</strong> and <strong>#</strong> are special, because they
+open the <em>operators key-menu</em> and the <em>functions key-menu</em>, respectively.
+</p>
+<p>
+<img class="ss" src="img/operators-menu.png" width="126" height="61" alt="operators key-menu" />
+When either key-menu is displayed, select an entry by pressing
+the corresponding key on the numeric keypad (<strong>1</strong>-<strong>9</strong>, <strong>*0#</strong>).
+The top row of the key-menu corresponds to keys <strong>1 2 3</strong>, the middle row to
+keys <strong>4 5 6</strong>, and the bottom row to keys <strong>* 0 #</strong>.
+</p>
+<p>
+For example, pressing the <strong>*</strong> key while the operators key-menu is active produces
+the <strong>+</strong> operator, while the <strong>7</strong> key produces the <strong>*</strong> operator,
+as is displayed in the menu visible on the screen.
+</p>
+
+<!--
+<p>
+When no menu is active, you can easily obtain the <strong>+</strong>
+operator by double-pressing the <strong>*</strong> key (as the first press activates the operators' menu,
+while the second press selects <strong>+</strong> from the menu. Of course, you don't have to wait for the menu
+when you double-press).
+</p>
+-->
+
+<p>
+<img class="ss" src="img/functions-menu.png" width="126" height="61" alt="functions key-menu" />
+While the left key-menu contains the operators, the right key-menu (activated with the <strong>#</strong> key) 
+contains everything else: the decimal dot, variables, constants, functions, and the plotting commands. 
+</p>
+
+<p>
+Some entries in the functions key-menu are displayed with a green lower-left corner, such as
+<img src="img/sin-button.png" width="41" height="14" alt="sin button" />. Selecting these entries opens
+additional sub-menus that contain related entries. For example, the <span class="menu">sin<img src="img/green-corner.png" width="7" height="7" /></span>
+entry opens the trigonometric menu where you can find sin, cos, tan, etc.
+</p>
+
+<p>
+The sub-menu items are arranged such that pressing the key for a green-corner entry twice produces the
+corresponding symbol directly. For example, when the functions key-menu is active, pressing
+<strong>*</strong> twice produces the <strong>sin</strong> function.
+</p>
+
+<p>
+To dismiss a key-menu without making a selection, press any key corresponding to none of the entries.
+</p>
+
+<h2>Operators</h2>
+<img class="ss" src="img/operators.png" width="128" height="160" alt="screenshot: operators" />
+Pressing <strong>*</strong> opens the operators key-menu, containing the usual operators
+<strong>+&nbsp;-&nbsp;*&nbsp;/</strong>, parentheses <strong>(&nbsp;)</strong>, as well as:
+
+<table>
+<tr><th>%</th><td>real modulo (remainder). E.g. 1.75 % 0.5 = 0.25</td></tr>
+<tr><th>^</th><td>power (exponentiation)</td></tr>
+<tr><th>!</th><td>the factorial, extended to the real numbers (Gamma function)</td></tr>
+<tr><th>,</th><td>the comma is used to separate the arguments of a function.
+E.g. <code>min(3/4<strong>,</strong>10/16)</code>.</td></tr>
+</table>
+
+<h2>Functions, constants, decimal dot</h2>
+<img class="ss" src="img/functions.png" width="128" height="160" alt="screenshot: functions" />
+Pressing <strong>#</strong> opens the functions key-menu. 
+This menu contains everything except the operators:
+
+<table>
+<tr><th><span class="menu">sin<img src="img/green-corner.png" width="7" height="7" /></span></th><td>trigonometric functions menu:<br/>
+sin cos tan, asin acos atan, and their hyperbolic variants.</td></tr>
+<tr><th><span class="menu">ln<img src="img/green-corner.png" width="7" height="7" /></span></th><td>logarithms menu:<br />
+lg (base 10 logarithm), ln (natural logarithm), lb (base 2 logarithm), cbrt (cubic root).</td></tr>
+<tr><th>.</th><td>decimal dot</td></tr>
+<tr><th>pi</th><td>&pi; = 3.141592653589793...</td></tr>
+<tr><th>e</th><td>e = 2.718281828459045...</td></tr>
+<tr><th><span class="menu">abs<img src="img/green-corner.png" width="7" height="7" /></span></th><td>various functions:<br/>
+combinations, permutations, random number generator, fractional and integer part, min, max, abs.
+</td></tr>
+<tr><th><span class="menu">plot<img src="img/green-corner.png" width="7" height="7" /></span></th><td>plotting functions:<br/>
+plot (draws the graph of a function of one variable), map (draws a grayscale "map" of a function of two variables), par (produces a parametric plot of two functions which prescribe x and y coordinate).
+</td></tr>
+<tr><th><span class="menu">a<img src="img/green-corner.png" width="7" height="7" /></span></th><td>names for user-defined functions and constants</td></tr>
+<tr><th>:=</th><td>function/constant definition symbol</td></tr>
+<tr><th>sqrt</th><td>square root</td></tr>
+<tr><th>ans</th><td>Answer, the result of the previous operation</td></tr>
+<tr><th>E</th><td>Exponent notation symbol (e.g. 2.5E3 = 2500)</td></tr>
+</table>
+
+<h2>Plotting functions of one variable: <em>plot</em></h2>
+<p>
+<img class="ss" src="img/plot-parhelp.png" width="128" height="42" alt="screenshot: plot" />
+To plot a graph of a function of one variable, use the <em>plot</em> command, available by pressing <strong>4</strong> twice
+while in the functions key-menu. This command takes three parameters. The first parameter is the function you
+wish to plot, such as <code>x*sin(1/x)</code>. The second and third parameters are the minimum and maximum
+value of <em>x</em> for which to plot the function. Note that the meaning of the parameters is indicated above
+the input line.
+</p>
+
+<p>
+<img class="ss" src="img/plot.png" width="128" height="160" alt="screenshot: plot" />
+For example, to produce the graph to the left, type <code>plot(x*sin(1/x),0,1/2)</code>.
+</p>
+
+<p>
+The general form of the <em>plot</em> command is
+</p>
+
+<p>
+&nbsp;&nbsp;<i>plot</i>(<i>F</i>, <i>x<sub>min</sub></i>, <i>x<sub>max</sub></i>),
+</p>
+
+<p>
+where <i>F</i> can either be an expression involving <i>x</i> (such as in the example above), the name
+of a built-in one-parameter function (such as <em>sin</em>), or the name of a
+user-defined one-parameter function (see below on how to define functions). Combinations such as
+<code>sin+x</code> are also allowed.
+</p>
+
+<h2>Parametric plots: <em>par</em></h2>
+<p>
+The <em>par</em> command is found in the <span class="menu">plot<img src="img/green-corner.png" width="7" height="7" /></span>
+sub-menu of the functions key-menu. It produces plots where the x and y coordinates are determined by a pair
+of one-parameter functions. The general form is
+</p>
+
+<p>
+<img class="ss" src="img/par.png" width="128" height="160" alt="screenshot: par" />
+&nbsp;&nbsp;<i>par</i>(<i>F</i>, <i>G</i>, <i>t<sub>min</sub></i>, <i>t<sub>max</sub></i>),
+</p>
+
+<p>
+where <i>F</i> and <i>G</i> are expressions involving <i>t</i>, names of built-in or user-defined one-parameter functions
+(see below on how to define functions), or a combination such as <code>t^sqrt</code>.
+The plotted curve consists of all the points (<i>F</i>(<i>t</i>),<i>G</i>(<i>t</i>)), with <i>t</i> varying from
+<i>t<sub>min</sub></i> to <i>t<sub>max</sub></i>.
+</p>
+
+<p>
+For example, to produce the plot to the left, type <code>par(sin,sin(2t),0,2pi)</code>.
+</p>
+
+<p>
+Note: the parameter name <i>t</i> only exists in the context described here and replaces <i>x</i> in the variables key-menu when
+entering one of the functions <i>F</i> or <i>G</i>.
+</p>
+
+<h2>Plotting functions of two variables: <em>map</em></h2>
+<p>
+<img class="ss" src="img/map.png" width="128" height="160" alt="screenshot: map" />
+The <em>map</em> command is available from the <span class="menu">plot<img src="img/green-corner.png" width="7" height="7" /></span>
+sub-menu of the functions key-menu. It visualises functions of two variables by colouring each
+display pixel with a grayscale value corresponding linearly to the function evaluated at its
+coordinates. The general form is
+</p>
+
+<p>
+&nbsp;&nbsp;<i>map</i>(<i>F</i>, <i>x<sub>min</sub></i>, <i>x<sub>max</sub></i>, <i>y<sub>min</sub></i> [, <i>y<sub>max</sub></i>]),
+</p>
+
+<p>
+where <i>F</i> can be an expression involving <i>x</i> and <i>y</i>, the name of a built-in or
+user-defined two-parameter function (see below on how to define functions), or a combination such as
+<code>gcd/y</code>.
+The parameters <i>x<sub>min</sub></i>, <i>x<sub>max</sub></i>, <i>y<sub>min</sub></i>, <i>y<sub>max</sub></i>
+define the region to be plotted.
+As the square brackets around <i>y<sub>max</sub></i> indicate, it may be left out, in which case it
+is chosen such that the aspect ratio of the map is 1 (i.e., scales on the x and the y axis coincide).
+</p>
+
+<p>
+For example, to produce the map to the left, type <code>map(sin(x^2+y^2),-5,5,-5,5)</code>.
+</p>
+
+<p>Pixels corresponding to non-real values are coloured as follows: <span style="background-color: #000080; color: #FFFFFF">dark blue</span> for negative infinity; <span style="background-color: #FFFF40">bright yellow</span> for positive infinity; <span style="background-color: #FF0000">red</span> for NaN (not a number).
+
+<h2>User-defined variables and functions</h2>
+<p>
+<img class="ss" src="img/define-function.png" width="128" height="160" alt="screenshot: define function" />
+To define a new variable or function, first choose its name from the <em>variables</em> menu, available by
+pressing <strong>5</strong> in the functions key-menu.
+There is a limited choice of one-letter names: <i>a</i>, <i>b</i>, <i>c</i>, <i>d</i>, <i>m</i>, <i>n</i>,
+<i>f</i>, <i>g</i>, <i>h</i>.
+<!-- Note that the names <i>x</i>, <i>y</i>, <i>z</i> <em>cannot</em> be assigned to, since these are special (see below). -->
+</p>
+
+<p>
+Next enter the <em>definition symbol</em>, <strong>:=</strong>, available by pressing <strong>6</strong>
+in the functions key-menu. If the variable to be defined has previously been undefined, the
+definition symbol is inserted automatically.
+</p>
+
+<p>
+Finally, enter the expression to be assigned.
+</p>
+
+<p>
+In order to define a variable, this expression can be a number or an arithmetic expression that
+evaluates to a number. For example, <code>a:=sqrt(pi/2)</code> assigns the
+value 1.2533... to the variable <em>a</em>.
+</p>
+
+<p>
+In order to define a function, simply use one of the special <em>parameter names</em>
+<i>x</i>, <i>y</i>, <i>z</i> in the function's expression.
+<i>x</i> denotes the first parameter of the function, <i>y</i> the second,
+<i>z</i> the third.
+The presence of at least one parameter is what differentiates a function definition from a variable definition. 
+For example, <code>f:=sqrt(x^2+y^2)</code> defines the function <i>f</i>(<i>x</i>,<i>y</i>).
+</p>
+<p>
+The parameter names <i>x</i>, <i>y</i>, <i>z</i> are only available in the variables key-menu when defining
+a new function (and partially when entering a function to be plotted, see above).
+</p>
+<p>
+All definitions (variables and functions) are persistent, i.e. they are saved between invocations of
+Javia Calculator.
+</p>
+
+
+<h2>Operations History</h2>
+<p>
+The most recent 32 expressions are saved in a <em>history</em>.
+You can easily navigate the history using the up/down arrows.
+</p>
+
+<h2>Parentheses</h2>
+<p>
+Use parentheses <strong>(&nbsp;)</strong> to control order of evaluation.
+Parentheses occurring at the beginning or end of the expression may be omitted.<br />
+<pre>
+1+2*3+4     = 11
+(1+2)*(3+4) = 21
+1+2)*(3+4   = 21
+1+2)(3+4    = 21
+</pre>
+The last line demonstrates that the multiplication symbol <strong>*</strong> may also
+be omitted.
+</p>
+
+<h2>Edit Navigation</h2>
+<p>
+The left/right arrow keys are used to move the cursor inside the text of the expression. 
+When the expression is long and spans multiple lines, the up/down arrow keys may be used to
+move the cursor vertically between lines.
+</p>
+
+<p>
+The up/down arrow keys are also used to navigate within the history.
+<!--
+When the expression is single-line, the up/down arrow keys navigate within the history. 
+DOWN moves towards older expressions, while UP moves towards more recent ones.
+In a multi-line expression the history navigation takes place when the cursor tries
+to move vertically beyond the bounds of the expression 
+(i.e. when the cursor is positioned on the first line and you press UP, or 
+when the cursor is positioned on the last line and you press DOWN).
+-->
+</p>
+
+<h2>Deleting</h2>
+
+<p>
+The right softkey is used to erase the token immediately to the left of the cursor, similar
+to the way the backspace key works on a computer. Other additional keys which are present on
+some mobiles (for example, a dedicated clear key) may have the same effect.
+</p>
+
+<h2>The application menu</h2>
+
+<p>
+The left softkey displays the application menu, which is structured as follows.
+</p>
+
+<table class="small"><tr><td class="small">General settings &gt; Angle unit &gt;&nbsp;</td><td class="small">Radians<br/>Degrees</td></tr></table>
+<p class="expl">
+The angle unit applies to the trigonometric functions sin, cos, tan, asin, acos, atan.
+</p>
+
+<table class="small"><tr><td class="small">General settings &gt; Rounding &gt;&nbsp;</td><td class="small">Smart rounding<br/>No rounding</td></tr></table>
+<p class="expl">
+Determines whether result values are rounded to better match their underlying precision.
+</p>
+
+<table class="small"><tr><td class="small">Plot settings &gt; Axes &gt;&nbsp;</td><td class="small">Draw axes<br/>No axes</td></tr></table>
+<p class="expl">
+Determines whether the <i>plot</i> and <i>par</i> commands should draw axes.
+</p>
+
+<table class="small"><tr><td class="small">Plot settings &gt; Labels &gt;&nbsp;</td><td class="small">Draw labels<br/>No labels</td></tr></table>
+<p class="expl">
+Determines whether the <i>plot</i>, <i>par</i> and <i>map</i> commands should draw labels to indicate minimum and maximum x, y, and function values
+(as applicable).
+</p>
+
+<table class="small"><tr><td class="small">Plot settings &gt; Aspect ratio &gt;&nbsp;</td><td class="small">Aspect ratio = 1<br/>Stretch to fill screen</td></tr></table>
+<p class="expl">
+Determines whether the <i>plot</i> and <i>par</i> commands should apply an equal scale to the x and y axes (aspect ratio = 1) or whether
+scales should be chosen so that the whole screen is used (stretch to fill screen). Also determines whether the four or five parameter form of <i>map</i>
+is inserted into the input line when the <i>map</i> command is selected from the functions key-menu.
+</p>
+
+<table class="small"><tr><td class="small">Help</td></tr></table>
+<p class="expl">
+Displays help on Javia Calculator.
+</p>
+
+<table class="small"><tr><td class="small">About</td></tr></table>
+<p class="expl">
+Displays program and version information.
+</p>
+
+<table class="small"><tr><td class="small">Exit</td></tr></table>
+<p class="expl">
+Exits Javia Calculator.
+</p>
+
+</div>
+
+<div class="footer">
+Copyright © 2006&ndash;2007 by Mihai Preda and Carlo Teubner. 
+</div>
+</body>
+</html>
