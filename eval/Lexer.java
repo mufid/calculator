@@ -1,21 +1,51 @@
 class Lexer {
-    static final byte
-        NONE = 0,
-        NUMBER = 1,
-        NAME   = 2,
-        LPAREN = 3,
-        RPAREN = 4,
-        PLUS   = 5,
-        MINUS  = 6,
-        TIMES  = 7,
-        DIV    = 8,
-        FACT   = 9,
-        POWER  = 10,
-        MOD    = 11,
-        COMMA  = 12,
-        END    = 13,
-        ERROR  = 14;
+    static final TokenType
+        ADD    = new TokenType("+", 3, TokenType.INFIX, false),
+        SUB    = new TokenType("-", 3, TokenType.INFIX, false),
+
+        MUL    = new TokenType("*", 4, TokenType.INFIX, false),
+        DIV    = new TokenType("/", 4, TokenType.INFIX, false),
+        MOD    = new TokenType("%", 4, TokenType.INFIX, false),
+
+        UMIN   = new TokenType("-", 5, TokenType.PREFIX, false),
+
+        POWER  = new TokenType("^", 6, TokenType.INFIX,  false),
+
+        FACT   = new TokenType("!", 7, TokenType.POSTFIX, true),
+
+        CALL   = new TokenType("call", 0, 0, false),
+        COMMA  = new TokenType(",",    1, 0, false),
+
+        LPAREN = new TokenType("(",    1, 0, false),
+        RPAREN = new TokenType(")",    2, 0, true),
+
+        NUMBER = new TokenType("number", 9, 0, true),
+        CONST  = new TokenType("alpha",  9, 0, true),
+
+        END    = new TokenType("end",   0, 0, false),
+        ERROR  = new TokenType("error", 0, 0, false);
     
+    static final Token
+        TOK_ADD = new Token(ADD),
+        TOK_SUB = new Token(SUB),
+
+        TOK_MUL = new Token(MUL),
+        TOK_DIV = new Token(DIV),
+        TOK_MOD = new Token(MOD),
+
+        TOK_UMIN = new Token(UMIN),
+
+        TOK_POWER  = new Token(POWER),
+        TOK_FACT   = new Token(FACT),
+
+        TOK_LPAREN = new Token(LPAREN),
+        TOK_RPAREN = new Token(RPAREN),
+        TOK_COMMA  = new Token(COMMA),
+
+        TOK_END    = new Token(END),
+        TOK_ERROR  = new Token(ERROR);
+
+    /*
     static final String[] TOKEN_NAMES = {
         "NONE",
         "NUMBER",
@@ -33,6 +63,7 @@ class Lexer {
         "END",
         "ERROR"
     };
+    */
 
     static final char END_MARKER = '$';
 
@@ -49,14 +80,14 @@ class Lexer {
         pos = 0;
     }
 
-    int nextToken() {
+    Token nextToken() {
         numberValue = 0;
         nameValue   = "";
 
         int p  = pos;
         char c = input[p++];
         int begin = pos;
-        int ret = NONE;
+        TokenType retType;
 
         //skip white space
         while (c == ' ' || c == '\t') {
@@ -64,19 +95,19 @@ class Lexer {
         }
         pos = p;
         switch (c) {
-        case '!': return FACT;
-        case END_MARKER: return END;
-        case '%': return MOD;
-        case '(': return LPAREN;
-        case ')': return RPAREN;
-        case '*': return TIMES;
-        case '+': return PLUS;
-        case ',': return COMMA;
-        case '-': return MINUS;
-        case '/': return DIV;
+        case '!': return TOK_FACT;
+        case END_MARKER: return TOK_END;
+        case '%': return TOK_MOD;
+        case '(': return TOK_LPAREN;
+        case ')': return TOK_RPAREN;
+        case '*': return TOK_TIMES;
+        case '+': return TOK_PLUS;
+        case ',': return TOK_COMMA;
+        case '-': return TOK_MINUS;
+        case '/': return TOK_DIV;
         }
         if (c == '^') {
-            return POWER;
+            return TOK_POWER;
         }
 
         --p;
@@ -99,24 +130,12 @@ class Lexer {
                     c = input[++p];
                 }
             }
-                /*
-                  if (input[end-1] == 'E') {
-                  --end;
-                }
-                */
-                
-                /*
-                if (input[start] == '.' && 
-                    (end == start+1  ||
-                     (end >= start+2 && input[start+1] == 'E'))) {
-                    throw Compiler.error;
-                }
-                */
             try {
                 numberValue = Double.parseDouble(String.valueOf(input, begin, p-begin));
-                ret = NUMBER;
+                retType = NUMBER;
             } catch (NumberFormatException e) {
-                ret = ERROR;
+                pos = p;
+                return TOK_ERROR;
             }
         } else {
             if (('a' <= c && c <= 'z') ||
@@ -127,19 +146,24 @@ class Lexer {
                          ('A' <= c && c <= 'Z') ||
                          ('0' <= c && c <= '9'));
             }
-            ret = NAME;
+            if (c == '(') {
+                ++p;
+                retType = CALL;
+            } else {
+                retType = NAME;
+            }
         }
         nameValue = String.valueOf(input, begin, p-begin);
         pos = p;
-        return ret;
+        return new Token(retType, numberValue, nameValue);
     }
     
     public static void main(String[] argv) {
         Lexer lexer = new Lexer(argv[0]);
-        int token;
+        Token token;
         do {
             token = lexer.nextToken();
-            System.out.println(Lexer.TOKEN_NAMES[token] + " (" + lexer.pos + ", " + lexer.nameValue + ", " + lexer.numberValue + ")");
+            System.out.println(token.name + " (" + lexer.pos + ", " + lexer.nameValue + ", " + lexer.numberValue + ")");
         } while (token != END);
     }
 }
