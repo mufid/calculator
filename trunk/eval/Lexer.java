@@ -1,17 +1,19 @@
+// Copyright (C) 2007 Mihai Preda
+
 class Lexer {
     static final TokenType
-        ADD    = new TokenType("+", 3, TokenType.INFIX, false),
-        SUB    = new TokenType("-", 3, TokenType.INFIX, false),
+        ADD    = new TokenType("+", 3, TokenType.LEFT, false),
+        SUB    = new TokenType("-", 3, TokenType.LEFT, false),
 
-        MUL    = new TokenType("*", 4, TokenType.INFIX, false),
-        DIV    = new TokenType("/", 4, TokenType.INFIX, false),
-        MOD    = new TokenType("%", 4, TokenType.INFIX, false),
+        MUL    = new TokenType("*", 4, TokenType.LEFT, false),
+        DIV    = new TokenType("/", 4, TokenType.LEFT, false),
+        MOD    = new TokenType("%", 4, TokenType.LEFT, false),
 
         UMIN   = new TokenType("-", 5, TokenType.PREFIX, false),
 
-        POWER  = new TokenType("^", 6, TokenType.INFIX,  false),
+        POWER  = new TokenType("^", 6, TokenType.RIGHT,  false),
 
-        FACT   = new TokenType("!", 7, TokenType.POSTFIX, true),
+        FACT   = new TokenType("!", 7, TokenType.SUFIX, true),
 
         CALL   = new TokenType("call", 0, 0, false),
         COMMA  = new TokenType(",",    1, 0, false),
@@ -87,7 +89,7 @@ class Lexer {
         int p  = pos;
         char c = input[p++];
         int begin = pos;
-        TokenType retType;
+        TokenType retType = ERROR;
 
         //skip white space
         while (c == ' ' || c == '\t') {
@@ -100,10 +102,10 @@ class Lexer {
         case '%': return TOK_MOD;
         case '(': return TOK_LPAREN;
         case ')': return TOK_RPAREN;
-        case '*': return TOK_TIMES;
-        case '+': return TOK_PLUS;
+        case '*': return TOK_MUL;
+        case '+': return TOK_ADD;
         case ',': return TOK_COMMA;
-        case '-': return TOK_MINUS;
+        case '-': return TOK_SUB;
         case '/': return TOK_DIV;
         }
         if (c == '^') {
@@ -145,25 +147,34 @@ class Lexer {
                 } while (('a' <= c && c <= 'z') ||
                          ('A' <= c && c <= 'Z') ||
                          ('0' <= c && c <= '9'));
-            }
-            if (c == '(') {
-                ++p;
-                retType = CALL;
+                if (c == '(') {
+                    retType = CALL;
+                } else {
+                    retType = CONST;
+                }
             } else {
-                retType = NAME;
+                return TOK_ERROR;
             }
         }
+        
         nameValue = String.valueOf(input, begin, p-begin);
+        if (retType == CALL) {
+            ++p;
+        }
         pos = p;
         return new Token(retType, numberValue, nameValue);
     }
     
     public static void main(String[] argv) {
         Lexer lexer = new Lexer(argv[0]);
+        Compiler compiler = new Compiler();
         Token token;
+        System.out.println(argv[0]+'\n');
         do {
             token = lexer.nextToken();
-            System.out.println(token.name + " (" + lexer.pos + ", " + lexer.nameValue + ", " + lexer.numberValue + ")");
-        } while (token != END);
+            System.out.println(token.toString() + " (" + lexer.pos + ", " + lexer.nameValue + ", " + lexer.numberValue + ")");
+            compiler.add(token);
+        } while (!(token == TOK_END || token == TOK_ERROR));
+        System.out.println("----\n\n"+compiler.toString());
     }
 }
