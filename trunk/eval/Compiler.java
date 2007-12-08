@@ -35,25 +35,32 @@ class Compiler {
     }
 
     boolean add(Token token) {
-        TokenType type = token.type;
-        
-        if (type == Lexer.NUMBER || type == Lexer.CONST || type == Lexer.LPAREN || type == Lexer.CALL) {
+        //TokenType type = token.type;
+        int priority = token.type.priority;
+        int id = token.type.id;
+        switch (id) {
+        case Lexer.NUMBER:
+        case Lexer.CONST:
+        case Lexer.LPAREN:
+        case Lexer.CALL:
             if (prevType != null && prevType.isOperand) {
                 add(Lexer.TOK_MUL);
             }
             stack.push(token);
-        } else if (type == Lexer.RPAREN) {
-            if (prevType == Lexer.CALL) {
+            break;
+            
+        case Lexer.RPAREN: {
+            if (prevType.id == Lexer.CALL) {
                 top().arity--; //compensate for ++ below
             } else if (!prevType.isOperand) {
                 System.out.println("misplaced ')'");
                 return false;
             }
 
-            popHigher(type.priority);
+            popHigher(priority);
             Token t = top();
             if (t != null) {
-                if (t.type == Lexer.CALL) {
+                if (t.type.id == Lexer.CALL) {
                     t.arity++;
                     code.push(t);
                 } else if (t != Lexer.TOK_LPAREN) {
@@ -61,31 +68,43 @@ class Compiler {
                 }
                 stack.pop();
             }
-        } else if (type == Lexer.COMMA) {
+            break;
+        }
+        
+        case Lexer.COMMA: {            
             if (prevType == null || !prevType.isOperand) {
                 throw new Error("misplaced COMMA");
             }
-            popHigher(type.priority);
+            popHigher(priority);
             Token t = top();
-            if (t==null || t.type != Lexer.CALL) {
+            if (t==null || t.type.id != Lexer.CALL) {
                 throw new Error("COMMA not inside CALL");
             }
             t.arity++;
             //code.push(stack.pop());
-        } else if (type == Lexer.SUB && prevType != null && !prevType.isOperand) {
-            //change '-' to unary minus
-            token = Lexer.TOK_UMIN;
-            stack.push(token);
-        } else if (type == Lexer.END) {
-            popHigher(type.priority);
-        } else { //operators
+            break;
+        }
+        
+        case Lexer.END:
+            popHigher(priority);
+            break;
+            
+        case Lexer.SUB:
+            if (prevType != null && !prevType.isOperand) {
+                //change SUB to unary minus
+                token = Lexer.TOK_UMIN;
+                stack.push(token);
+                break; //only break inside if, otherwise fall-through
+            }
+            
+        default: //operators
             if (prevType == null || !prevType.isOperand) {
                 throw new Error("operator without operand");
             }
-            popHigher(type.priority + (type.assoc==TokenType.RIGHT ? 1 : 0));
+            popHigher(priority + (token.type.assoc==TokenType.RIGHT ? 1 : 0));
             stack.push(token);
         }
-        prevType = type;
+        prevType = token.type;
         return true;
     }
 }

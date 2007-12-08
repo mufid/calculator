@@ -1,78 +1,53 @@
 // Copyright (C) 2007 Mihai Preda
 
 class Lexer {
+    static final int
+        ADD = 1, 
+        SUB = 2, 
+        MUL = 3, 
+        DIV = 4, 
+        MOD = 5,
+        UMIN   = 6, 
+        POWER  = 7, 
+        FACT   = 8,
+        NUMBER = 9, 
+        CONST  = 10,
+        CALL   = 11, 
+        COMMA  = 12, 
+        LPAREN = 13, 
+        RPAREN = 14,
+        END    = 15,
+        ERROR  = 16;
+        
     static final TokenType
-        ADD    = new TokenType("+", 3, TokenType.LEFT, false),
-        SUB    = new TokenType("-", 3, TokenType.LEFT, false),
-
-        MUL    = new TokenType("*", 4, TokenType.LEFT, false),
-        DIV    = new TokenType("/", 4, TokenType.LEFT, false),
-        MOD    = new TokenType("%", 4, TokenType.LEFT, false),
-
-        UMIN   = new TokenType("-", 5, TokenType.PREFIX, false),
-
-        POWER  = new TokenType("^", 6, TokenType.RIGHT,  false),
-
-        FACT   = new TokenType("!", 7, TokenType.SUFIX, true),
-
-        CALL   = new TokenType("call", 0, 0, false),
-        COMMA  = new TokenType(",",    1, 0, false),
-
-        LPAREN = new TokenType("(",    1, 0, false),
-        RPAREN = new TokenType(")",    2, 0, true),
-
-        NUMBER = new TokenType("number", 9, 0, true),
-        CONST  = new TokenType("alpha",  9, 0, true),
-
-        END    = new TokenType("end",   0, 0, false),
-        ERROR  = new TokenType("error", 0, 0, false);
+        NUMBER_TYPE = new TokenType(NUMBER, "number", 9, 0, true),
+        CONST_TYPE  = new TokenType(CONST, "alpha",  9, 0, true),
+        CALL_TYPE   = new TokenType(CALL, "call", 0, 0, false);
     
     static final Token
-        TOK_ADD = new Token(ADD),
-        TOK_SUB = new Token(SUB),
+        TOK_ADD = new Token(ADD, "+", 3, TokenType.LEFT, false),
+        TOK_SUB = new Token(SUB, "-", 3, TokenType.LEFT, false),
 
-        TOK_MUL = new Token(MUL),
-        TOK_DIV = new Token(DIV),
-        TOK_MOD = new Token(MOD),
+        TOK_MUL = new Token(MUL, "*", 4, TokenType.LEFT, false),
+        TOK_DIV = new Token(DIV, "/", 4, TokenType.LEFT, false),
+        TOK_MOD = new Token(MOD, "%", 4, TokenType.LEFT, false),
 
-        TOK_UMIN = new Token(UMIN),
+        TOK_UMIN = new Token(UMIN, "-", 5, TokenType.PREFIX, false),
 
-        TOK_POWER  = new Token(POWER),
-        TOK_FACT   = new Token(FACT),
+        TOK_POWER  = new Token(POWER, "^", 6, TokenType.RIGHT,  false),
+        TOK_FACT   = new Token(FACT,  "!", 7, TokenType.SUFIX, true),
 
-        TOK_LPAREN = new Token(LPAREN),
-        TOK_RPAREN = new Token(RPAREN),
-        TOK_COMMA  = new Token(COMMA),
+        TOK_LPAREN = new Token(LPAREN, "(",    1, 0, false),
+        TOK_RPAREN = new Token(RPAREN, ")",    2, 0, true),
+        TOK_COMMA  = new Token(COMMA, ",",    1, 0, false),
 
-        TOK_END    = new Token(END),
-        TOK_ERROR  = new Token(ERROR);
-
-    /*
-    static final String[] TOKEN_NAMES = {
-        "NONE",
-        "NUMBER",
-        "NAME",
-        "(",
-        ")",
-        "+",
-        "-",
-        "*",
-        "/",
-        "!",
-        "^",
-        "%",
-        ",",
-        "END",
-        "ERROR"
-    };
-    */
+        TOK_END    = new Token(END,   "end",   0, 0, false),
+        TOK_ERROR  = new Token(ERROR, "error", 0, 0, false);
 
     static final char END_MARKER = '$';
 
     char[] input;
     int pos;
-    double numberValue;
-    String nameValue;
 
     public Lexer(String str) {
         int len = str.length();
@@ -83,13 +58,10 @@ class Lexer {
     }
 
     Token nextToken() {
-        numberValue = 0;
-        nameValue   = "";
-
         int p  = pos;
         char c = input[p++];
         int begin = pos;
-        TokenType retType = ERROR;
+        //TokenType retType = ERROR;
 
         //skip white space
         while (c == ' ' || c == '\t') {
@@ -132,11 +104,11 @@ class Lexer {
                     c = input[++p];
                 }
             }
+            pos = p;
             try {
-                numberValue = Double.parseDouble(String.valueOf(input, begin, p-begin));
-                retType = NUMBER;
+                double numberValue = Double.parseDouble(String.valueOf(input, begin, p-begin));
+                return new Token(NUMBER_TYPE, numberValue);
             } catch (NumberFormatException e) {
-                pos = p;
                 return TOK_ERROR;
             }
         } else {
@@ -147,22 +119,19 @@ class Lexer {
                 } while (('a' <= c && c <= 'z') ||
                          ('A' <= c && c <= 'Z') ||
                          ('0' <= c && c <= '9'));
+                String nameValue = String.valueOf(input, begin, p-begin);
                 if (c == '(') {
-                    retType = CALL;
+                    pos = p + 1;
+                    return new Token(CALL_TYPE, nameValue);
                 } else {
-                    retType = CONST;
+                    pos = p;
+                    return new Token(CONST_TYPE, nameValue);                    
                 }
+
             } else {
                 return TOK_ERROR;
             }
         }
-        
-        nameValue = String.valueOf(input, begin, p-begin);
-        if (retType == CALL) {
-            ++p;
-        }
-        pos = p;
-        return new Token(retType, numberValue, nameValue);
     }
     
     public static void main(String[] argv) {
@@ -172,7 +141,7 @@ class Lexer {
         System.out.println(argv[0]+'\n');
         do {
             token = lexer.nextToken();
-            System.out.println(token.toString() + " (" + lexer.pos + ", " + lexer.nameValue + ", " + lexer.numberValue + ")");
+            System.out.println("" + token);
             compiler.add(token);
         } while (!(token == TOK_END || token == TOK_ERROR));
         System.out.println("----\n\n"+compiler.toString());

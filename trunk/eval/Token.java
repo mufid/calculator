@@ -10,18 +10,28 @@ public class Token {
         this.type = type;
     }
 
-    Token(TokenType type, double value, String alpha) {
-        this(type);
-        this.value = value;
-        this.name  = alpha;
+    Token(int id, String name, int priority, int assoc, boolean isOperand) {
+        type = new TokenType(id, name, priority, assoc, isOperand);
     }
 
+    Token(TokenType type, double value) {
+        this(type);
+        this.value = value;
+    }
+
+    Token(TokenType type, String alpha) {
+        this(type);
+        this.name  = alpha;
+    }
+    
+
     public String toString() {
-        if (type == Lexer.NUMBER) {
+        switch (type.id) {
+        case Lexer.NUMBER:
             return "" + value;
-        } else if (type == Lexer.CALL) {
+        case Lexer.CALL:
             return name + '(' + arity + ')';
-        } else if (type == Lexer.CONST) {
+        case Lexer.CONST:
             return name;
         }
         return type.name;
