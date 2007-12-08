@@ -12,11 +12,13 @@ class TokenType {
     final int priority;
     final int assoc;
     final boolean isOperand;
+    final int id;
 
-    TokenType(String name, int priority, int kind, boolean isOperand) {
+    TokenType(int id, String name, int priority, int assoc, boolean isOperand) {
+        this.id = id;
         this.name = name;
         this.priority = priority;
-        this.assoc = kind;
+        this.assoc = assoc;
         this.isOperand = isOperand;
     }
 }
