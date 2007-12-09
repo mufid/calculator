@@ -1,12 +1,14 @@
 // Copyright (C) 2007 Mihai Preda
 
-public class VM {
+public class Fun {
     public static final byte
-        RET = 0,
+        RET   = 0,
+        CONST = 1,
+        CALL  = 2,
 
     //ANS = 5,
         CONST_PI = 6,
-        CONST_E = 7,
+        CONST_E  = 7,
 
         ADD = 8,
         SUB = 9,
@@ -14,7 +16,7 @@ public class VM {
         DIV = 11,
         MOD = 12,
 
-        UMIN = 13,
+        UMIN  = 13,
         POWER = 14,
         FACT  = 15,
 
@@ -57,77 +59,55 @@ public class VM {
 
         LD0 = 46,
         LD1 = 47,
-        LD2 = 48,
-    //LD3 = 49,
-        
-        CALL0 = 50,
-        CALL1 = 51,
-        CALL2 = 52,
-        CALL3 = 53,
-       
-        CALL4 = 54,
-        CALL5 = 55,
-        CALL6 = 56,
-        CALL7 = 57,
-
-        CONST0 = 58,
-        CONST1 = 59,
-        CONST2 = 60,
-        CONST3 = 61,
-
-        CONST4 = 62,
-        CONST5 = 63,
-        CONST6 = 64,
-        CONST7 = 65,
-
-        CONST8  = 66,
-        CONST9  = 67,
-        CONST10 = 68,
-        CONST11 = 69
+        LD2 = 48
         ;
-
-    static final int MAX_CONSTS = CONST11 - CONST0 + 1;
-    static final int MAX_CODE   = 512;
-
-    Fun(int arity, byte[] code, double[] consts, Fun[] funcs) {
-        this.arity = arity;
-        this.code   = code;
-        this.consts = consts;
-        this.funcs  = funcs;
-    }
 
     double[] consts;
     private Fun[] funcs;
     private byte[] code;
     int arity; 
 
+    Fun(int arity, byte[] code, double[] consts, Fun[] funcs) {
+        this.arity  = arity;
+        this.code   = code;
+        this.consts = consts;
+        this.funcs  = funcs;
+    }
+
+    int trace(double[] stack, int sp, byte op, double lastConst, Fun lastFun) {
+        consts[0] = lastConst;
+        funcs[0]  = lastFun;
+        code[0]   = op;
+        code[1]   = RET;
+        return exec(stack, sp);
+    }
+
     int exec(double[] s, int p) {
-        int op;
         int pc = 0; //program counter
-        byte[] prog = mProg; //local variable
+        byte[] code = this.code;
         int initialSP = p;
         double x, y, z;
+        int constp = 0;
+        int funp   = 0;
+        final double angleFactor = 1; // 1/Calc.cfg.trigFactor;
+
         switch (arity) {
         case 3: z = s[p--];
         case 2: y = s[p--];
         case 1: x = s[p--];
         }
-        final double angleFactor = 1; // 1/Calc.cfg.trigFactor;
-        
+
         while (true) {
-            op = code[pc++];
-            switch (op) {
-            case CONST0: s[++p] = c0; break;
-            case CONST1: s[++p] = c1; break;
-            case CONST2: s[++p] = c2; break;
-            case CONST3: s[++p] = c3; break;
+            switch (code[pc++]) {
+            case CONST: s[++p] = consts[constp++]; break;
+            case CALL: { 
+                Fun fun = funcs[funp++];
+                fun.exec(s, p); 
+                p -= fun.arity - 1; 
+                break;
+            }
                 
-            case CONST4: s[++p] = c4; break;
-            case CONST5: s[++p] = c5; break;
-            case CONST6: s[++p] = c6; break;
-            case CONST7: s[++p] = c7; break;
-                
-            case ANS:      s[++p] = 0;           break; //todo: fix ans
+                //case ANS:      s[++p] = 0;           break; //todo: fix ans
             case CONST_PI: s[++p] = MoreMath.PI; break;
             case CONST_E:  s[++p] = MoreMath.E;  break;
             case RND:      s[++p] = rng.nextDouble(); break;
@@ -179,25 +159,7 @@ public class VM {
                     
             case LD0: s[++p] = x; break;
             case LD1: s[++p] = y; break;
-            case LD2: s[++p] = z; break;
-                    
-            case CALL0: 
-                f0.exec(s, p); 
-                p -= f0.arity - 1; 
-                break;
-                
-            case CALL1: 
-                f1.exec(s, p); 
-                p -= f1.arity - 1; 
-                break;
-                
-            case CALL2: case CALL3: case CALL4: case CALL5: case CALL6: case CALL7: {
-                Function f = funcs[prog[pc-1] - CALL2];
-                f.exec(s, p);
-                p -= f.arity - 1; //the return value is on top of stack
-                break;
-            }
-                
+            case LD2: s[++p] = z; break;                                   
             case RET:
                 return p;
             }

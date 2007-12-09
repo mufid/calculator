@@ -10,8 +10,8 @@ public class Token {
         this.type = type;
     }
 
-    Token(int id, String name, int priority, int assoc, boolean isOperand) {
-        type = new TokenType(id, name, priority, assoc, isOperand);
+    Token(int id, String name, int priority, int assoc, boolean isOperand, byte vmop) {
+        type = new TokenType(id, name, priority, assoc, isOperand, vmop);
     }
 
     Token(TokenType type, double value) {
