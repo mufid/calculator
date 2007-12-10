@@ -22,7 +22,9 @@ class Compiler {
             compiler.add(token);
         } while (token != Lexer.TOK_END && token != Lexer.TOK_ERROR);
         Fun fun = codegen.gen(compiler.code);
+        fun.source = str;
         compiler.init();
+        System.out.println(fun.toString());
         return fun;
     }
 
