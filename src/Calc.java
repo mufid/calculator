@@ -6,6 +6,7 @@ import java.io.*;
 import javax.microedition.midlet.MIDlet;
 
 import org.javia.lib.*;
+import org.javia.lib.midp.*;
 
 public final class Calc extends BasicMIDlet implements CommandListener, Runnable {
     static UnitTest dummy;
