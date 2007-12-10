@@ -30,44 +30,13 @@ class Codegen {
     }
 
     Codegen() {
-        def("sin",  1, Fun.SIN);
-        def("cos",  1, Fun.COS);
-        def("tan",  1, Fun.TAN);
-        def("asin", 1, Fun.ASIN);
-        def("acos", 1, Fun.ACOS);
-        def("atan", 1, Fun.ATAN);
-        
-        def("sinh",  1, Fun.SINH);
-        def("cosh",  1, Fun.COSH);
-        def("tanh",  1, Fun.TANH);
-        def("asinh", 1, Fun.ASINH);
-        def("acosh", 1, Fun.ACOSH);
-        def("atanh", 1, Fun.ATANH);
-
-        def("exp",   1, Fun.EXP);
-        def("ln",    1, Fun.LN);
-        def("log10", 1, Fun.LOG10);
-        def("log2",  1, Fun.LOG2);
-
-        def("sqrt",  1, Fun.SQRT);
-        def("cbrt",  1, Fun.CBRT);
-
-        def("abs",   1, Fun.ABS);
-        def("floor", 1, Fun.FLOOR);
-        def("ceil",  1, Fun.CEIL);
-        def("sign",  1, Fun.SIGN);
-        
-        def("min", 2, Fun.MIN);
-        def("max", 2, Fun.MAX);
-
-        def("gcd",  2, Fun.GCD);
-        def("comb", 2, Fun.COMB);
-        def("perm", 2, Fun.PERM);
+        for (int i = 0; i < VM.BYTECODE_END; ++i) {
+            int arity = VM.builtinArity[i];
+            if (arity == 1 || arity == 2) {
+                builtins[arity].put(VM.opcodeName[i], new Byte((byte)i));
+            }
+        }
         init();
-    }
-
-    private void def(String name, int arity, byte vmop) {
-        builtins[arity].put(name, new Byte(vmop));
     }
 
     double lookupVar(String name) {
@@ -169,6 +138,8 @@ class Codegen {
         byte[] trimmedCode = new byte[pc];
         System.arraycopy(code, 0, trimmedCode, 0, pc);
 
-        return new Fun(arity, trimmedCode, trimmedConsts, trimmedFuncs);
+        return pc > 1 ? 
+            new Fun(arity, trimmedCode, trimmedConsts, trimmedFuncs) :
+            null;
     }
 }

@@ -2,6 +2,7 @@
 
 import java.util.Stack;
 import java.util.EmptyStackException;
+import org.javia.lib.Log;
 
 class Compiler {
     static Lexer lexer       = new Lexer();
@@ -15,16 +16,19 @@ class Compiler {
     synchronized public static Fun compile(String str) {
         lexer.init(str);
         codegen.init();
-        //compiler.init();
+        compiler.init();
         Token token;
         do {
             token = lexer.nextToken();
-            compiler.add(token);
-        } while (token != Lexer.TOK_END && token != Lexer.TOK_ERROR);
+            if (!compiler.add(token)) {
+                Log.log("compile error on '" + str + "'");
+                return null;
+            }
+        } while (token != Lexer.TOK_END);
         Fun fun = codegen.gen(compiler.code);
-        fun.source = str;
-        compiler.init();
-        System.out.println(fun.toString());
+        //fun.source = str;
+        //compiler.init();
+        Log.log("compile '" + str + "': " + fun);
         return fun;
     }
 
@@ -69,6 +73,9 @@ class Compiler {
         int priority = token.type.priority;
         int id = token.type.id;
         switch (id) {
+        case Lexer.ERROR:
+            return false;
+
         case Lexer.NUMBER:
         case Lexer.CONST:
         case Lexer.LPAREN:
@@ -83,7 +90,7 @@ class Compiler {
             if (prevType.id == Lexer.CALL) {
                 top().arity--; //compensate for ++ below
             } else if (!prevType.isOperand) {
-                System.out.println("misplaced ')'");
+                Log.log("misplaced ')'");
                 return false;
             }
 
@@ -94,7 +101,8 @@ class Compiler {
                     t.arity++;
                     code.push(t);
                 } else if (t != Lexer.TOK_LPAREN) {
-                    throw new Error("expected LPAREN or CALL");
+                    Log.log("expected LPAREN or CALL");
+                    return false;
                 }
                 stack.pop();
             }
@@ -103,12 +111,14 @@ class Compiler {
         
         case Lexer.COMMA: {            
             if (prevType == null || !prevType.isOperand) {
-                throw new Error("misplaced COMMA");
+                Log.log("misplaced COMMA");
+                return false;
             }
             popHigher(priority);
             Token t = top();
             if (t==null || t.type.id != Lexer.CALL) {
-                throw new Error("COMMA not inside CALL");
+                Log.log("COMMA not inside CALL");
+                return false;
             }
             t.arity++;
             //code.push(stack.pop());
@@ -116,6 +126,10 @@ class Compiler {
         }
         
         case Lexer.END:
+            if (prevType == null || !prevType.isOperand) {
+                Log.log("misplaced END");
+                return false;
+            }
             popHigher(priority);
             break;
             
@@ -129,7 +143,8 @@ class Compiler {
             
         default: //operators
             if (prevType == null || !prevType.isOperand) {
-                throw new Error("operator without operand");
+                Log.log("operator without operand");
+                return false;
             }
             popHigher(priority + (token.type.assoc==TokenType.RIGHT ? 1 : 0));
             stack.push(token);
