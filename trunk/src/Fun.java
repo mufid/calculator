@@ -12,7 +12,7 @@ public class Fun extends VM {
     String source;
 
     Fun(int arity, byte[] code, double[] consts, Fun[] funcs) {
-        this.source = null;
+        this.source = "";
         this.arity  = arity;
         this.code   = code;
         this.consts = consts;
@@ -23,14 +23,14 @@ public class Fun extends VM {
         StringBuffer buf = new StringBuffer();
         buf.append("Function with arity ").append(arity);
         buf.append("; sub-funcs ").append(funcs.length);
-        if (source != null) {
-            buf.append("\nSource: '").append(source).append("'");
+        if (source.length() > 0) {
+            buf.append("\n  source: '").append(source).append("'");
         }
-        buf.append("\n  consts:");
+        buf.append("\n  consts: ");
         for (int i = 0; i < consts.length; ++i) {
             buf.append("\n    ").append(consts[i]);
         }
-        buf.append("\n  code:");
+        buf.append("\n  code: ");
         for (int i = 0; i < consts.length; ++i) {
             buf.append("\n    ").append(opcodeName[code[i]]);
         }
