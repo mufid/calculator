@@ -129,8 +129,9 @@ class History {
     }
 
     DataOut dataOut = new DataOut();
-    void enter(char[] str, int len, String asString) {
-        compiler.compile(str, len);
+    void enter(String str) {
+        /*
+        compiler.compile(str);
         Result res = Compiler.result;
 
         boolean hasValue = res.hasValue();
@@ -160,5 +161,6 @@ class History {
             }
         }
         historyPos = 0;
+        */
     }
 }

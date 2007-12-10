@@ -1,5 +1,7 @@
 // Copyright (C) 2007 Mihai Preda
 
+import java.util.Random;
+
 public class Fun {
     public static final byte
         RET   = 0,
@@ -57,10 +59,12 @@ public class Fun {
         COMB = 44,
         PERM = 45,
 
-        LD0 = 46,
-        LD1 = 47,
-        LD2 = 48
+        LDX = 46,
+        LDY = 47,
+        LDZ = 48
         ;
+
+    static Random random = new Random();
 
     double[] consts;
     private Fun[] funcs;
@@ -82,6 +86,16 @@ public class Fun {
         return exec(stack, sp);
     }
 
+    private static double[] globalStack = new double[128];
+
+    double eval() {
+        int sp = exec(globalStack, -1);
+        if (sp != 0) {
+            throw new Error("unexpected SP: " + sp);
+        }
+        return globalStack[0];
+    }
+
     int exec(double[] s, int p) {
         int pc = 0; //program counter
         byte[] code = this.code;
@@ -91,6 +105,7 @@ public class Fun {
         int funp   = 0;
         final double angleFactor = 1; // 1/Calc.cfg.trigFactor;
 
+        x = y = z = Double.NaN;
         switch (arity) {
         case 3: z = s[p--];
         case 2: y = s[p--];
@@ -108,9 +123,9 @@ public class Fun {
             }
                 
                 //case ANS:      s[++p] = 0;           break; //todo: fix ans
-            case CONST_PI: s[++p] = MoreMath.PI; break;
-            case CONST_E:  s[++p] = MoreMath.E;  break;
-            case RND:      s[++p] = rng.nextDouble(); break;
+            case CONST_PI: s[++p] = Math.PI; break;
+            case CONST_E:  s[++p] = Math.E;  break;
+            case RND:      s[++p] = random.nextDouble(); break;
                     
             case ADD: s[--p] += s[p+1]; break;
             case SUB: s[--p] -= s[p+1]; break;
@@ -122,9 +137,9 @@ public class Fun {
             case UMIN: s[p] = -s[p]; break;
             case FACT: s[p] = MoreMath.factorial(s[p]); break;                   
                 
-            case SIN:  s[p] = MoreMath.sin(s[p] * angleFactor); break;
-            case COS:  s[p] = MoreMath.cos(s[p] * angleFactor); break;
-            case TAN:  s[p] = MoreMath.tan(s[p] * angleFactor); break;
+            case SIN:  s[p] = Math.sin(s[p] * angleFactor); break;
+            case COS:  s[p] = Math.cos(s[p] * angleFactor); break;
+            case TAN:  s[p] = Math.tan(s[p] * angleFactor); break;
             case ASIN: s[p] = MoreMath.asin(s[p]) / angleFactor; break;
             case ACOS: s[p] = MoreMath.acos(s[p]) / angleFactor; break;
             case ATAN: s[p] = MoreMath.atan(s[p]) / angleFactor; break;
@@ -134,7 +149,7 @@ public class Fun {
             case LOG10: s[p] = MoreMath.log10(s[p]); break;
             case LOG2:  s[p] = MoreMath.log2(s[p]); break;
                 
-            case SQRT: s[p] = MoreMath.sqrt(s[p]); break;
+            case SQRT: s[p] = Math.sqrt(s[p]); break;
             case CBRT: s[p] = MoreMath.cbrt(s[p]); break;
                 
             case SINH: s[p] = MoreMath.sinh(s[p]); break;
@@ -157,11 +172,11 @@ public class Fun {
             case COMB: s[--p] = MoreMath.comb(s[p], s[p+1]); break;
             case PERM: s[--p] = MoreMath.perm(s[p], s[p+1]); break;
                     
-            case LD0: s[++p] = x; break;
-            case LD1: s[++p] = y; break;
-            case LD2: s[++p] = z; break;                                   
-            case RET:
-                return p;
+            case LDX: s[++p] = x; break;
+            case LDY: s[++p] = y; break;
+            case LDZ: s[++p] = z; break;
+
+            case RET: return p;
             }
         }
     }

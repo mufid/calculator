@@ -49,7 +49,15 @@ class Lexer {
     char[] input;
     int pos;
 
-    public Lexer(String str) {
+    Lexer() {
+        this("");
+    }
+
+    Lexer(String str) {
+        init(str);
+    }
+
+    void init(String str) {
         int len = str.length();
         input = new char[len+1];
         str.getChars(0, len, input, 0);

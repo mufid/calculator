@@ -15,12 +15,12 @@ class TokenType {
     final int id;
     final byte vmop;
 
-    TokenType(int id, String name, int priority, int assoc, boolean isOperand, byte vmop) {
+    TokenType(int id, String name, int priority, int assoc, boolean isOperand, int vmop) {
         this.id = id;
         this.name = name;
         this.priority = priority;
         this.assoc = assoc;
         this.isOperand = isOperand;
-        this.vmop = vmop;
+        this.vmop = (byte)vmop;
     }
 }

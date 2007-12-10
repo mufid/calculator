@@ -4,9 +4,37 @@ import java.util.Stack;
 import java.util.EmptyStackException;
 
 class Compiler {
+    static Lexer lexer       = new Lexer();
+    static Compiler compiler = new Compiler();
+    static Codegen codegen   = new Codegen();
+
     Stack stack = new Stack();
     Stack code  = new Stack();
-    TokenType prevType  = null;
+    TokenType prevType;
+
+    synchronized public static Fun compile(String str) {
+        lexer.init(str);
+        codegen.init();
+        //compiler.init();
+        Token token;
+        do {
+            token = lexer.nextToken();
+            compiler.add(token);
+        } while (token != Lexer.TOK_END && token != Lexer.TOK_ERROR);
+        Fun fun = codegen.gen(compiler.code);
+        compiler.init();
+        return fun;
+    }
+
+    public Compiler() {
+        init();
+    }
+
+    public void init() {
+        stack.removeAllElements();
+        code.removeAllElements();
+        prevType = null;
+    }
 
     public String toString() {
         StringBuffer buf = new StringBuffer();

@@ -51,35 +51,11 @@ class KeyState {
         });
 
         vars = new KeyState(new Object[] {
-            null, null, null,
+            "x",  "y",  "z",
             "f",  "a",  "b",
             "g",  "c",  "d",
             "h",  "m",  "n",
-        }) {
-          void init() {
-              keys[0] = keys[1] = keys[2] = null;
-              changed = true;
-              String pre = Calc.self.calcCanvas.preCursorLine();
-              if (Lexer.isAssignment(pre)) {
-                  keys[0] = "x";
-                  keys[1] = "y";
-                  keys[2] = "z";
-                  return;
-              }
-              switch (Lexer.getFunctionPlotCommand(pre)) {
-              case VM.PLOT:
-                  keys[0] = "x";
-                  break;
-              case VM.MAP:
-                  keys[0] = "x";
-                  keys[1] = "y";
-                  break;
-              case VM.PARPLOT:
-                  keys[0] = "t";
-                  break;
-              }
-          }
-        };
+            });
 
         plots = new KeyState(new Object[] {
             null,   null,   null,
