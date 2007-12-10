@@ -6,6 +6,7 @@ import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 
 import org.javia.lib.*;
+import org.javia.lib.midp.*;
 
 class CalcConfig {
     private static final String
