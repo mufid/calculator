@@ -100,10 +100,7 @@ class CalcCanvas extends Canvas {
                 if (piIdx != -1) {
                     str = str.substring(0, piIdx) + Calc.cfg.piString + str.substring(piIdx + 4, str.length());
                 }
-                final int len = str.length();
-                char[] chs = new char[len + 1]; // one extra char for '$' which Lexer inserts
-                str.getChars(0, len, chs, 0);
-                history.enter(chs, len, str);
+                history.enter(str);
             }
         }
 
@@ -157,18 +154,18 @@ class CalcCanvas extends Canvas {
     }
 
     void updateResult() {
-        if (compiler.compile(line, len)) {
-            if (Compiler.result.plotCommand == -1) {
-                CompiledFunction func = Compiler.result.function;
-                String strResult = func.arity() > 0 ?
-                        line[0] + params[func.arity()-1] : format(func.evaluate());
-                drawResultString(strResult);
-            }
+        Fun func = compiler.compile(new String(line, 0, len));
+        if (func != null) {
+            String strResult = func.arity > 0 ?
+                line[0] + params[func.arity - 1] : format(func.eval());
+            drawResultString(strResult);
         } else {
-            if (Compiler.result.errorStart < len)
+            /*
+            if (Compiler.result.errorStart < len) {
                 markError();
-            if (Compiler.result.plotCommand == -1)
-                drawResultString(null);
+            }
+            */
+            drawResultString(null);
         }
     }
 
@@ -269,6 +266,7 @@ class CalcCanvas extends Canvas {
     }
 
     void markError() {
+        /*
         final int start = Compiler.result.errorStart, end = Compiler.result.errorEnd;
         int errLine, startOfLine, w, y, w2, y2,
             minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE,
@@ -288,6 +286,7 @@ class CalcCanvas extends Canvas {
             if (y2 > maxY) maxY = y2;
         }
         repaint(minX, minY, maxX - minX, maxY - minY);
+        */
     }
 
     boolean drawCursor = true;
@@ -316,6 +315,7 @@ class CalcCanvas extends Canvas {
         //Log.log("pos " + pos + " row " + cursorRow + " col " + cursorCol + " x " + cursorX + " y " + cursorY);
         setCursor(true);
 
+        /*
         final int[] cmdSlot = Lexer.getPlotCommandAndSlot(new String(line, 0, len), pos + 1);
         if (cmdSlot[0] != -1) {
             String help = null;
@@ -326,6 +326,7 @@ class CalcCanvas extends Canvas {
             }
             drawResultString(help);
         }
+        */
     }
 
     char histBuf[] = new char[256+30];
@@ -405,6 +406,10 @@ class CalcCanvas extends Canvas {
         }
         KeyState.paint(g);        
     }
+    
+    private static final boolean isLetter(char c) {
+        return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
+    }
 
     int prevFlexPoint(int pos) {
         if (pos < 0) {
@@ -415,17 +420,19 @@ class CalcCanvas extends Canvas {
         }
         int p = pos;
         if (p >= 1 && line[p] == '(') {
-            do { --p; } while (p >= 0 && Lexer.isLetter(line[p]));
+            /*
+            do { --p; } while (p >= 0 && isLetter(line[p]));
             final int sym = Lexer.getSymbol(new String(line, p + 1, pos));
             if (Lexer.isBuiltinFunction(sym) || Lexer.isPlotCommand(sym) ||
                 Lexer.isVariable(sym) && Variables.isFunction(sym) && p > -1)
             { pos = p; }
             else
-                --pos;
+            */
+            --pos;
             return pos;
         }
-        if (p >= 0 && Lexer.isLetter(line[p])) {
-            do { --p; } while (p >= 0 && Lexer.isLetter(line[p]));
+        if (p >= 0 && isLetter(line[p])) {
+            do { --p; } while (p >= 0 && isLetter(line[p]));
             return p;
         }
         return pos - 1;
@@ -439,16 +446,18 @@ class CalcCanvas extends Canvas {
             return pos + 2;
         }
         int p = ++pos;
-        if (Lexer.isLetter(line[pos])) {
-            while (pos < len && Lexer.isLetter(line[pos]))
+        if (isLetter(line[pos])) {
+            while (pos < len && isLetter(line[pos]))
                 ++pos;
             --pos;
+            /*
             if (pos + 1 < len && line[pos + 1] == '(') {
                 final int sym = Lexer.getSymbol(new String(line, p, pos + 1));
                 if (Lexer.isBuiltinFunction(sym) || Lexer.isPlotCommand(sym) ||
                     Lexer.isVariable(sym) && Variables.isFunction(sym) && pos > 0)
                 { ++pos; }
             }
+            */
         }
         return pos;
     }
@@ -546,10 +555,12 @@ class CalcCanvas extends Canvas {
             break;
 
         case Canvas.FIRE:
-            history.enter(line, len, lineStr());
+            history.enter(lineStr());
+            /*
             Result res = Compiler.result;
             if (res.errorStart == -1 && res.plotCommand != -1)
                 Calc.self.plotCanvas.plot(res);
+            */
             updateFromHistEntry(history.getCurrent());
             doChanged(-1);
             updateHistory();
@@ -596,7 +607,7 @@ class CalcCanvas extends Canvas {
                 s = String.valueOf((char)key);
             }
             if (s != null) {
-                int sym = -1;
+                //int sym = -1;
                 final int s_len = s.length();
                 final boolean isOperator = s_len == 1 && "+*/%^!".indexOf(s.charAt(0)) != -1;
                 if (pos == -1 && s_len == 1) {
@@ -604,24 +615,29 @@ class CalcCanvas extends Canvas {
                         insertIntoLine("ans");
                         lastInsertLen += 3;
                     } else {
-                        sym = Lexer.getSymbol(s);
+                        //sym = Lexer.getSymbol(s);
                     }
                     insertIntoLine(s);
+                    /*
                     if (Lexer.isVariable(sym) && !Variables.isDefined(sym)) {
                         insertIntoLine(":=");
                         lastInsertLen += 2;
                     }
+                    */
                 } else {
+                    /*
                     if (!isOperator) {
-                        sym = Lexer.getSymbol(s);
-                        if (sym != -1 && pos > -1 && Lexer.isLetter(line[pos])) {
+                        //sym = Lexer.getSymbol(s);
+                        if (sym != -1 && pos > -1 && isLetter(line[pos])) {
                             insertIntoLine("*");
                             ++lastInsertLen;
                         }
                     }
+                    */
                     insertIntoLine(s);
                 }
                 lastInsertLen += s.length();
+                /*
                 if (sym != -1) {
                     int arity = Lexer.isVariable(sym)
                     ? (Variables.isFunction(sym)
@@ -645,6 +661,7 @@ class CalcCanvas extends Canvas {
                         }
                     }
                 }
+                */
                 doChanged(oldPos);
             }
         } else {

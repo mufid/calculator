@@ -4,22 +4,30 @@ import java.util.Vector;
 import java.util.Hashtable;
 
 class Codegen {
-    static final int MAX_STACK  = 32;
-    static final int MAX_CONSTS = 16;
-    static final int MAX_FUNCS  = 16;
-    static final int MAX_CODE   = 128;
+    private static final int MAX_STACK  = 32;
+    private static final int MAX_CONSTS = 16;
+    private static final int MAX_FUNCS  = 16;
+    private static final int MAX_CODE   = 128;
 
-    double stack[] = new double[MAX_STACK];
-    int sp = -1;
-        
+    Hashtable[] builtins = {null, new Hashtable(), new Hashtable()};
+
+    double stack[]  = new double[MAX_STACK];        
     double consts[] = new double[MAX_CONSTS];
-    int nConst = 0;
-
     byte[] code = new byte[MAX_CODE];
-    int pc = 0;
-
     Fun[] funcs = new Fun[MAX_FUNCS];
-    int nf = 0;
+
+    int sp, nConst, pc, nf;
+    int arity;
+
+    Fun tracer = new Fun(0, new byte[2], new double[1], new Fun[1]);
+
+    void init() {
+        sp     = -1;
+        nConst = 0;
+        pc     = 0;
+        nf     = 0;
+        arity  = 0;
+    }
 
     Codegen() {
         def("sin",  1, Fun.SIN);
@@ -55,9 +63,8 @@ class Codegen {
         def("gcd",  2, Fun.GCD);
         def("comb", 2, Fun.COMB);
         def("perm", 2, Fun.PERM);
+        init();
     }
-
-    Hashtable[] builtins = {null, new Hashtable(), new Hashtable()};
 
     private void def(String name, int arity, byte vmop) {
         builtins[arity].put(name, new Byte(vmop));
@@ -84,12 +91,14 @@ class Codegen {
     }
 
     Fun gen(Vector tokens) {
-        Fun tracer = new Fun(0, new byte[2], new double[1], new Fun[1]);
+        init();
         int size = tokens.size();
-        byte op;
-        double lastConst;
-        Fun lastFun;
+        double lastConst = 0;
+        Fun lastFun = null;
+
         for (int i = 0; i < size; ++i) {
+            byte op;
+
             Token token = (Token) tokens.elementAt(i);
             TokenType type = token.type;
             switch (type.id) {
@@ -99,11 +108,22 @@ class Codegen {
                 break;
 
             case Lexer.CONST:
-                if (token.name == "rnd") {
+                String name = token.name;
+                if (name.equals("rnd")) {
                     op  = Fun.RND;
                 } else {
+                    if (name.length() == 1) {
+                        char c = name.charAt(0);
+                        if (c == 'x' || c == 'y' || c == 'z') {
+                            op = (byte) (Fun.LDX + (c - 'x'));
+                            if (arity < c - 'x' + 1) {
+                                arity = c - 'x' + 1;
+                            }
+                            break;
+                        }
+                    }
                     op = Fun.CONST;
-                    lastConst = consts[nConst++] = lookupVar(token.name);
+                    lastConst = consts[nConst++] = lookupVar(name);
                 }
                 break;
 
@@ -138,5 +158,17 @@ class Codegen {
                 }
             }
         }
+        
+        double[] trimmedConsts = new double[nConst];
+        System.arraycopy(consts, 0, trimmedConsts, 0, nConst);
+
+        Fun[] trimmedFuncs = new Fun[nf];
+        System.arraycopy(funcs, 0, trimmedFuncs, 0, nf);
+
+        code[pc++] = Fun.RET;
+        byte[] trimmedCode = new byte[pc];
+        System.arraycopy(code, 0, trimmedCode, 0, pc);
+
+        return new Fun(arity, trimmedCode, trimmedConsts, trimmedFuncs);
     }
 }
