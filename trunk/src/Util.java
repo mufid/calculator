@@ -179,11 +179,13 @@ class Util {
         return s;
     }
 
+    /*
     public static void sort(Object[] array, int length) {
         Object[] temp = new Object[length];
         System.arraycopy(array, 0, temp, 0, length);
         Util.mergeSort(temp, array, 0, length, 0);
     }
+    */
 
     // taken from J2SE 6.0's Arrays.java
     /**
@@ -193,6 +195,7 @@ class Util {
      * high is the end index in dest to end sorting
      * off is the offset to generate corresponding low, high in src
      */
+    /*
     private static void mergeSort(Object[] src, Object[] dest, int low, int high, int off) {
         final int length = high - low;
 
@@ -230,6 +233,7 @@ class Util {
                 dest[i] = src[q++];
         }
     }
+    */
 
     private static void swap(Object[] x, int a, int b) {
         Object t = x[a];
