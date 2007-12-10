@@ -104,7 +104,7 @@ class CalcCanvas extends Canvas {
             }
         }
 
-        Variables.load();
+        //Variables.load();
 
         cursorX = 20;
         cursorY = 10;

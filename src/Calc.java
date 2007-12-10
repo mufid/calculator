@@ -13,7 +13,7 @@ public final class Calc extends BasicMIDlet implements CommandListener, Runnable
         
     static Display display;
     CalcCanvas calcCanvas;
-    PlotCanvas plotCanvas;
+    //PlotCanvas plotCanvas;
     static final String helpStr = 
 "Press * or # to display a menu, " +
 "next press a key (1-9,*0#) to select. " +
@@ -78,7 +78,7 @@ public final class Calc extends BasicMIDlet implements CommandListener, Runnable
         cfg = new CalcConfig(rs, RS_CONFIG);
         display = Display.getDisplay(this);
         calcCanvas = new CalcCanvas();
-        plotCanvas = new PlotCanvas(display, calcCanvas);
+        //plotCanvas = new PlotCanvas(display, calcCanvas);
 
         menu = new Menu("Menu", new Cmd[] {
                 new Menu("General settings", new Cmd[] {

@@ -2,80 +2,39 @@
 
 import java.util.Random;
 
-public class Fun {
-    public static final byte
-        RET   = 0,
-        CONST = 1,
-        CALL  = 2,
-
-    //ANS = 5,
-        CONST_PI = 6,
-        CONST_E  = 7,
-
-        ADD = 8,
-        SUB = 9,
-        MUL = 10,
-        DIV = 11,
-        MOD = 12,
-
-        UMIN  = 13,
-        POWER = 14,
-        FACT  = 15,
-
-        RND = 16,
-
-        SIN = 17,
-        COS = 18,
-        TAN = 19,
-        ASIN = 20,
-        ACOS = 21,
-        ATAN = 22,
-        
-        EXP = 23,
-        LN  = 24,
-        LOG10 = 25,
-        LOG2  = 26,
-        
-        SQRT = 27,
-        CBRT = 28,
-
-        SINH = 29,
-        COSH = 30,
-        TANH = 31,
-        ASINH = 32,
-        ACOSH = 33,
-        ATANH = 34,
-                
-    //INT   = 35,
-    //FRAC  = 36,
-        ABS   = 37,
-        FLOOR = 38,
-        CEIL  = 39,
-        SIGN  = 40,
-
-        MIN = 41,
-        MAX = 42,
-        GCD = 43,
-        COMB = 44,
-        PERM = 45,
-
-        LDX = 46,
-        LDY = 47,
-        LDZ = 48
-        ;
-
+public class Fun extends VM {
     static Random random = new Random();
 
     double[] consts;
     private Fun[] funcs;
     private byte[] code;
     int arity; 
+    String source;
 
     Fun(int arity, byte[] code, double[] consts, Fun[] funcs) {
+        this.source = null;
         this.arity  = arity;
         this.code   = code;
         this.consts = consts;
         this.funcs  = funcs;
+    }
+
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("Function with arity ").append(arity);
+        buf.append("; sub-funcs ").append(funcs.length);
+        if (source != null) {
+            buf.append("\nSource: '").append(source).append("'");
+        }
+        buf.append("\n  consts:");
+        for (int i = 0; i < consts.length; ++i) {
+            buf.append("\n    ").append(consts[i]);
+        }
+        buf.append("\n  code:");
+        for (int i = 0; i < consts.length; ++i) {
+            buf.append("\n    ").append(opcodeName[code[i]]);
+        }
+        return buf.toString();
     }
 
     int trace(double[] stack, int sp, byte op, double lastConst, Fun lastFun) {
@@ -123,9 +82,9 @@ public class Fun {
             }
                 
                 //case ANS:      s[++p] = 0;           break; //todo: fix ans
-            case CONST_PI: s[++p] = Math.PI; break;
-            case CONST_E:  s[++p] = Math.E;  break;
-            case RND:      s[++p] = random.nextDouble(); break;
+            case PI:  s[++p] = Math.PI; break;
+            case E:   s[++p] = Math.E;  break;
+            case RND: s[++p] = random.nextDouble(); break;
                     
             case ADD: s[--p] += s[p+1]; break;
             case SUB: s[--p] -= s[p+1]; break;
