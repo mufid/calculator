@@ -22,12 +22,18 @@ import org.javia.lib.Log;
 
 public class Compiler {
     static Lexer lexer       = new Lexer();
-    static Compiler compiler = new Compiler();
     static Codegen codegen   = new Codegen();
+    static Compiler compiler = new Compiler(codegen);
 
     Stack stack = new Stack();
-    Stack code  = new Stack();
+    //Stack code  = new Stack();
     TokenType prevType;
+    Codegen consumer;
+
+    public Compiler(Codegen consumer) {
+        init();
+        this.consumer = consumer;
+    }
 
     synchronized public static Fun compile(String str) {
         lexer.init(str);
@@ -41,23 +47,20 @@ public class Compiler {
                 return null;
             }
         } while (token != Lexer.TOK_END);
-        Fun fun = codegen.gen(compiler.code);
+        Fun fun = codegen.getFun();
         //fun.source = str;
         //compiler.init();
         Log.log("compile '" + str + "': " + fun);
         return fun;
     }
 
-    public Compiler() {
-        init();
-    }
-
     public void init() {
         stack.removeAllElements();
-        code.removeAllElements();
+        //code.removeAllElements();
         prevType = null;
     }
 
+    /*
     public String toString() {
         StringBuffer buf = new StringBuffer();
         int size = code.size();
@@ -66,6 +69,7 @@ public class Compiler {
         }
         return buf.toString();
     }
+    */
 
     private Token top() {
         try {
@@ -75,10 +79,11 @@ public class Compiler {
         }
     }
 
-    void popHigher(int priority) {
+    private void popHigher(int priority) {
         Token t = top();
         while (t != null && t.type.priority >= priority) {
-            code.push(t);
+            consumer.add(t);
+            //code.push(t);
             stack.pop();
             t = top();
         }
@@ -115,7 +120,7 @@ public class Compiler {
             if (t != null) {
                 if (t.type.id == Lexer.CALL) {
                     t.arity++;
-                    code.push(t);
+                    consumer.add(t);
                 } else if (t != Lexer.TOK_LPAREN) {
                     Log.log("expected LPAREN or CALL");
                     return false;

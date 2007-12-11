@@ -159,15 +159,6 @@ class Lexer {
     }
     
     public static void main(String[] argv) {
-        Lexer lexer = new Lexer(argv[0]);
-        Compiler compiler = new Compiler();
-        Token token;
-        System.out.println(argv[0]+'\n');
-        do {
-            token = lexer.nextToken();
-            System.out.println("" + token);
-            compiler.add(token);
-        } while (!(token == TOK_END || token == TOK_ERROR));
-        System.out.println("----\n\n"+compiler.toString());
+        System.out.println("argv[0] :\n" + Compiler.compile(argv[0]));
     }
 }
