@@ -1,9 +1,35 @@
-// Copyright (c) 2006-2007 Mihai Preda.
-// Available under the MIT License (see COPYING).
+/*
+ * Copyright (C) 2006-2007 Mihai Preda.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *
+ * Portions derived from FDLIBM 5.3
+ * http://www.netlib.org/fdlibm/
+ * FDLIBM comes with this copyright notice:
+ *
+ * ====================================================
+ * Copyright (C) 2004 by Sun Microsystems, Inc. All rights reserved.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice 
+ * is preserved.
+ * ====================================================
+ */
 
-class MoreMath {
-    //parts derived from FDLIBM 5.3
+package org.javia.eval;
 
+public class MoreMath {
     private static final int HI(double x) {
         return (int)(Double.doubleToLongBits(x) >> 32);
     }
@@ -24,7 +50,7 @@ class MoreMath {
         return Double.longBitsToDouble((Double.doubleToLongBits(x) & 0xffffffff00000000L) | low);
     }
 
-    static final double
+    private static final double
         PI_2   = 1.57079632679489661923,
         PI_4   = 0.78539816339744830962,
         LOG2E  = 1.4426950408889634074,
@@ -134,7 +160,7 @@ class MoreMath {
         Lg6 = 1.531383769920937332e-01,
         Lg7 = 1.479819860511658591e-01;
     
-    static final double atan(double x) {
+    public static final double atan(double x) {
         double w,s1,s2,z;
         int ix,hx,id;
 
@@ -181,7 +207,7 @@ class MoreMath {
         }
     }
 
-    static final double asin(double x) {
+    public static final double asin(double x) {
         //double t,w,p,q,c,r,s;
         int hx = HI(x);
         int ix = hx&0x7fffffff;
@@ -221,11 +247,11 @@ class MoreMath {
         return (hx>0) ? t : -t;
     }
 
-    static final double acos(double x) {
+    public static final double acos(double x) {
         return (x < 0) ? PI_2 + asin(-x) : PI_2 - asin(x);
     }
 
-    static final double exp(double x) {
+    public static final double exp(double x) {
         int shx = HI(x);
         int xsb = shx >>> 31;
         int hx = shx & 0x7fffffff;
@@ -283,7 +309,7 @@ class MoreMath {
         }
     }
 
-    static final double log(double x) {
+    public static final double log(double x) {
         double hfsq, f, s, z, R, w, t1, t2, dk;
         int k, i, j;
 
@@ -362,43 +388,43 @@ class MoreMath {
         }
     }
 
-    static final double sinh(double x) {
+    public static final double sinh(double x) {
         if (x < 0) { return -sinh(-x); }
         double ex = exp(x);
         return (ex - 1./ex) * half;
     }
 
-    static final double cosh(double x) {
+    public static final double cosh(double x) {
         x = Math.abs(x);
         double ex = exp(x);
         return (ex + 1./ex) * half;
     }
 
-    static final double tanh(double x) {
+    public static final double tanh(double x) {
         return (x < 0) ? -tanh(-x) : (1 - 2/(exp(x+x) + 1));
     }
 
-    static final double asinh(double x) {
+    public static final double asinh(double x) {
         return (x < 0) ? -asinh(-x) : log(x + x + 1/(Math.sqrt(x*x + 1) + x));
     }
     
-    static final double acosh(double x) {
+    public static final double acosh(double x) {
         return log(x + x - 1/(Math.sqrt(x*x - 1) + x));
     }
 
-    static final double atanh(double x) {
+    public static final double atanh(double x) {
         return (x < 0) ? -atanh(-x) : 0.5 * log(1. + (x + x)/(1 - x));
     }
 
-    static final double cbrt(double x) {
+    public static final double cbrt(double x) {
         return (x < 0) ? -pow(-x, 1/3.) : pow(x, 1/3.);
     }
 
-    static final double trunc(double x) {
+    public static final double trunc(double x) {
         return x >= 0 ? Math.floor(x) : Math.ceil(x);
     }
 
-    static final double gcd(double x, double y) {
+    public static final double gcd(double x, double y) {
         //double remainder = y;
         if (Double.isNaN(x) || Double.isNaN(y) ||
             Double.isInfinite(x) || Double.isInfinite(y)) {
@@ -416,7 +442,7 @@ class MoreMath {
         return x > 1e-10 ? x : 0;
     }
  
-    static final double lgamma(double x) {
+    public static final double lgamma(double x) {
         double tmp = x + 5.2421875; //== 607/128. + .5;
         return 0.9189385332046727418 //LN_SQRT2PI, ln(sqrt(2*pi))
             + log(
@@ -465,7 +491,7 @@ class MoreMath {
         2.5260757449731984E302,
     };
 
-    static final double factorial(double x) {
+    public static final double factorial(double x) {
         if (x < 0) { // x <= -1 ?
             return Double.NaN;
         }
@@ -488,7 +514,7 @@ class MoreMath {
         return exp(lgamma(x));
     }
 
-    static final double comb(double n, double k) {
+    public static final double comb(double n, double k) {
         if (n < 0 || k < 0) { return Double.NaN; }
         if (n < k) { return 0; }
         if (Math.floor(n) == n && Math.floor(k) == k) {
@@ -507,7 +533,7 @@ class MoreMath {
         }
     }
 
-    static final double perm(double n, double k) {
+    public static final double perm(double n, double k) {
         if (n < 0 || k < 0) { return Double.NaN; }
         if (n < k) { return 0; }
         if (Math.floor(n) == n && Math.floor(k) == k) {
@@ -525,7 +551,7 @@ class MoreMath {
         }
     }
 
-    static final double pow(double x, double y) {
+    public static final double pow(double x, double y) {
         double z,ax,z_h,z_l,p_h,p_l;
         double y1,t1,t2,r,s,t,u,v,w;
         int i,j,k,yisint,n;
@@ -756,12 +782,12 @@ class MoreMath {
     }
     */
 
-    static final double copysign(double x, double y) {
+    private static final double copysign(double x, double y) {
         return Double.longBitsToDouble((Double.doubleToLongBits(x) & 0x7fffffffffffffffL) |
                                        (Double.doubleToLongBits(y) & 0x8000000000000000L));
     }
 
-    static final double scalbn(double x, int n) {
+    private static final double scalbn(double x, int n) {
         int hx = HI(x);
         int lx = LO(x);
         int k = (hx & 0x7ff00000) >> 20; /* extract exponent */
@@ -788,25 +814,25 @@ class MoreMath {
         return x * twom54;
     }
 
-    static final double log10(double x) {
+    public static final double log10(double x) {
         return log(x) * LOG10E;
     }
 
-    static final double log2(double x) {
+    public static final double log2(double x) {
         return log(x) * LOG2E;
     }
 
-    static final boolean isPiMultiple(double x) {
+    private static final boolean isPiMultiple(double x) {
         return x % Math.PI == 0;
     }
 
-    static final int intLog10(double x) {
+    public static final int intLog10(double x) {
         //an alternative implem is using a for loop.
         return (int)Math.floor(log10(x));
         //return (int)log10(x);
     }
 
-    static final double intExp10(int exp) {
+    public static final double intExp10(int exp) {
         return Double.parseDouble("1E" + exp);
     }
 }

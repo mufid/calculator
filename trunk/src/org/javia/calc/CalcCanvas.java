@@ -1,10 +1,27 @@
-// Copyright (c) 2006-2007 Mihai Preda, Carlo Teubner.
-// Available under the MIT License (see COPYING).
+/*
+ * Copyright (C) 2006-2007 Mihai Preda & Carlo Teubner.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.javia.calc;
 
 import javax.microedition.lcdui.*;
 import java.io.*;
 
 import org.javia.lib.*;
+import org.javia.eval.Compiler;
+import org.javia.eval.Fun;
 
 ///#define START_LINE(lines, n) (((n)==0)?0:lines[n-1])
 
@@ -33,7 +50,6 @@ class CalcCanvas extends Canvas {
         "sin({PI}/2)"
     };
 
-    Compiler compiler = new Compiler();
     History history; 
 
     int screenW, screenH;
@@ -90,7 +106,7 @@ class CalcCanvas extends Canvas {
         editLines = new int[maxEditLines + 1];
         clientW = screenW - 2*clientX;
 
-        history = new History(compiler);
+        history = new History();
         DataInputStream is = Calc.rs.readIS(Calc.RS_CURRENT);
         updateFromHistEntry(is == null ? new HistEntry("1+1", 0, false) : new HistEntry(is));
         if (is == null) {
@@ -154,7 +170,7 @@ class CalcCanvas extends Canvas {
     }
 
     void updateResult() {
-        Fun func = compiler.compile(new String(line, 0, len));
+        Fun func = Compiler.compile(new String(line, 0, len));
         if (func != null) {
             String strResult = func.arity > 0 ?
                 line[0] + params[func.arity - 1] : format(func.eval());
