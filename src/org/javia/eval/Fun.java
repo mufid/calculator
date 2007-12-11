@@ -1,18 +1,34 @@
-// Copyright (C) 2007 Mihai Preda
+/*
+ * Copyright (C) 2007 Mihai Preda.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.javia.eval;
 
 import java.util.Random;
 
 public class Fun extends VM {
-    static Random random = new Random();
-
-    double[] consts;
+    private static Random random = new Random();
+    private double[] consts;
     private Fun[] funcs;
     private byte[] code;
-    int arity; 
-    String source;
+
+    public final int arity; 
+    //String source;
 
     Fun(int arity, byte[] code, double[] consts, Fun[] funcs) {
-        this.source = "";
+        //this.source = "";
         this.arity  = arity;
         this.code   = code;
         this.consts = consts;
@@ -23,9 +39,11 @@ public class Fun extends VM {
         StringBuffer buf = new StringBuffer();
         buf.append("Function with arity ").append(arity);
         buf.append("; sub-funcs ").append(funcs.length);
+        /*
         if (source.length() > 0) {
             buf.append("\n  source: '").append(source).append("'");
         }
+        */
         buf.append("\n  consts: ");
         for (int i = 0; i < consts.length; ++i) {
             buf.append("\n    ").append(consts[i]);
@@ -47,7 +65,7 @@ public class Fun extends VM {
 
     private static double[] globalStack = new double[128];
 
-    double eval() {
+    public double eval() {
         int sp = exec(globalStack, -1);
         if (sp != 0) {
             throw new Error("unexpected SP: " + sp);
@@ -55,7 +73,7 @@ public class Fun extends VM {
         return globalStack[0];
     }
 
-    int exec(double[] s, int p) {
+    public int exec(double[] s, int p) {
         int pc = 0; //program counter
         byte[] code = this.code;
         int initialSP = p;
