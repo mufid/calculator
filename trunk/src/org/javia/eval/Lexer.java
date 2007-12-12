@@ -32,8 +32,7 @@ class Lexer {
         COMMA  = 12, 
         LPAREN = 13, 
         RPAREN = 14,
-        END    = 15,
-        ERROR  = 16;
+        END    = 15;
         
     static final TokenType
         NUMBER_TYPE = new TokenType(NUMBER, "number", 9, 0, true,  -1),
@@ -55,10 +54,9 @@ class Lexer {
 
         TOK_LPAREN = new Token(LPAREN, "(",    1, 0, false, -1),
         TOK_RPAREN = new Token(RPAREN, ")",    2, 0, true,  -1),
-        TOK_COMMA  = new Token(COMMA, ",",    1, 0, false,  -1),
-
-        TOK_END    = new Token(END,   "end",   0, 0, false, -1),
-        TOK_ERROR  = new Token(ERROR, "error", 0, 0, false, -1);
+        TOK_COMMA  = new Token(COMMA,  ",",    1, 0, false,  -1),
+        TOK_END    = new Token(END,   "end",   0, 0, false, -1);
+    //TOK_ERROR  = new Token(ERROR, "error", 0, 0, false, -1);
 
     static final char END_MARKER = '$';
 
@@ -85,7 +83,6 @@ class Lexer {
         int p  = pos;
         char c = input[p++];
         int begin = pos;
-        //TokenType retType = ERROR;
 
         //skip white space
         while (c == ' ' || c == '\t') {
@@ -129,11 +126,12 @@ class Lexer {
                 }
             }
             pos = p;
+            String nbStr = String.valueOf(input, begin, p-begin);
             try {
-                double numberValue = Double.parseDouble(String.valueOf(input, begin, p-begin));
+                double numberValue = Double.parseDouble(nbStr);
                 return new Token(NUMBER_TYPE, numberValue);
             } catch (NumberFormatException e) {
-                return TOK_ERROR;
+                throw new SyntaxException("invalid number " + nbStr, null);
             }
         } else {
             if (('a' <= c && c <= 'z') ||
@@ -153,7 +151,7 @@ class Lexer {
                 }
 
             } else {
-                return TOK_ERROR;
+                throw new SyntaxException("invalic character '" + c + "'", null); 
             }
         }
     }
