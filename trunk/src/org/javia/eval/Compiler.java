@@ -16,161 +16,153 @@
 
 package org.javia.eval;
 
-import java.util.Stack;
-import java.util.EmptyStackException;
-import org.javia.lib.Log;
+import java.util.Vector;
+import java.util.Hashtable;
 
-public class Compiler {
-    static Lexer lexer       = new Lexer();
-    static Codegen codegen   = new Codegen();
-    static Compiler compiler = new Compiler(codegen);
+class Compiler {
+    private static final int MAX_STACK  = 32;
+    private static final int MAX_CONSTS = 16;
+    private static final int MAX_FUNCS  = 16;
+    private static final int MAX_CODE   = 128;
 
-    Stack stack = new Stack();
-    //Stack code  = new Stack();
-    TokenType prevType;
-    Codegen consumer;
+    Hashtable[] builtins = {null, new Hashtable(), new Hashtable()};
 
-    public Compiler(Codegen consumer) {
-        init();
-        this.consumer = consumer;
+    double stack[]  = new double[MAX_STACK];        
+    double consts[] = new double[MAX_CONSTS];
+    byte[] code = new byte[MAX_CODE];
+    Fun[] funcs = new Fun[MAX_FUNCS];
+
+    int sp, nConst, pc, nf;
+    int arity;
+
+    Fun tracer = new Fun(0, new byte[2], new double[1], new Fun[1]);
+
+    void init() {
+        sp     = -1;
+        nConst = 0;
+        pc     = 0;
+        nf     = 0;
+        arity  = 0;
     }
 
-    synchronized public static Fun compile(String str) {
-        lexer.init(str);
-        codegen.init();
-        compiler.init();
-        Token token;
-        do {
-            token = lexer.nextToken();
-            if (!compiler.add(token)) {
-                Log.log("compile error on '" + str + "'");
-                return null;
+    Compiler() {
+        for (int i = 0; i < VM.BYTECODE_END; ++i) {
+            int arity = VM.builtinArity[i];
+            if (arity == 1 || arity == 2) {
+                builtins[arity].put(VM.opcodeName[i], new Byte((byte)i));
             }
-        } while (token != Lexer.TOK_END);
-        Fun fun = codegen.getFun();
-        //fun.source = str;
-        //compiler.init();
-        Log.log("compile '" + str + "': " + fun);
-        return fun;
-    }
-
-    public void init() {
-        stack.removeAllElements();
-        //code.removeAllElements();
-        prevType = null;
-    }
-
-    /*
-    public String toString() {
-        StringBuffer buf = new StringBuffer();
-        int size = code.size();
-        for (int i = 0; i < size; ++i) {
-            buf.append(((Token) code.elementAt(i)).toString()).append('\n');
         }
-        return buf.toString();
-    }
-    */
-
-    private Token top() {
-        try {
-            return (Token) stack.peek();
-        } catch (EmptyStackException e) {
-            return null;
-        }
+        init();
     }
 
-    private void popHigher(int priority) {
-        Token t = top();
-        while (t != null && t.type.priority >= priority) {
-            consumer.add(t);
-            //code.push(t);
-            stack.pop();
-            t = top();
+    double lookupVar(String name) {
+        //todo: implement
+        return 0;
+    }
+
+    byte lookupBuiltin(String name, int arity) {
+        if (arity == 1 || arity == 2) {
+            Byte vmop = (Byte) builtins[arity].get(name);
+            if (vmop != null) {
+                return vmop.byteValue();
+            }
         }
+        return 0;
+    }
+
+    Fun lookupFun(String name, int arity) {
+        //todo: implement
+        return null;
     }
 
     boolean add(Token token) {
-        //TokenType type = token.type;
-        int priority = token.type.priority;
-        int id = token.type.id;
-        switch (id) {
-        case Lexer.ERROR:
-            return false;
-
+        double lastConst = 0;
+        Fun lastFun = null;
+        byte op;
+        TokenType type = token.type;
+        switch (type.id) {
         case Lexer.NUMBER:
+            op = Fun.CONST;
+            lastConst = consts[nConst++] = token.value;
+            break;
+            
         case Lexer.CONST:
-        case Lexer.LPAREN:
-        case Lexer.CALL:
-            if (prevType != null && prevType.isOperand) {
-                add(Lexer.TOK_MUL);
-            }
-            stack.push(token);
-            break;
-            
-        case Lexer.RPAREN: {
-            if (prevType.id == Lexer.CALL) {
-                top().arity--; //compensate for ++ below
-            } else if (!prevType.isOperand) {
-                Log.log("misplaced ')'");
-                return false;
-            }
-
-            popHigher(priority);
-            Token t = top();
-            if (t != null) {
-                if (t.type.id == Lexer.CALL) {
-                    t.arity++;
-                    consumer.add(t);
-                } else if (t != Lexer.TOK_LPAREN) {
-                    Log.log("expected LPAREN or CALL");
-                    return false;
+            String name = token.name;
+            if (name.equals("rnd")) {
+                op  = Fun.RND;
+            } else {
+                if (name.length() == 1) {
+                    char c = name.charAt(0);
+                    if (c == 'x' || c == 'y' || c == 'z') {
+                        op = (byte) (Fun.LDX + (c - 'x'));
+                        if (arity < c - 'x' + 1) {
+                            arity = c - 'x' + 1;
+                        }
+                        break;
+                    }
                 }
-                stack.pop();
+                op = Fun.CONST;
+                lastConst = consts[nConst++] = lookupVar(name);
             }
-            break;
-        }
-        
-        case Lexer.COMMA: {            
-            if (prevType == null || !prevType.isOperand) {
-                Log.log("misplaced COMMA");
-                return false;
-            }
-            popHigher(priority);
-            Token t = top();
-            if (t==null || t.type.id != Lexer.CALL) {
-                Log.log("COMMA not inside CALL");
-                return false;
-            }
-            t.arity++;
-            //code.push(stack.pop());
-            break;
-        }
-        
-        case Lexer.END:
-            if (prevType == null || !prevType.isOperand) {
-                Log.log("misplaced END");
-                return false;
-            }
-            popHigher(priority);
             break;
             
-        case Lexer.SUB:
-            if (prevType != null && !prevType.isOperand) {
-                //change SUB to unary minus
-                token = Lexer.TOK_UMIN;
-                stack.push(token);
-                break; //only break inside if, otherwise fall-through
+        case Lexer.CALL:
+            op = lookupBuiltin(token.name, token.arity);
+            if (op <= 0) {
+                op = Fun.CALL;
+                lastFun = funcs[nf++] = lookupFun(token.name, token.arity);
             }
+            break;
             
-        default: //operators
-            if (prevType == null || !prevType.isOperand) {
-                Log.log("operator without operand");
-                return false;
+        default:
+            op = type.vmop;
+            if (op <= 0) {
+                throw new Error("wrong vmop");
             }
-            popHigher(priority + (token.type.assoc==TokenType.RIGHT ? 1 : 0));
-            stack.push(token);
         }
-        prevType = token.type;
+        int oldSP = sp;
+        sp = tracer.trace(stack, sp, op, lastConst, lastFun);
+        if (op == Fun.RND) {
+            stack[sp] = Double.NaN;
+        }
+        if (sp > oldSP || stack[sp] == Double.NaN) {
+            code[pc++] = op;
+        } else {
+            //constant folding
+            pc -= oldSP - sp;
+            nConst -= oldSP - sp;
+            consts[nConst-1] = stack[sp];
+            if (code[pc-1] != Fun.CONST) {
+                throw new Error("Expected CONST on fold");
+            }
+        }
         return true;
+    }
+    
+    Fun getFun() {
+        if (pc <= 0) {
+            throw new Error("empty fun");
+        }
+
+        double[] trimmedConsts = new double[nConst];
+        System.arraycopy(consts, 0, trimmedConsts, 0, nConst);
+
+        Fun[] trimmedFuncs = new Fun[nf];
+        System.arraycopy(funcs, 0, trimmedFuncs, 0, nf);
+
+        code[pc++] = Fun.RET;
+        byte[] trimmedCode = new byte[pc];
+        System.arraycopy(code, 0, trimmedCode, 0, pc);
+
+        init();
+        return new Fun(arity, trimmedCode, trimmedConsts, trimmedFuncs);
+    }
+
+    Fun gen(Vector tokens) {
+        int size = tokens.size();
+        for (int i = 0; i < size; ++i) {
+            add((Token) tokens.elementAt(i));
+        }
+        return getFun();
     }
 }

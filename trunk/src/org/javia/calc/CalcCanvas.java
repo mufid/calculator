@@ -20,7 +20,7 @@ import javax.microedition.lcdui.*;
 import java.io.*;
 
 import org.javia.lib.*;
-import org.javia.eval.Compiler;
+import org.javia.eval.Parser;
 import org.javia.eval.Fun;
 
 ///#define START_LINE(lines, n) (((n)==0)?0:lines[n-1])
@@ -170,14 +170,14 @@ class CalcCanvas extends Canvas {
     }
 
     void updateResult() {
-        Fun func = Compiler.compile(new String(line, 0, len));
+        Fun func = Parser.compile(new String(line, 0, len));
         if (func != null) {
             String strResult = func.arity > 0 ?
                 line[0] + params[func.arity - 1] : format(func.eval());
             drawResultString(strResult);
         } else {
             /*
-            if (Compiler.result.errorStart < len) {
+            if (Parser.result.errorStart < len) {
                 markError();
             }
             */
