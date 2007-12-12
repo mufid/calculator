@@ -159,6 +159,6 @@ class Lexer {
     }
     
     public static void main(String[] argv) {
-        System.out.println("argv[0] :\n" + Compiler.compile(argv[0]));
+        System.out.println("argv[0] :\n" + Parser.compile(argv[0]));
     }
 }

@@ -126,12 +126,12 @@ class UnitTest {
 /*
         System.out.println(Util.doubleToTrimmedString(0.9999, 5));
 
-        Compiler compiler = new Compiler();
+        Parser parser = new Parser();
         String[] defs = { "f:=x", "g:=x*y", "b:=x", "h:=x*b(x)" };
         for (int i = 0; i < defs.length; ++i) {
             char[] ch = new char[defs[i].length() + 1];
             defs[i].getChars(0, defs[i].length(), ch, 0);
-            if (compiler.compile(ch, defs[i].length())) {
+            if (parser.compile(ch, defs[i].length())) {
                 final int idx = Compiler.result.definedSymbol - VMConstants.FIRST_VAR;
                 Variables.funcs[idx] = new CompiledFunction(Compiler.result.function);
                 Variables.types[idx] = Variables.TYPE_FUNC;
