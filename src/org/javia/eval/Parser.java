@@ -40,13 +40,14 @@ public class Parser {
         compiler.init();
         parser.init();
         Token token;
-        do {
-            token = lexer.nextToken();
-            if (!parser.add(token)) {
-                Log.log("compile error on '" + str + "'");
-                return null;
-            }
-        } while (token != Lexer.TOK_END);
+        try {
+            do {
+                parser.push(token = lexer.nextToken());
+            } while (token != Lexer.TOK_END);
+        } catch (SyntaxException e) {
+            Log.log("compile error on '" + str + "' : " + e + " : " + e.token);
+            return null;
+        }
         Fun fun = compiler.getFun();
         //fun.source = str;
         //parser.init();
@@ -82,48 +83,45 @@ public class Parser {
     private void popHigher(int priority) {
         Token t = top();
         while (t != null && t.type.priority >= priority) {
-            consumer.add(t);
+            consumer.push(t);
             //code.push(t);
             stack.pop();
             t = top();
         }
     }
 
-    boolean add(Token token) {
+    void push(Token token) {
         //TokenType type = token.type;
         int priority = token.type.priority;
         int id = token.type.id;
         switch (id) {
-        case Lexer.ERROR:
-            return false;
+        case Lexer.CALL:
+            token.arity++;
+            //fall through
 
         case Lexer.NUMBER:
         case Lexer.CONST:
         case Lexer.LPAREN:
-        case Lexer.CALL:
             if (prevType != null && prevType.isOperand) {
-                add(Lexer.TOK_MUL);
+                push(Lexer.TOK_MUL);
             }
             stack.push(token);
             break;
             
         case Lexer.RPAREN: {
-            if (prevType.id == Lexer.CALL) {
-                top().arity--; //compensate for ++ below
-            } else if (!prevType.isOperand) {
-                Log.log("misplaced ')'");
-                return false;
+            if (prevType != null && prevType.id == Lexer.CALL) {
+                top().arity--;
+            } else if (prevType == null || !prevType.isOperand) {
+                throw new SyntaxException("misplaced ')'", token);
             }
 
             popHigher(priority);
             Token t = top();
             if (t != null) {
                 if (t.type.id == Lexer.CALL) {
-                    t.arity++;
-                    consumer.add(t);
+                    consumer.push(t);
                 } else if (t != Lexer.TOK_LPAREN) {
-                    Log.log("expected LPAREN or CALL");
-                    return false;
+                    throw new SyntaxException("expected LPAREN or CALL", token);
                 }
                 stack.pop();
             }
@@ -132,14 +130,12 @@ public class Parser {
         
         case Lexer.COMMA: {            
             if (prevType == null || !prevType.isOperand) {
-                Log.log("misplaced COMMA");
-                return false;
+                throw new SyntaxException("misplaced COMMA", token);
             }
             popHigher(priority);
             Token t = top();
             if (t==null || t.type.id != Lexer.CALL) {
-                Log.log("COMMA not inside CALL");
-                return false;
+                throw new SyntaxException("COMMA not inside CALL", token);
             }
             t.arity++;
             //code.push(stack.pop());
@@ -147,11 +143,9 @@ public class Parser {
         }
         
         case Lexer.END:
-            if (prevType == null || !prevType.isOperand) {
-                Log.log("misplaced END");
-                return false;
-            }
-            popHigher(priority);
+            do {
+                push(Lexer.TOK_RPAREN);
+            } while (top() != null);
             break;
             
         case Lexer.SUB:
@@ -164,13 +158,11 @@ public class Parser {
             
         default: //operators
             if (prevType == null || !prevType.isOperand) {
-                Log.log("operator without operand");
-                return false;
+                throw new SyntaxException("operator without operand", token);
             }
             popHigher(priority + (token.type.assoc==TokenType.RIGHT ? 1 : 0));
             stack.push(token);
         }
         prevType = token.type;
-        return true;
     }
 }

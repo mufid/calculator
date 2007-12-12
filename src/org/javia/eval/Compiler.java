@@ -75,7 +75,7 @@ class Compiler {
         return null;
     }
 
-    boolean add(Token token) {
+    void push(Token token) {
         double lastConst = 0;
         Fun lastFun = null;
         byte op;
@@ -110,7 +110,11 @@ class Compiler {
             op = lookupBuiltin(token.name, token.arity);
             if (op <= 0) {
                 op = Fun.CALL;
-                lastFun = funcs[nf++] = lookupFun(token.name, token.arity);
+                Fun f = lookupFun(token.name, token.arity);
+                if (f == null) {
+                    throw new SyntaxException("function not found", token);
+                }                
+                lastFun = funcs[nf++] = f;
             }
             break;
             
@@ -125,7 +129,7 @@ class Compiler {
         if (op == Fun.RND) {
             stack[sp] = Double.NaN;
         }
-        if (sp > oldSP || stack[sp] == Double.NaN) {
+        if (sp > oldSP || Double.isNaN(stack[sp])) {
             code[pc++] = op;
         } else {
             //constant folding
@@ -136,7 +140,6 @@ class Compiler {
                 throw new Error("Expected CONST on fold");
             }
         }
-        return true;
     }
     
     Fun getFun() {
@@ -158,11 +161,13 @@ class Compiler {
         return new Fun(arity, trimmedCode, trimmedConsts, trimmedFuncs);
     }
 
+    /*
     Fun gen(Vector tokens) {
         int size = tokens.size();
         for (int i = 0; i < size; ++i) {
-            add((Token) tokens.elementAt(i));
+            push((Token) tokens.elementAt(i));
         }
         return getFun();
     }
+    */
 }
