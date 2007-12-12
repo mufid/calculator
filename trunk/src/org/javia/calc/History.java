@@ -21,53 +21,6 @@ import java.io.*;
 
 import org.javia.lib.*;
 
-class HistEntry {
-    String base, edited;
-    double result;
-    boolean hasResult;
-    int pos;
-
-    HistEntry(String str, double res, boolean hasRes) {
-        base = str == null ? "" : str;
-        result = res;
-        hasResult = hasRes;
-        flush();
-    }
-
-    HistEntry(DataInputStream in) {
-        try {
-            result = in.readDouble();
-            hasResult = in.readBoolean();
-            base = in.readUTF();
-        } catch (IOException e) {
-            Log.log(e);
-            //throw new Error(e.toString());
-        }
-        flush();
-    }
-
-    void write(DataOutputStream out) {
-        try {
-            out.writeDouble(result);
-            out.writeBoolean(hasResult);
-            out.writeUTF(base);
-        } catch (IOException e) {
-            Log.log(e);
-            //throw new Error(e.toString());
-        }
-    }
-
-    void flush() {
-        edited = base;
-        pos = base.length() - 1;
-    }
-
-    void update(String str, int iniPos) {
-        pos = iniPos;
-        edited = str;
-    }
-}
-
 class History {
     static double ans = 0;
 
@@ -150,9 +103,6 @@ class History {
         boolean hasValue = res.hasValue();
         if (hasValue)
             ans = res.function.evaluate();
-
-        if (res.errorStart == -1 && res.definedSymbol != -1)
-            Variables.persistDefine(res, ans);
 
         ((HistEntry)history.elementAt(historyPos)).flush();
         if (len > 0) {

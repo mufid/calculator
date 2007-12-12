@@ -19,13 +19,16 @@ package org.javia.calc;
 import javax.microedition.lcdui.*;
 import java.io.*;
 
-import org.javia.lib.*;
+import org.javia.lib.midp.ImageCanvas;
+import org.javia.lib.Log;
+import org.javia.lib.DataOut;
+
 import org.javia.eval.Parser;
 import org.javia.eval.Fun;
 
 ///#define START_LINE(lines, n) (((n)==0)?0:lines[n-1])
 
-class CalcCanvas extends Canvas {
+class CalcCanvas extends ImageCanvas {
     
     private static int START_LINE(int[] lines, int n) { return n == 0 ? 0 : lines[n-1]; }
     
@@ -80,9 +83,6 @@ class CalcCanvas extends Canvas {
     static final int clientX = spaceSide + 2;
     static int clientW, historyH;
 
-    Image img;
-    Graphics gg;
-
     CalcCanvas() {
         //setFullScreenMode(true); 
 
@@ -95,9 +95,7 @@ class CalcCanvas extends Canvas {
 
         Calc.cfg.initPiSymbol(new Font[] { font, historyFont });
 
-        img = Image.createImage(screenW, screenH);
-        gg  = img.getGraphics();
-        gg.setFont(font);
+        screenGraphics.setFont(font);
 
         KeyState.init(screenW, screenH, font);
 
@@ -154,17 +152,17 @@ class CalcCanvas extends Canvas {
         initFrameHeights[HISTORY] = historyH;
 
         for (int i = 0; i < N_ZONES; ++i) {
-            gg.setColor(borderCol[i]);
-            gg.drawRect(clientX-2, Y[i]-2, clientW+3, initFrameHeights[i]+3);
-            gg.setColor(bgCol[i]);
-            gg.drawRect(clientX-1, Y[i]-1, clientW+1, initFrameHeights[i]+1);
+            screenGraphics.setColor(borderCol[i]);
+            screenGraphics.drawRect(clientX-2, Y[i]-2, clientW+3, initFrameHeights[i]+3);
+            screenGraphics.setColor(bgCol[i]);
+            screenGraphics.drawRect(clientX-1, Y[i]-1, clientW+1, initFrameHeights[i]+1);
         }
 
         //gg.setColor(0x808080);
-        gg.setColor(BACKGR);
-        gg.drawRect(0, 0, screenW-1, screenH-1);
-        gg.fillRect(1, Y[EDIT] - 2 - spaceEdit, screenW-2, spaceEdit);
-        gg.fillRect(1, Y[HISTORY] - 2 - spaceHist, screenW-2, spaceHist);
+        screenGraphics.setColor(BACKGR);
+        screenGraphics.drawRect(0, 0, screenW-1, screenH-1);
+        screenGraphics.fillRect(1, Y[EDIT] - 2 - spaceEdit, screenW-2, spaceEdit);
+        screenGraphics.fillRect(1, Y[HISTORY] - 2 - spaceHist, screenW-2, spaceHist);
 
         //repaint();
     }
@@ -189,13 +187,13 @@ class CalcCanvas extends Canvas {
     private void drawResultString(String str) {
         boolean changed = false;
         if (!resultEmpty) {
-            gg.setColor(bgCol[RESULT]);
-            gg.fillRect(clientX, Y[RESULT], clientW, lineHeight);
+            screenGraphics.setColor(bgCol[RESULT]);
+            screenGraphics.fillRect(clientX, Y[RESULT], clientW, lineHeight);
             changed = true;
         }
         if (str != null) {
-            gg.setColor(fgCol[RESULT]);
-            gg.drawString(str, clientX + clientW, Y[RESULT], Graphics.TOP | Graphics.RIGHT);
+            screenGraphics.setColor(fgCol[RESULT]);
+            screenGraphics.drawString(str, clientX + clientW, Y[RESULT], Graphics.TOP | Graphics.RIGHT);
             resultEmpty = false;
             changed = true;
         } else
@@ -266,18 +264,18 @@ class CalcCanvas extends Canvas {
         //Log.log("nEditLines " + nEditLines + "; changeLine " + changeLine);                           
 
         //Graphics g = gg[EDIT];
-        gg.setColor(bgCol[EDIT]);
-        gg.fillRect(clientX, Y[EDIT] + changeLine*lineHeight, clientW, (nEditLines - changeLine)*lineHeight);
+        screenGraphics.setColor(bgCol[EDIT]);
+        screenGraphics.fillRect(clientX, Y[EDIT] + changeLine*lineHeight, clientW, (nEditLines - changeLine)*lineHeight);
         repaint(clientX, Y[EDIT] + changeLine*lineHeight, clientW, (nEditLines - changeLine)*lineHeight);
         //repaint(0, 2+changeLine*lineHeight, screenW, (nEditLines - changeLine)*lineHeight);
         
-        gg.setColor(fgCol[EDIT]);
+        screenGraphics.setColor(fgCol[EDIT]);
         int start = changeLine==0 ? 0 : editLines[changeLine-1];
         for (int i = changeLine, y = Y[EDIT] + changeLine*lineHeight,
                  end = editLines[i]; 
              i < nEditLines; ++i, y+=lineHeight, start = end) {
             end = editLines[i];
-            gg.drawChars(line, start, end-start, clientX, y, 0); //Graphics.BOTTOM|Graphics.LEFT);
+            screenGraphics.drawChars(line, start, end-start, clientX, y, 0); //Graphics.BOTTOM|Graphics.LEFT);
         }
     }
 
@@ -287,13 +285,13 @@ class CalcCanvas extends Canvas {
         int errLine, startOfLine, w, y, w2, y2,
             minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE,
             maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
-        gg.setColor(0xFF0000);
+        screenGraphics.setColor(0xFF0000);
         for (int epos = start; epos <= end; ++epos) {
             errLine = posToLine(editLines, epos);
             startOfLine = errLine==0 ? 0 : editLines[errLine-1];
             w = clientX + font.charsWidth(line, startOfLine, epos - startOfLine);
             y = Y[EDIT] + errLine*lineHeight;
-            gg.drawChar(line[epos], w, y, 0);
+            screenGraphics.drawChar(line[epos], w, y, 0);
             w2 = w + font.charWidth(line[epos]);
             y2 = y + lineHeight;
             if (w < minX) minX = w;
@@ -349,10 +347,10 @@ class CalcCanvas extends Canvas {
     int histBufLen;
     int histLines[] = new int[8];
     void updateHistory() {
-        gg.setColor(bgCol[HISTORY]);
-        gg.fillRect(clientX, Y[HISTORY], clientW, historyH);
-        gg.setColor(fgCol[HISTORY]);
-        gg.setFont(historyFont);
+        screenGraphics.setColor(bgCol[HISTORY]);
+        screenGraphics.fillRect(clientX, Y[HISTORY], clientW, historyH);
+        screenGraphics.setColor(fgCol[HISTORY]);
+        screenGraphics.setFont(historyFont);
         int histLineHeight = historyFont.getHeight();
         int y = Y[HISTORY] + histLineHeight / 2;
         int histSize = history.size();
@@ -372,11 +370,11 @@ class CalcCanvas extends Canvas {
             }
             int nLines = split(historyFont, histBuf, histBufLen, clientW, histLines);
             for (int i = 0, start = 0; i < nLines && y <= yLimit; ++i, y+= histLineHeight) {
-                gg.drawChars(histBuf, start, histLines[i]-start, clientX, y, 0);
+                screenGraphics.drawChars(histBuf, start, histLines[i]-start, clientX, y, 0);
                 start = histLines[i];
             }
         }
-        gg.setFont(font);
+        screenGraphics.setFont(font);
         repaint(clientX, Y[HISTORY], clientW, historyH);
     }
 
@@ -403,8 +401,9 @@ class CalcCanvas extends Canvas {
         if (keypadH == 0 && helpText != null) {
         }
         */
-        if (keypadH == 0) {
-            g.drawImage(img, 0, 0, 0);
+        //if (keypadH == 0) {
+        g.drawImage(screenImage, 0, 0, 0);
+        /*
         } else {
             int border = spaceBot+2;
             int h = screenH - keypadH - border;
@@ -416,6 +415,7 @@ class CalcCanvas extends Canvas {
                              0, h, 0);
             }
         }
+        */
         if (drawCursor) {
             g.setColor(0);
             g.fillRect(cursorX, cursorY, cursorW, cursorH);
@@ -751,9 +751,5 @@ class CalcCanvas extends Canvas {
         if (lineStr == null)
             lineStr = String.valueOf(line, 0, len);
         return lineStr;
-    }
-
-    String preCursorLine() {
-        return new String(line, 0, pos + 1);
     }
 }
