@@ -66,6 +66,9 @@ public class Fun extends VM {
     private static double[] globalStack = new double[128];
 
     public double eval() {
+        if (arity != 0) {
+            throw new Error("eval() on arity " + arity);
+        }
         int sp = exec(globalStack, -1);
         if (sp != 0) {
             throw new Error("unexpected SP: " + sp);
