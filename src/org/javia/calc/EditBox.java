@@ -19,6 +19,8 @@ package org.javia.calc;
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 
+import org.javia.lib.Log;
+
 class EditBox {
     static final int MAX_SIZE  = 1024;
     static final int MAX_LINES = 40;
@@ -75,8 +77,9 @@ class EditBox {
 
     // insert str after pos
     int insert(int pos, String str) {
-        if (pos >= size) {
-            pos = size-1;
+        Log.log("insert " + pos + ' ' + str);
+        if (pos > size) {
+            pos = size;
         }
         int len = str.length();
         System.arraycopy(buffer, pos, buffer, pos + len, size - pos);
@@ -128,6 +131,7 @@ class EditBox {
     }
 
     int getX(int row, int pos) {
+        Log.log("getX " + row + ' ' + pos);
         int start = lineStart[row];
         return font.charsWidth(buffer, start, pos-start);
     }   

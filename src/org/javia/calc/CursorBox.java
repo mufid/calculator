@@ -19,10 +19,11 @@ package org.javia.calc;
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 
+import org.javia.lib.Log;
+
 class CursorBox {
-    EditBox box;
-    int cursorPos;
-    //int lineHeight;
+    private EditBox box;
+    private int cursorPos;
     
     CursorBox(int width, Font font, int maxLines) {
         box = new EditBox(width, font, maxLines);
@@ -98,6 +99,7 @@ class CursorBox {
     */
 
     void getCursorRowX(int outRowX[]) {
+        Log.log("cursorPos " + cursorPos);
         int row = box.getRow(cursorPos);
         int x = box.getX(row, cursorPos);
         outRowX[0] = row;
