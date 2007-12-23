@@ -16,7 +16,10 @@
 
 package org.javia.calc;
 
-import javax.microedition.lcdui.*;
+import javax.microedition.lcdui.Graphics;
+import javax.microedition.lcdui.Font;
+import javax.microedition.lcdui.Canvas;
+
 import java.io.*;
 
 import org.javia.lib.midp.ImageCanvas;
@@ -430,13 +433,11 @@ class CalcCanvas extends ImageCanvas {
         case Canvas.LEFT:
             editor.moveLeft();
             updateCursor();
-            //changed = true;
             break;
             
         case Canvas.RIGHT:
             editor.moveRight();
             updateCursor();
-            //changed = true;
             break;
             
         case Canvas.UP:

@@ -55,7 +55,7 @@ class HistEntry {
 
     void flush() {
         edited = base;
-        pos = base.length() - 1;
+        pos = base.length();
     }
 
     void update(String str, int iniPos) {
