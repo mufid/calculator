@@ -20,6 +20,7 @@ import java.util.*;
 import java.io.*;
 
 import org.javia.lib.*;
+import org.javia.eval.*;
 
 class History {
     static double ans = 0;
@@ -50,7 +51,7 @@ class History {
             ++recId;
         }
         history = new Vector(v.size() + 1);
-        addElement(new HistEntry(null, 0, false));
+        addElement(new HistEntry(""));
         int n = v.size();
         for (int i = posMaxSeq; i >= 0; --i) {
             addElement(v.elementAt(i));
@@ -61,10 +62,12 @@ class History {
         HistEntry entry;
         for (int i = 1; i <= n; ++i) {
             entry = get(i);
+            /*
             if (entry.hasResult) {
                 ans = entry.result;
                 break;
             }
+            */
         }
     }
     
@@ -96,17 +99,14 @@ class History {
 
     DataOut dataOut = new DataOut();
     void enter(String str) {
-        /*
-        compiler.compile(str);
-        Result res = Compiler.result;
-
-        boolean hasValue = res.hasValue();
-        if (hasValue)
-            ans = res.function.evaluate();
-
+        Fun fun = Parser.compile(str);
+        if (fun != null && fun.arity == 0) {
+            ans = fun.eval();
+        }
         ((HistEntry)history.elementAt(historyPos)).flush();
-        if (len > 0) {
-            HistEntry newEntry = new HistEntry(asString, ans, hasValue);
+        if (str.length() > 0) {
+            HistEntry newEntry = new HistEntry(str);
+            /*
             try {
                 dataOut.writeInt(++maxSeq);
             } catch (IOException e) {
@@ -118,12 +118,12 @@ class History {
             }
             int recId = posMaxSeq + Calc.RS_HIST_START;
             Calc.rs.write(recId, dataOut.getBytesAndReset());
+            */
             history.insertElementAt(newEntry, 1);
             if (history.size() > Calc.RS_MAX_HIST+1) {
                 history.setSize(Calc.RS_MAX_HIST+1);
             }
         }
         historyPos = 0;
-        */
     }
 }

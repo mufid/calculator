@@ -26,12 +26,7 @@ import org.javia.lib.DataOut;
 import org.javia.eval.Parser;
 import org.javia.eval.Fun;
 
-///#define START_LINE(lines, n) (((n)==0)?0:lines[n-1])
-
 class CalcCanvas extends ImageCanvas {
-    
-    private static int START_LINE(int[] lines, int n) { return n == 0 ? 0 : lines[n-1]; }
-    
     static final int 
         KEY_SOFT1 =  -6,
         KEY_SOFT2 =  -7,
@@ -57,17 +52,17 @@ class CalcCanvas extends ImageCanvas {
 
     int screenW, screenH;
 
-    int cursorRow, cursorCol;
-    int cursorX, cursorY, cursorW = 1, cursorH;
+    //int cursorRow, cursorCol;
+    int cursorX, cursorY;
+    int cursorW = 1, cursorH;
 
     Font font, historyFont;
     int lineHeight;
 
-    char line[] = new char[256];
-    int len = 0, pos = -1;
-    int lastInsertLen = 0;
-    int editLines[];
-    int nEditLines = 0;
+    EditBox historyWrap;
+    CursorBox editor;
+
+    int nEditLines;
     int maxEditLines;
     int editH;
 
@@ -101,12 +96,12 @@ class CalcCanvas extends ImageCanvas {
 
         maxEditLines = (screenH - (KeyState.h + spaceTop + spaceEdit + spaceHist + 8)) / lineHeight - 1;
         //Log.log("max edit lines " + maxEditLines);
-        editLines = new int[maxEditLines + 1];
         clientW = screenW - 2*clientX;
-
+        editor      = new CursorBox(clientW, font, maxEditLines);
+        historyWrap = new EditBox(clientW, historyFont, 4);
         history = new History();
         DataInputStream is = Calc.rs.readIS(Calc.RS_CURRENT);
-        updateFromHistEntry(is == null ? new HistEntry("1+1", 0, false) : new HistEntry(is));
+        updateFromHistEntry(is == null ? new HistEntry("1+1") : new HistEntry(is));
         if (is == null) {
             for (int i = 0; i < initHistory.length; ++i) {
                 String str = initHistory[i];
@@ -125,7 +120,7 @@ class CalcCanvas extends ImageCanvas {
         cursorH = lineHeight;
 
         //initFrame(nEditLines);
-        doChanged(-1);
+        doChanged();
         //updateHistory();
         repaint();
     }
@@ -168,10 +163,10 @@ class CalcCanvas extends ImageCanvas {
     }
 
     void updateResult() {
-        Fun func = Parser.compile(new String(line, 0, len));
+        Fun func = Parser.compile(editor.toString());
         if (func != null) {
             String strResult = func.arity > 0 ?
-                line[0] + params[func.arity - 1] : format(func.eval());
+                params[func.arity - 1] : format(func.eval());
             drawResultString(strResult);
         } else {
             /*
@@ -202,58 +197,9 @@ class CalcCanvas extends ImageCanvas {
             repaint(clientX, Y[RESULT], clientW, lineHeight);
     }
 
-    static int fitWidth(Font font, int targetWidth, String str) {
-        char buf[] = str.toCharArray();
-        return fitWidth(font, targetWidth, buf, 0, buf.length);
-    }
-
-    static int fitWidth(Font font, int targetWidth, char buf[], int start, int end) {
-        int mW = font.charWidth('m');
-        int n;
-        while ((n = Math.min(targetWidth/mW, end - start)) >= 2) {
-            targetWidth -= font.charsWidth(buf, start, n);
-            start += n;
-        }
-        while (start < end && (targetWidth -= font.charWidth(buf[start])) >= 0) {
-            ++start;
-        }
-        return start;
-    }
-
-    static int split(Font font, char buf[], int len, int w, int lines[]) {
-        return split(font, buf, len, w, lines, 0);
-    }
-
-    static int split(Font font, char buf[], int len, int w, 
-              int lines[], int changeLine) {
-        int end = START_LINE(lines, changeLine);
-        int i;
-        for (i = changeLine; i < lines.length && end < len; ++i) {
-            lines[i] = end = fitWidth(font, w, buf, end, len);            
-        }
-        if (i == 0) {
-            lines[0] = 0;
-            return 1;
-        }
-        return i;
-    }
-
-    int posToLine(int lines[], int pos) {
-        int line = 0;
-        while (pos >= lines[line]) { ++line; }
-        return line;
-    }
-               
-    void editChanged(int changePos) {
-        int changeLine = posToLine(editLines, changePos);
+    void editChanged() {
         int oldNLines = nEditLines;
-        nEditLines = split(font, line, len, clientW, editLines, changeLine);
-        if (nEditLines > maxEditLines) {
-            pos = changePos;
-            delFromLine(pos, lastInsertLen);
-            nEditLines = maxEditLines;
-            return;
-        }
+        nEditLines = editor.nLines();
         if (oldNLines != nEditLines) {
             initFrame(nEditLines);
             updateHistory();
@@ -265,18 +211,12 @@ class CalcCanvas extends ImageCanvas {
 
         //Graphics g = gg[EDIT];
         screenGraphics.setColor(bgCol[EDIT]);
-        screenGraphics.fillRect(clientX, Y[EDIT] + changeLine*lineHeight, clientW, (nEditLines - changeLine)*lineHeight);
-        repaint(clientX, Y[EDIT] + changeLine*lineHeight, clientW, (nEditLines - changeLine)*lineHeight);
+        screenGraphics.fillRect(clientX, Y[EDIT], clientW, nEditLines*lineHeight);
+        repaint(clientX, Y[EDIT], clientW, nEditLines*lineHeight);
         //repaint(0, 2+changeLine*lineHeight, screenW, (nEditLines - changeLine)*lineHeight);
         
         screenGraphics.setColor(fgCol[EDIT]);
-        int start = changeLine==0 ? 0 : editLines[changeLine-1];
-        for (int i = changeLine, y = Y[EDIT] + changeLine*lineHeight,
-                 end = editLines[i]; 
-             i < nEditLines; ++i, y+=lineHeight, start = end) {
-            end = editLines[i];
-            screenGraphics.drawChars(line, start, end-start, clientX, y, 0); //Graphics.BOTTOM|Graphics.LEFT);
-        }
+        editor.drawLines(screenGraphics, clientX, Y[EDIT]);
     }
 
     void markError() {
@@ -309,20 +249,14 @@ class CalcCanvas extends ImageCanvas {
         repaint(cursorX, cursorY, cursorW, cursorH);
     }
 
+    int outRowX[] = new int[2];
     void updateCursor() {
         setCursor(drawCursor);
-        int start;
-        if (pos == -1) {
-            cursorRow = 0;
-            start     = 0;
-            cursorCol = 0;
-        } else {
-            cursorRow = posToLine(editLines, pos); //pos+1
-            start     = START_LINE(editLines, cursorRow);
-            cursorCol = (pos+1) - start;
-        }
-        cursorY = Y[EDIT] + cursorRow * lineHeight;
-        cursorX = clientX + font.charsWidth(line, start, cursorCol);
+
+        editor.getCursorRowX(outRowX);
+        cursorY = Y[EDIT] + outRowX[0] * lineHeight;
+        cursorX = clientX + outRowX[1];
+
         if (cursorX > 0) {
             --cursorX;
         }
@@ -343,8 +277,8 @@ class CalcCanvas extends ImageCanvas {
         */
     }
 
-    char histBuf[] = new char[256+30];
-    int histBufLen;
+    //char histBuf[] = new char[256+30];
+    //int histBufLen;
     int histLines[] = new int[8];
     void updateHistory() {
         screenGraphics.setColor(bgCol[HISTORY]);
@@ -356,43 +290,56 @@ class CalcCanvas extends ImageCanvas {
         int histSize = history.size();
         int yLimit = Y[HISTORY] + historyH - histLineHeight;
         for (int p = 1; p < histSize && y <= yLimit; ++p, y+= histLineHeight/2) {
-            HistEntry entry = history.get(p);            
-            String base = entry.base;
-            String result = entry.hasResult ? format(entry.result) : "";
-            base.getChars(0, base.length(), histBuf, 0);
-            histBufLen = base.length();
+            HistEntry entry = history.get(p);
+                //String base   = entry.base;
+            String result = /*entry.hasResult ? format(entry.result) :*/ "";
+            String txt = entry.base;
+            if (result.length() > 0) {
+                txt += " = " + result;
+            }
+            //base.getChars(0, base.length(), histBuf, 0);
+            //histBufLen = base.length();
+            /*
             if (result.length() > 0) {
                 histBuf[histBufLen++] = ' ';
                 histBuf[histBufLen++] = '=';
                 histBuf[histBufLen++] = ' ';
                 result.getChars(0, result.length(), histBuf, histBufLen);
                 histBufLen += result.length();
+                }*/
+            historyWrap.set(txt);
+            int saveY = y;
+            y += historyWrap.nLines() * histLineHeight;
+            if (y <= yLimit) {
+                historyWrap.drawLines(screenGraphics, clientX, saveY);
             }
-            int nLines = split(historyFont, histBuf, histBufLen, clientW, histLines);
-            for (int i = 0, start = 0; i < nLines && y <= yLimit; ++i, y+= histLineHeight) {
-                screenGraphics.drawChars(histBuf, start, histLines[i]-start, clientX, y, 0);
-                start = histLines[i];
+
+            /*
+            for (int i = 0; i < nLines && y <= yLimit; ++i, y+=histLineHeight) {
+                screenGraphics.drawString(historyWrap.lines[i], clientX, y, 0);
             }
+            */
         }
         screenGraphics.setFont(font);
         repaint(clientX, Y[HISTORY], clientW, historyH);
     }
 
     String format(double v) {
-        String str = Util.doubleToString(v, Calc.cfg.roundingDigits);
-        //int len  = str.length();
+        return Util.doubleToString(v, Calc.cfg.roundingDigits);
+        /*
         int ePos = str.lastIndexOf('E');
         if (ePos == -1) {
-            int n = fitWidth(font, clientW, str);
+            int n = wrap.fitWidth(str, clientW);
             return str.substring(0, n);
             //return str;
         } else {
             String tail = str.substring(ePos);
             str = str.substring(0, ePos);
             int tailW   = font.stringWidth(tail);
-            int n = fitWidth(font, clientW - tailW, str);
+            int n = wrap.fitWidth(str, clientW - tailW);
             return str.substring(0, n) + tail;
         }
+        */
     }
 
     protected void paint(Graphics g) {
@@ -427,7 +374,9 @@ class CalcCanvas extends ImageCanvas {
         return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
     }
 
-    int prevFlexPoint(int pos) {
+    //private int prevFlexPoint(int pos) {
+    //    return pos < 0 ? pos : pos - 1;
+        /*
         if (pos < 0) {
             return pos;
         }
@@ -436,14 +385,14 @@ class CalcCanvas extends ImageCanvas {
         }
         int p = pos;
         if (p >= 1 && line[p] == '(') {
-            /*
+          
             do { --p; } while (p >= 0 && isLetter(line[p]));
             final int sym = Lexer.getSymbol(new String(line, p + 1, pos));
             if (Lexer.isBuiltinFunction(sym) || Lexer.isPlotCommand(sym) ||
                 Lexer.isVariable(sym) && Variables.isFunction(sym) && p > -1)
             { pos = p; }
             else
-            */
+          
             --pos;
             return pos;
         }
@@ -452,9 +401,13 @@ class CalcCanvas extends ImageCanvas {
             return p;
         }
         return pos - 1;
-    }
+        */
+    //}
 
-    int nextFlexPoint(int pos) {
+    /*
+    private int nextFlexPoint(int pos) {
+        return pos >= line.length() - 1 ? pos : pos + 1;
+      
         if (pos >= len - 1) {
             return pos;
         }
@@ -466,32 +419,46 @@ class CalcCanvas extends ImageCanvas {
             while (pos < len && isLetter(line[pos]))
                 ++pos;
             --pos;
-            /*
+          
             if (pos + 1 < len && line[pos + 1] == '(') {
                 final int sym = Lexer.getSymbol(new String(line, p, pos + 1));
                 if (Lexer.isBuiltinFunction(sym) || Lexer.isPlotCommand(sym) ||
                     Lexer.isVariable(sym) && Variables.isFunction(sym) && pos > 0)
                 { ++pos; }
             }
-            */
+          
         }
         return pos;
-    }
 
+    }
+        */
+
+    /*
     void delFromLine(int p, int size) {
+        buffer.delete(p+1, p+1+size);
+
         int p2 = p + size + 1;
         System.arraycopy(line, p2, line, p + 1, len - p2);
         len -= size;
         lineStr = null;
     }
+    */
 
+    /*
     void delFromLine() {
+        buffer.delete();
+
         int prev = prevFlexPoint(pos);
         delFromLine(prev, pos-prev);
         pos = prev;
     }
+    */
 
+    /*
     void insertIntoLine(String s) {
+        buffer.insert(pos + 1, s);
+        pos += s.length();
+
         int strLen = s.length();
         if (len + strLen <= 255) {            
             System.arraycopy(line, pos+1, line, pos + strLen + 1, len-(pos+1));
@@ -501,22 +468,23 @@ class CalcCanvas extends ImageCanvas {
             lineStr = null;
         }
     }
+    */
 
     protected void keyRepeated(int key) {
         keyPressed(key);
     }
     
-    private void doChanged(int changePos) {
-        editChanged(changePos);
+    private void doChanged() {
+        editChanged();
         updateCursor();
         updateResult();
     }
     
     void historyMove(int dir) {
-        history.getCurrent().update(lineStr(), pos);
+        history.getCurrent().update(editor.toString(), editor.cursorPos());
         if (history.move(dir)) {
             updateFromHistEntry(history.getCurrent());
-            doChanged(-1);
+            doChanged();
         }        
     }
 
@@ -524,61 +492,42 @@ class CalcCanvas extends ImageCanvas {
         //Log.log("cursorRow " + cursorRow);
         switch (action) {
         case Canvas.LEFT:
-            pos = prevFlexPoint(pos);
+            editor.moveLeft();
             updateCursor();
             //changed = true;
             break;
             
         case Canvas.RIGHT:
-            pos = nextFlexPoint(pos);
+            editor.moveRight();
             updateCursor();
             //changed = true;
             break;
             
         case Canvas.UP:
-            if (cursorRow == 0) {
-                historyMove(-1);
-            } else {
-                int width = font.charsWidth(line, editLines[cursorRow-1], cursorCol);
-                int startPrev = START_LINE(editLines, cursorRow-1);
-                int targetPos = fitWidth(font, width, line, startPrev, len)-1;
-                //Log.log("width " + width + " target " + targetPos);
-                int aheadPos;
-                while (true) {
-                    aheadPos = prevFlexPoint(pos);
-                    if (aheadPos < targetPos || pos == -1) { break; }
-                    pos = aheadPos;
-                }
+            if (editor.moveUp()) {
                 updateCursor();
+            } else {
+                historyMove(-1);                
             }
             break;
             
         case Canvas.DOWN:
-            if (cursorRow == nEditLines-1) {
-                historyMove(1);
-            } else {
-                int width = font.charsWidth(line, START_LINE(editLines, cursorRow), cursorCol);
-                int startNext = editLines[cursorRow];
-                int targetPos = pos == -1 ? editLines[0] : fitWidth(font, width, line, startNext, len)-1;
-                int aheadPos;
-                while (true) {
-                    aheadPos = nextFlexPoint(pos);
-                    if (aheadPos > targetPos || pos == len-1) { break; }
-                    pos = aheadPos;
-                }
+            if (editor.moveDown()) {
                 updateCursor();
-            } 
+            } else {
+                historyMove(1);
+            }
             break;
 
         case Canvas.FIRE:
-            history.enter(lineStr());
+            history.enter(editor.toString());
             /*
             Result res = Compiler.result;
             if (res.errorStart == -1 && res.plotCommand != -1)
                 Calc.self.plotCanvas.plot(res);
             */
             updateFromHistEntry(history.getCurrent());
-            doChanged(-1);
+            doChanged();
             updateHistory();
             break;
             
@@ -589,8 +538,8 @@ class CalcCanvas extends ImageCanvas {
             
         case Canvas.GAME_B:
         case Canvas.GAME_D:
-            delFromLine();
-            doChanged(pos);
+            editor.delete(1);
+            doChanged();
             break;
         default:                    
         }
@@ -614,45 +563,18 @@ class CalcCanvas extends ImageCanvas {
         }
 
         if (key > 0) {
-            int oldPos = pos;
-            lastInsertLen = 0;
-            String s;
-            if (keyPos >= 0) {
-                s = KeyState.handleKey(keyPos);
-            } else {
-                s = String.valueOf((char)key);
-            }
+            final String s = (keyPos >= 0) ?
+                KeyState.handleKey(keyPos) :
+                String.valueOf((char)key);
+            
             if (s != null) {
-                //int sym = -1;
-                final int s_len = s.length();
-                final boolean isOperator = s_len == 1 && "+*/%^!".indexOf(s.charAt(0)) != -1;
-                if (pos == -1 && s_len == 1) {
-                    if (isOperator) {
-                        insertIntoLine("ans");
-                        lastInsertLen += 3;
-                    } else {
-                        //sym = Lexer.getSymbol(s);
-                    }
-                    insertIntoLine(s);
-                    /*
-                    if (Lexer.isVariable(sym) && !Variables.isDefined(sym)) {
-                        insertIntoLine(":=");
-                        lastInsertLen += 2;
-                    }
-                    */
-                } else {
-                    /*
-                    if (!isOperator) {
-                        //sym = Lexer.getSymbol(s);
-                        if (sym != -1 && pos > -1 && isLetter(line[pos])) {
-                            insertIntoLine("*");
-                            ++lastInsertLen;
-                        }
-                    }
-                    */
-                    insertIntoLine(s);
+                /*
+                if (editor.size() == 0 && s.length() == 1 && isOperator) {
+                    editor.insert("ans");
                 }
-                lastInsertLen += s.length();
+                */
+                editor.insert(s);
+
                 /*
                 if (sym != -1) {
                     int arity = Lexer.isVariable(sym)
@@ -678,7 +600,7 @@ class CalcCanvas extends ImageCanvas {
                     }
                 }
                 */
-                doChanged(oldPos);
+                doChanged();
             }
         } else {
             int action = 0;
@@ -699,8 +621,8 @@ class CalcCanvas extends ImageCanvas {
                 if (action != 0) {
                     handleAction(action);
                 } else {
-                    delFromLine();
-                    doChanged(pos);
+                    editor.delete();
+                    doChanged();
                 }
             }
         }
@@ -720,11 +642,7 @@ class CalcCanvas extends ImageCanvas {
  */
 
     void updateFromHistEntry(HistEntry entry) {
-        pos = entry.pos;
-        String str = entry.edited;
-        len = str.length();
-        str.getChars(0, len, line, 0);
-        lineStr = null;
+        editor.set(entry.edited, entry.pos);
     }
 
     static int getKeyPos(int key) {
@@ -741,15 +659,17 @@ class CalcCanvas extends ImageCanvas {
 
     DataOut dataOut = new DataOut();
     void saveOnExit() {
-        new HistEntry(lineStr(), 0, false).write(dataOut);
+        new HistEntry(editor.toString()).write(dataOut);
         Calc.rs.write(Calc.RS_CURRENT, dataOut.getBytesAndReset());
     }
 
-    private String lineStr = null;
+    //private String lineStr = null;
 
+    /*
     String lineStr() {
         if (lineStr == null)
             lineStr = String.valueOf(line, 0, len);
         return lineStr;
     }
+    */
 }
