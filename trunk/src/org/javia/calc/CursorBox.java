@@ -75,7 +75,7 @@ class CursorBox {
     }
 
     void moveRight() {
-        if (cursorPos < box.size - 1) {
+        if (cursorPos < box.size) {
             ++cursorPos;
         }
     }

@@ -22,8 +22,8 @@ import javax.microedition.lcdui.Graphics;
 import org.javia.lib.Log;
 
 class EditBox {
-    static final int MAX_SIZE  = 1024;
-    static final int MAX_LINES = 40;
+    static final int MAX_SIZE  = 512;
+    static final int MAX_LINES = 20;
 
     char buffer[]   = new char[MAX_SIZE];
     int lineStart[] = new int[MAX_LINES];
@@ -120,8 +120,8 @@ class EditBox {
     }
 
     int getRow(int pos) {
-        if (pos >= size) {
-            pos = size -1;
+        if (pos > size) {
+            pos = size;
         }
         int row = 1;
         while (pos > lineStart[row]) {

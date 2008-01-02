@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Mihai Preda.
+ * Copyright (C) 2007-2008 Mihai Preda.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,56 +25,39 @@ class Compiler {
     private static final int MAX_FUNCS  = 16;
     private static final int MAX_CODE   = 128;
 
-    Hashtable[] builtins = {null, new Hashtable(), new Hashtable()};
+    static final int MAX_ARITY = 5;
 
     double stack[]  = new double[MAX_STACK];        
     double consts[] = new double[MAX_CONSTS];
     byte[] code = new byte[MAX_CODE];
     Fun[] funcs = new Fun[MAX_FUNCS];
-
-    int sp, nConst, pc, nf;
-    int arity;
-
     Fun tracer = new Fun(0, new byte[2], new double[1], new Fun[1]);
 
-    void init() {
-        sp     = -1;
-        nConst = 0;
-        pc     = 0;
-        nf     = 0;
-        arity  = 0;
-    }
+    int sp = -1;
+    int nConst, pc, nf;
+    int arity;
 
-    Compiler() {
-        for (int i = 0; i < VM.BYTECODE_END; ++i) {
-            int arity = VM.builtinArity[i];
-            if (arity == 1 || arity == 2) {
-                builtins[arity].put(VM.opcodeName[i], new Byte((byte)i));
-            }
+    String argNames[];
+    SymbolTable symbols;
+
+    void start(SymbolTable newSymbols, String argNames[]) {
+        sp = -1;
+        nConst = pc = nf = arity = 0;
+
+        if (symbols != null) {
+            symbols.popFrame();
         }
-        init();
-    }
-
-    double lookupVar(String name) {
-        //todo: implement
-        return 0;
-    }
-
-    byte lookupBuiltin(String name, int arity) {
-        if (arity == 1 || arity == 2) {
-            Byte vmop = (Byte) builtins[arity].get(name);
-            if (vmop != null) {
-                return vmop.byteValue();
-            }
+        symbols = newSymbols;
+        symbols.pushFrame();
+        arity   = argNames.length;
+        if (arity > MAX_ARITY) {
+            throw new Error("Arity too large " + arity);
         }
-        return 0;
+        for (int i = 0; i < arity; ++i) {
+            symbols.add(new Symbol(argNames[i], -1, (byte)(VM.LOAD0 + i)));
+        }
     }
-
-    Fun lookupFun(String name, int arity) {
-        //todo: implement
-        return null;
-    }
-
+    
     void push(Token token) {
         double lastConst = 0;
         Fun lastFun = null;
@@ -87,37 +70,23 @@ class Compiler {
             break;
             
         case Lexer.CONST:
-            String name = token.name;
-            if (name.equals("rnd")) {
-                op  = Fun.RND;
-            } else {
-                if (name.length() == 1) {
-                    char c = name.charAt(0);
-                    if (c == 'x' || c == 'y' || c == 'z') {
-                        op = (byte) (Fun.LDX + (c - 'x'));
-                        if (arity < c - 'x' + 1) {
-                            arity = c - 'x' + 1;
-                        }
-                        break;
-                    }
-                }
-                op = Fun.CONST;
-                lastConst = consts[nConst++] = lookupVar(name);
-            }
-            break;
-            
         case Lexer.CALL:
-            op = lookupBuiltin(token.name, token.arity);
-            if (op <= 0) {
+            String name = token.name;
+            Symbol symbol = symbols.lookup(token.name, token.arity);
+            if (symbol == null) {
+                throw new SyntaxException("undefined '" + token.name + "' with arity" + token.arity, token); 
+            }
+            if (symbol.op > 0) { // built-in
+                op = symbol.op;
+            } else if (symbol.fun != null) { // function call
                 op = Fun.CALL;
-                Fun f = lookupFun(token.name, token.arity);
-                if (f == null) {
-                    throw new SyntaxException("function not found", token);
-                }                
-                lastFun = funcs[nf++] = f;
+                lastFun = funcs[nf++] = symbol.fun;
+            } else { // variable reference
+                op = Fun.CONST;
+                lastConst = consts[nConst++] = symbol.value;
             }
             break;
-            
+                        
         default:
             op = type.vmop;
             if (op <= 0) {
@@ -157,17 +126,41 @@ class Compiler {
         byte[] trimmedCode = new byte[pc];
         System.arraycopy(code, 0, trimmedCode, 0, pc);
 
-        init();
+        symbols.popFrame();
+        symbols = null;
         return new Fun(arity, trimmedCode, trimmedConsts, trimmedFuncs);
     }
+}
+
 
     /*
-    Fun gen(Vector tokens) {
-        int size = tokens.size();
-        for (int i = 0; i < size; ++i) {
-            push((Token) tokens.elementAt(i));
-        }
-        return getFun();
+    void start(String argNames[]) {
+        clear();
+
+         todo: load args symbols
+            int arg;
+            if (name.equals("rnd")) {
+                op  = Fun.RND;
+            } else if ((arg = lookupArg(name)) >= 0) {
+                if (effectiveArity < arg + 1) {
+                    effectiveArity = arg + 1;
+                }
+                op = (byte) (Fun.LOAD0 + arg);
+            } else {
+
+            }
     }
     */
-}
+
+    /*
+                if (name.length() == 1) {
+                    char c = name.charAt(0);
+                    if (c == 'x' || c == 'y' || c == 'z') {
+                        op = (byte) (Fun.LDX + (c - 'x'));
+                        if (arity < c - 'x' + 1) {
+                            arity = c - 'x' + 1;
+                        }
+                        break;
+                    }
+                }
+    */
