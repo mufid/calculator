@@ -21,9 +21,10 @@ import java.util.EmptyStackException;
 import org.javia.lib.Log;
 
 public class Parser {
-    static Lexer lexer       = new Lexer();
-    static Compiler compiler   = new Compiler();
-    static Parser parser = new Parser(compiler);
+    private static Lexer lexer       = new Lexer();
+    private static Compiler compiler = new Compiler();
+    private static Parser parser     = new Parser(compiler);
+    private static SymbolTable symbols = new SymbolTable();
 
     Stack stack = new Stack();
     //Stack code  = new Stack();
@@ -35,9 +36,14 @@ public class Parser {
         this.consumer = consumer;
     }
 
-    synchronized public static Fun compile(String str) {
+    private static final String NO_ARGS[] = new String[0];
+    public static Fun compile(String str) {
+        return compile(str, NO_ARGS);
+    }
+
+    synchronized public static Fun compile(String str, String argNames[]) {
         lexer.init(str);
-        compiler.init();
+        compiler.start(symbols, argNames);
         parser.init();
         Token token;
         try {
@@ -49,6 +55,7 @@ public class Parser {
             return null;
         }
         Fun fun = compiler.getFun();
+
         //fun.source = str;
         //parser.init();
         Log.log("compile '" + str + "': " + fun);

@@ -80,16 +80,21 @@ public class Fun extends VM {
         int pc = 0; //program counter
         byte[] code = this.code;
         int initialSP = p;
-        double x, y, z;
         int constp = 0;
         int funp   = 0;
         final double angleFactor = 1; // 1/Calc.cfg.trigFactor;
-
-        x = y = z = Double.NaN;
+        
+        // arguments, read from stack on exec entry
+        // we don't use an array in order to avoid the dynamic allocation (new)
+        // @see Compiler.MAX_ARITY
+        double a0, a1, a2, a3, a4;
+        a0 = a1 = a2 = a3 = a4 = Double.NaN;
         switch (arity) {
-        case 3: z = s[p--];
-        case 2: y = s[p--];
-        case 1: x = s[p--];
+        case 5: a4 = s[p--];
+        case 4: a3 = s[p--];
+        case 3: a2 = s[p--];
+        case 2: a1 = s[p--];
+        case 1: a0 = s[p--];
         }
 
         while (true) {
@@ -152,9 +157,11 @@ public class Fun extends VM {
             case COMB: s[--p] = MoreMath.comb(s[p], s[p+1]); break;
             case PERM: s[--p] = MoreMath.perm(s[p], s[p+1]); break;
                     
-            case LDX: s[++p] = x; break;
-            case LDY: s[++p] = y; break;
-            case LDZ: s[++p] = z; break;
+            case LOAD0: s[++p] = a0; break;
+            case LOAD1: s[++p] = a1; break;
+            case LOAD2: s[++p] = a2; break;
+            case LOAD3: s[++p] = a3; break;
+            case LOAD4: s[++p] = a4; break;
 
             case RET: return p;
             }
