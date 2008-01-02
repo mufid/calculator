@@ -131,36 +131,3 @@ class Compiler {
         return new Fun(arity, trimmedCode, trimmedConsts, trimmedFuncs);
     }
 }
-
-
-    /*
-    void start(String argNames[]) {
-        clear();
-
-         todo: load args symbols
-            int arg;
-            if (name.equals("rnd")) {
-                op  = Fun.RND;
-            } else if ((arg = lookupArg(name)) >= 0) {
-                if (effectiveArity < arg + 1) {
-                    effectiveArity = arg + 1;
-                }
-                op = (byte) (Fun.LOAD0 + arg);
-            } else {
-
-            }
-    }
-    */
-
-    /*
-                if (name.length() == 1) {
-                    char c = name.charAt(0);
-                    if (c == 'x' || c == 'y' || c == 'z') {
-                        op = (byte) (Fun.LDX + (c - 'x'));
-                        if (arity < c - 'x' + 1) {
-                            arity = c - 'x' + 1;
-                        }
-                        break;
-                    }
-                }
-    */
