@@ -20,7 +20,7 @@ import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
 
-class SymbolTable {
+public class SymbolTable {
     //Hashtable<Symbol, Symbol>
     private Hashtable symbols = new Hashtable();
 
@@ -30,7 +30,7 @@ class SymbolTable {
     //Stack<Vector>
     private Stack frames = new Stack();
 
-    SymbolTable() {
+    public SymbolTable() {
         int arity;
         for (byte i = 0; i < VM.BYTECODE_END; ++i) {
             if ((arity = VM.builtinArity[i]) >= 0) {
@@ -41,9 +41,10 @@ class SymbolTable {
 
     void add(Symbol s) {
         Object previous = symbols.put(s, s);
-        if (previous != null) {
-            delta.addElement(previous);
+        if (delta == null) {
+            delta = new Vector();
         }
+        delta.addElement(previous != null ? previous : Symbol.newEmpty(s));
     }
 
     static private Symbol shell = new Symbol(null, 0);
@@ -53,13 +54,19 @@ class SymbolTable {
 
     void pushFrame() {
         frames.push(delta);
-        delta = new Vector();
+        delta = null;
     }
 
     void popFrame() {
-        for (int i = delta.size() - 1; i >= 0; --i) {
-            Object previous = delta.elementAt(i);
-            symbols.put(previous, previous);
+        if (delta != null) {
+            for (int i = delta.size() - 1; i >= 0; --i) {
+                Symbol previous = (Symbol) delta.elementAt(i);
+                if (previous.isEmpty()) {
+                    symbols.remove(previous);
+                } else {
+                    symbols.put(previous, previous);
+                }
+            }
         }
         delta = (Vector) frames.pop();
     }

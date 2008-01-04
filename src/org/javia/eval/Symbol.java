@@ -22,21 +22,40 @@ class Symbol {
 
     byte op;
     Fun fun;
-    double value;
+    double value = 0;
 
     Symbol(String name, int arity, byte op) {
         setKey(name, arity);
         this.op = op;        
     }
 
-    Symbol(String name, int arity, Fun fun) {
+    Symbol(Fun fun) {
+        String name = fun.name;
+        if (name == null) {
+            throw new Error("fun without name: " + fun);
+        }
+
+        int arity = fun.arity;
+        if (arity == -1) {
+            //it's a const
+            this.value = fun.eval();
+        } else {
+            this.fun = fun;            
+        }
         setKey(name, arity);
-        this.fun = fun;
     }
 
     Symbol(String name, double value) {
         setKey(name, -1);
         this.value = value;
+    }
+
+    static Symbol newEmpty(Symbol s) {
+        return new Symbol(s.name, s.arity, (byte)0);
+    }
+
+    boolean isEmpty() {
+        return op == 0 && fun == null && value == 0;
     }
 
     Symbol setKey(String name, int arity) {

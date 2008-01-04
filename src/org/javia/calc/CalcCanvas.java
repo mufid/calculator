@@ -26,7 +26,8 @@ import org.javia.lib.midp.ImageCanvas;
 import org.javia.lib.Log;
 import org.javia.lib.DataOut;
 
-import org.javia.eval.Parser;
+import org.javia.eval.FunParser;
+import org.javia.eval.SymbolTable;
 import org.javia.eval.Fun;
 
 class CalcCanvas extends ImageCanvas {
@@ -37,7 +38,7 @@ class CalcCanvas extends ImageCanvas {
         KEY_END   = -11, 
         KEY_POWER = -12;
     private static final String arityParens[] = {"", "()", "(,)", "(,,)", "(,,,)", "(,,,,)"};
-    private static final String params[] = {"(x)", "(x,y)", "(x,y,z)" /* user-def fns have <= 3 params */ };
+    //private static final String params[] = {"(x)", "(x,y)", "(x,y,z)" /* user-def fns have <= 3 params */ };
 
     private static final String[][] plotParamHelp = {
         { "function of x", "min x-value", "max x-value" },
@@ -79,6 +80,8 @@ class CalcCanvas extends ImageCanvas {
     static final int clientX = spaceSide + 2;
     static int clientW, historyH;
 
+    SymbolTable symbols = new SymbolTable();
+
     CalcCanvas() {
         screenW = getWidth();
         screenH = getHeight();
@@ -97,7 +100,7 @@ class CalcCanvas extends ImageCanvas {
         clientW = screenW - 2*clientX;
         editor      = new CursorBox(clientW, font, maxEditLines);
         historyWrap = new EditBox(clientW, historyFont, 4);
-        history = new History();
+        history = new History(symbols);
         DataInputStream is = Calc.rs.readIS(Calc.RS_CURRENT);
         updateFromHistEntry(is == null ? new HistEntry("1+1") : new HistEntry(is));
         if (is == null) {
@@ -158,10 +161,10 @@ class CalcCanvas extends ImageCanvas {
     }
 
     void updateResult() {
-        Fun func = Parser.compile(editor.toString());
+        Fun func = FunParser.compile(editor.toString(), symbols);
         if (func != null) {
             String strResult = func.arity > 0 ?
-                params[func.arity - 1] : format(func.eval());
+                "function" : format(func.eval());
             drawResultString(strResult);
         } else {
             /*

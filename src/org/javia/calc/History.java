@@ -20,18 +20,22 @@ import java.util.*;
 import java.io.*;
 
 import org.javia.lib.*;
-import org.javia.eval.*;
+import org.javia.eval.SymbolTable;
+import org.javia.eval.FunParser;
+import org.javia.eval.Fun;
 
 class History {
     static double ans = 0;
 
     private int historyPos;
     private Vector history;
+    private SymbolTable symbols;
     
     int posMaxSeq = -1;
     int maxSeq = 0;
 
-    History() {
+    History(SymbolTable symbols) {
+        this.symbols = symbols;
         historyPos = 0;
         
         Vector v = new Vector(Calc.RS_MAX_HIST);
@@ -99,7 +103,7 @@ class History {
 
     DataOut dataOut = new DataOut();
     void enter(String str) {
-        Fun fun = Parser.compile(str);
+        Fun fun = FunParser.compile(str, symbols);
         if (fun != null && fun.arity == 0) {
             ans = fun.eval();
         }

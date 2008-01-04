@@ -16,6 +16,8 @@
 
 package org.javia.eval;
 
+import org.javia.lib.Log;
+
 class Lexer {
     static final int
         ADD = 1, 
@@ -64,11 +66,27 @@ class Lexer {
     int pos;
 
     Lexer() {
-        this("");
+        init("");
     }
 
     Lexer(String str) {
         init(str);
+    }
+
+    SyntaxException scan(String str, TokenConsumer consumer) {
+        init(str);
+        consumer.start();
+        Token token;
+        try {
+            do {
+                consumer.push(token = nextToken());
+            } while (token != TOK_END);
+        } catch (SyntaxException e) {
+            Log.log("error on '" + str + "' : " + e + " : " + e.token);
+            return e;
+        }
+        consumer.done();
+        return null;
     }
 
     void init(String str) {
@@ -131,7 +149,7 @@ class Lexer {
                 double numberValue = Double.parseDouble(nbStr);
                 return new Token(NUMBER_TYPE, numberValue);
             } catch (NumberFormatException e) {
-                throw new SyntaxException("invalid number " + nbStr, null);
+                throw SyntaxException.get("invalid number " + nbStr, null);
             }
         } else {
             if (('a' <= c && c <= 'z') ||
@@ -151,12 +169,12 @@ class Lexer {
                 }
 
             } else {
-                throw new SyntaxException("invalic character '" + c + "'", null); 
+                throw SyntaxException.get("invalic character '" + c + "'", null); 
             }
         }
     }
     
     public static void main(String[] argv) {
-        System.out.println("argv[0] :\n" + Parser.compile(argv[0]));
+        System.out.println("argv[0] :\n" + FunParser.compile(argv[0], new SymbolTable()));
     }
 }

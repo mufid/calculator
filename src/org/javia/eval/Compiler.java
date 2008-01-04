@@ -18,55 +18,42 @@ package org.javia.eval;
 
 import java.util.Vector;
 import java.util.Hashtable;
+import org.javia.lib.Log;
 
-class Compiler {
+class Compiler extends TokenConsumer {
     private static final int MAX_STACK  = 32;
     private static final int MAX_CONSTS = 16;
     private static final int MAX_FUNCS  = 16;
     private static final int MAX_CODE   = 128;
 
-    static final int MAX_ARITY = 5;
-
     double stack[]  = new double[MAX_STACK];        
     double consts[] = new double[MAX_CONSTS];
     byte[] code = new byte[MAX_CODE];
     Fun[] funcs = new Fun[MAX_FUNCS];
-    Fun tracer = new Fun(0, new byte[2], new double[1], new Fun[1]);
+    double traceConsts[] = new double[1];
+    Fun traceFuncs[] = new Fun[1];
+    Fun tracer = new Fun("<tracer>", 0, "<tracer>", new byte[]{VM.RET, VM.RET}, traceConsts, traceFuncs);
 
     int sp = -1;
     int nConst, pc, nf;
-    int arity;
+    //int arity;
 
     String argNames[];
     SymbolTable symbols;
 
-    void start(SymbolTable newSymbols, String argNames[]) {
+    void start(SymbolTable symbols) {
         sp = -1;
-        nConst = pc = nf = arity = 0;
-
-        if (symbols != null) {
-            symbols.popFrame();
-        }
-        symbols = newSymbols;
-        symbols.pushFrame();
-        arity   = argNames.length;
-        if (arity > MAX_ARITY) {
-            throw new Error("Arity too large " + arity);
-        }
-        for (int i = 0; i < arity; ++i) {
-            symbols.add(new Symbol(argNames[i], -1, (byte)(VM.LOAD0 + i)));
-        }
+        nConst = pc = nf = 0;
+        this.symbols = symbols;
     }
     
     void push(Token token) {
-        double lastConst = 0;
-        Fun lastFun = null;
         byte op;
         TokenType type = token.type;
         switch (type.id) {
         case Lexer.NUMBER:
             op = Fun.CONST;
-            lastConst = consts[nConst++] = token.value;
+            traceConsts[0] = token.value;
             break;
             
         case Lexer.CONST:
@@ -74,16 +61,16 @@ class Compiler {
             String name = token.name;
             Symbol symbol = symbols.lookup(token.name, token.arity);
             if (symbol == null) {
-                throw new SyntaxException("undefined '" + token.name + "' with arity" + token.arity, token); 
+                throw SyntaxException.get("undefined '" + token.name + "' with arity" + token.arity, token); 
             }
             if (symbol.op > 0) { // built-in
                 op = symbol.op;
             } else if (symbol.fun != null) { // function call
                 op = Fun.CALL;
-                lastFun = funcs[nf++] = symbol.fun;
+                traceFuncs[0] = funcs[nf++] = symbol.fun;
             } else { // variable reference
                 op = Fun.CONST;
-                lastConst = consts[nConst++] = symbol.value;
+                traceConsts[0] = symbol.value;
             }
             break;
                         
@@ -94,24 +81,27 @@ class Compiler {
             }
         }
         int oldSP = sp;
-        sp = tracer.trace(stack, sp, op, lastConst, lastFun);
+        sp = tracer.trace(stack, sp, op);
         if (op == Fun.RND) {
             stack[sp] = Double.NaN;
         }
-        if (sp > oldSP || Double.isNaN(stack[sp])) {
-            code[pc++] = op;
-        } else {
-            //constant folding
-            pc -= oldSP - sp;
-            nConst -= oldSP - sp;
-            consts[nConst-1] = stack[sp];
-            if (code[pc-1] != Fun.CONST) {
-                throw new Error("Expected CONST on fold");
+
+        //constant folding
+        if (!Double.isNaN(stack[sp])) {
+            if (op == VM.CALL) {
+                --nf;
             }
+            //Log.log("op " + VM.opcodeName[op] + " nConst " + nConst);
+            pc -= oldSP + 1 - sp;
+            nConst -= oldSP + 1 - sp;
+            consts[nConst++] = stack[sp];
+            op = VM.CONST;
+            //Log.log("op " + VM.opcodeName[op] + " nConst " + nConst);
         }
+        code[pc++] = op;
     }
     
-    Fun getFun() {
+    Fun getFun(String name, int arity, String source) {
         if (pc <= 0) {
             throw new Error("empty fun");
         }
@@ -126,8 +116,6 @@ class Compiler {
         byte[] trimmedCode = new byte[pc];
         System.arraycopy(code, 0, trimmedCode, 0, pc);
 
-        symbols.popFrame();
-        symbols = null;
-        return new Fun(arity, trimmedCode, trimmedConsts, trimmedFuncs);
+        return new Fun(name, arity, source, trimmedCode, trimmedConsts, trimmedFuncs);
     }
 }
