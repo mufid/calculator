@@ -25,11 +25,12 @@ public class Fun extends VM {
     private byte[] code;
 
     public final int arity; 
-    //String source;
+    String name, source;
 
-    Fun(int arity, byte[] code, double[] consts, Fun[] funcs) {
-        //this.source = "";
+    Fun(String name, int arity, String source, byte[] code, double[] consts, Fun[] funcs) {
+        this.name   = name;
         this.arity  = arity;
+        this.source = source;
         this.code   = code;
         this.consts = consts;
         this.funcs  = funcs;
@@ -37,7 +38,7 @@ public class Fun extends VM {
 
     public String toString() {
         StringBuffer buf = new StringBuffer();
-        buf.append("Function with arity ").append(arity);
+        buf.append("Fun ").append(source);
         buf.append("; sub-funcs ").append(funcs.length);
         /*
         if (source.length() > 0) {
@@ -49,17 +50,14 @@ public class Fun extends VM {
             buf.append("\n    ").append(consts[i]);
         }
         buf.append("\n  code: ");
-        for (int i = 0; i < consts.length; ++i) {
+        for (int i = 0; i < code.length; ++i) {
             buf.append("\n    ").append(opcodeName[code[i]]);
         }
         return buf.toString();
     }
 
-    int trace(double[] stack, int sp, byte op, double lastConst, Fun lastFun) {
-        consts[0] = lastConst;
-        funcs[0]  = lastFun;
+    int trace(double[] stack, int sp, byte op) {
         code[0]   = op;
-        code[1]   = RET;
         return exec(stack, sp);
     }
 
@@ -102,8 +100,8 @@ public class Fun extends VM {
             case CONST: s[++p] = consts[constp++]; break;
             case CALL: { 
                 Fun fun = funcs[funp++];
-                fun.exec(s, p); 
-                p -= fun.arity - 1; 
+                p = fun.exec(s, p); 
+                //p -= fun.arity - 1; 
                 break;
             }
                 

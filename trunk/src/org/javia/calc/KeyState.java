@@ -88,7 +88,7 @@ class KeyState {
 
         rootExp = new KeyState(new Object[] {
             "sqrt",  "ans",  "E",
-            plots,    vars,   ":=",
+            plots,    vars,   "=",
             Calc.cfg.piString, "e", ints,
             trigs,   logs,   ".",
         });

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Mihai Preda.
+ * Copyright (C) 2007-2008 Mihai Preda.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,64 +20,27 @@ import java.util.Stack;
 import java.util.EmptyStackException;
 import org.javia.lib.Log;
 
-public class Parser {
-    private static Lexer lexer       = new Lexer();
-    private static Compiler compiler = new Compiler();
-    private static Parser parser     = new Parser(compiler);
-    private static SymbolTable symbols = new SymbolTable();
-
+public class Parser extends TokenConsumer {
     Stack stack = new Stack();
-    //Stack code  = new Stack();
     TokenType prevType;
-    Compiler consumer;
+    TokenConsumer consumer;
 
-    public Parser(Compiler consumer) {
-        init();
+    void setConsumer(TokenConsumer consumer) {
         this.consumer = consumer;
     }
 
-    private static final String NO_ARGS[] = new String[0];
-    public static Fun compile(String str) {
-        return compile(str, NO_ARGS);
-    }
-
-    synchronized public static Fun compile(String str, String argNames[]) {
-        lexer.init(str);
-        compiler.start(symbols, argNames);
-        parser.init();
-        Token token;
-        try {
-            do {
-                parser.push(token = lexer.nextToken());
-            } while (token != Lexer.TOK_END);
-        } catch (SyntaxException e) {
-            Log.log("compile error on '" + str + "' : " + e + " : " + e.token);
-            return null;
-        }
-        Fun fun = compiler.getFun();
-
-        //fun.source = str;
-        //parser.init();
-        Log.log("compile '" + str + "': " + fun);
-        return fun;
-    }
-
-    public void init() {
+    //@Override
+    void start() {
         stack.removeAllElements();
-        //code.removeAllElements();
         prevType = null;
+        consumer.start();
     }
 
-    /*
-    public String toString() {
-        StringBuffer buf = new StringBuffer();
-        int size = code.size();
-        for (int i = 0; i < size; ++i) {
-            buf.append(((Token) code.elementAt(i)).toString()).append('\n');
-        }
-        return buf.toString();
+    //@Override
+    void done() {
+        consumer.done();
+        consumer = null;
     }
-    */
 
     private Token top() {
         try {
@@ -119,7 +82,7 @@ public class Parser {
             if (prevType != null && prevType.id == Lexer.CALL) {
                 top().arity--;
             } else if (prevType == null || !prevType.isOperand) {
-                throw new SyntaxException("misplaced ')'", token);
+                throw SyntaxException.get("misplaced ')'", token);
             }
 
             popHigher(priority);
@@ -128,7 +91,7 @@ public class Parser {
                 if (t.type.id == Lexer.CALL) {
                     consumer.push(t);
                 } else if (t != Lexer.TOK_LPAREN) {
-                    throw new SyntaxException("expected LPAREN or CALL", token);
+                    throw SyntaxException.get("expected LPAREN or CALL", token);
                 }
                 stack.pop();
             }
@@ -137,12 +100,12 @@ public class Parser {
         
         case Lexer.COMMA: {            
             if (prevType == null || !prevType.isOperand) {
-                throw new SyntaxException("misplaced COMMA", token);
+                throw SyntaxException.get("misplaced COMMA", token);
             }
             popHigher(priority);
             Token t = top();
             if (t==null || t.type.id != Lexer.CALL) {
-                throw new SyntaxException("COMMA not inside CALL", token);
+                throw SyntaxException.get("COMMA not inside CALL", token);
             }
             t.arity++;
             //code.push(stack.pop());
@@ -165,7 +128,7 @@ public class Parser {
             
         default: //operators
             if (prevType == null || !prevType.isOperand) {
-                throw new SyntaxException("operator without operand", token);
+                throw SyntaxException.get("operator without operand", token);
             }
             popHigher(priority + (token.type.assoc==TokenType.RIGHT ? 1 : 0));
             stack.push(token);
@@ -173,3 +136,14 @@ public class Parser {
         prevType = token.type;
     }
 }
+
+    /*
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        int size = code.size();
+        for (int i = 0; i < size; ++i) {
+            buf.append(((Token) code.elementAt(i)).toString()).append('\n');
+        }
+        return buf.toString();
+    }
+    */

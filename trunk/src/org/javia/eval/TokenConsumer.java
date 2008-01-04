@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Mihai Preda.
+ * Copyright (C) 2007-2008 Mihai Preda.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,12 @@
 
 package org.javia.eval;
 
-public class SyntaxException extends RuntimeException {
-    String mes;
-    Token token;
-    static SyntaxException inst = new SyntaxException();
-    
-    private SyntaxException() {
+abstract class TokenConsumer {
+    void start() {
     }
 
-    static SyntaxException get(String str, Token token) {
-        inst.mes = str;
-        inst.token = token;
-        return inst;
-    }
+    abstract void push(Token token);
 
-    public String toString() {
-        return mes + ' ' + token;
+    void done() {
     }
 }
