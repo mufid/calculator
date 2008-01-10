@@ -29,6 +29,7 @@ import org.javia.lib.DataOut;
 import org.javia.eval.FunParser;
 import org.javia.eval.SymbolTable;
 import org.javia.eval.Fun;
+import org.javia.eval.Util;
 
 class CalcCanvas extends ImageCanvas {
     static final int 

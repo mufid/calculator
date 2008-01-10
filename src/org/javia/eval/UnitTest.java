@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package org.javia.calc;
+package org.javia.eval;
 
-import org.javia.lib.*;
+import org.javia.lib.Log;
 import org.javia.eval.MoreMath;
 
 class FormatCase {
@@ -94,12 +94,14 @@ class TestFormat {
                 System.out.println("Expected '" + c.res + "', got '" + res + "'. " + Double.toString(c.val));
                 ret = false;
             }
+            int nKeep = c.rounding == 0 ? 17 : 15 - c.rounding;
+            //System.out.println("" + Double.toString(c.val) + " " + Util.round(c.val, nKeep) + " " + c.res + ", got " + res);
         }
         return ret;
     }
 }
 
-class UnitTest {
+public class UnitTest {
     public static void main(String argv[]) {
         //UnitTest tester = new UnitTest();
         checkCounter = 0;

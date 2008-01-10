@@ -55,7 +55,7 @@ class KeyState {
             null,  null,   null,
             null,  null,   null,
             "cbrt", null,  null,
-            "lg",  "ln",   "lb",
+            "log10",  "ln",   "log2",
         });
 
         ints = new KeyState(new Object[] {
@@ -66,10 +66,10 @@ class KeyState {
         });
 
         vars = new KeyState(new Object[] {
-            "x",  "y",  "z",
-            "f",  "a",  "b",
-            "g",  "c",  "d",
-            "h",  "m",  "n",
+                null,  null,   null,
+                null,  null,   null,
+                null,  null,   null,
+                null,  null,   null,
             });
 
         plots = new KeyState(new Object[] {
@@ -88,7 +88,7 @@ class KeyState {
 
         rootExp = new KeyState(new Object[] {
             "sqrt",  "ans",  "E",
-            plots,    vars,   "=",
+            plots,    vars,   "Define",
             Calc.cfg.piString, "e", ints,
             trigs,   logs,   ".",
         });
