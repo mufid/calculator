@@ -14,25 +14,32 @@
  * limitations under the License.
  */
 
-package org.javia.calc;
+package org.javia.eval;
 
-import javax.microedition.lcdui.Font;
 import org.javia.eval.MoreMath;
 
-class Util {
+public class Util {
     /* returns a number which is an approximation of v (within maxError)
-       and which has fewer digits in base-10).
+       and which has fewer digits in base10).
     */
-    static double shortApprox(double iniV, double maxError) {
+    public static double shortApprox(double iniV, double maxError) {
         final double v = Math.abs(iniV);
         final double tail = MoreMath.intExp10(MoreMath.intLog10(Math.abs(maxError)));
         //return v - v % tail;
-        final double ret = ((int)(v/tail +.5))*tail;
+        final double ret = Math.floor(v/tail +.5)*tail;
         return (iniV < 0) ? -ret : ret;
     }
 
-    static String doubleToString(double v, int roundingDigits) {
-        
+    public static double round(double v, int keepDigits) {
+        //int keepDigits = 15 - roundingDigits;
+        if (keepDigits >= 17 || v == 0) {
+            return v;
+        }
+        final double factor = MoreMath.intExp10(MoreMath.intLog10(Math.abs(v))-keepDigits+1);
+        return Math.floor(v/factor + .5)*factor;
+    }
+
+    public static String doubleToString(double v, int roundingDigits) {        
         if (roundingDigits > 13) {
             roundingDigits = 0;
         }
@@ -112,12 +119,12 @@ class Util {
         return buf.toString();
     }
 
+    /*
     static String doubleToTrimmedString(double v, int targetChars) {
         return doubleToTrimmedString(v, targetChars, Double.toString(Math.abs(v)));
     }
 
-    private static String doubleToTrimmedString(double v, int targetChars, String str)
-    {
+    private static String doubleToTrimmedString(double v, int targetChars, String str) {
         if (Double.isInfinite(v) || Double.isNaN(v)) {
             str = Double.toString(v);
             return str.length() > targetChars ? str.substring(0, targetChars) : str;
@@ -188,72 +195,13 @@ class Util {
 
         return buf.toString();
     }
+    */
 
+    /*
     static String fitDouble(double d, Font font, int pxWidth) {
         String s = null, str = Double.toString(Math.abs(d));
         for (int i = 15; i > 0 && font.stringWidth(s = doubleToTrimmedString(d, i, str)) > pxWidth; --i) ;
         return s;
     }
-
-    /*
-    public static void sort(Object[] array, int length) {
-        Object[] temp = new Object[length];
-        System.arraycopy(array, 0, temp, 0, length);
-        Util.mergeSort(temp, array, 0, length, 0);
-    }
     */
-
-    // taken from J2SE 6.0's Arrays.java
-    /**
-     * Src is the source array that starts at index 0
-     * Dest is the (possibly larger) array destination with a possible offset
-     * low is the index in dest to start sorting
-     * high is the end index in dest to end sorting
-     * off is the offset to generate corresponding low, high in src
-     */
-    /*
-    private static void mergeSort(Object[] src, Object[] dest, int low, int high, int off) {
-        final int length = high - low;
-
-        // Insertion sort on smallest arrays
-        if (length < 7) {
-            for (int i = low; i < high; i++)
-                for (int j = i; j > low
-                        && ((Comparable) dest[j - 1]).compareTo(dest[j]) > 0; j--)
-                    swap(dest, j, j - 1);
-            return;
-        }
-
-        // Recursively sort halves of dest into src
-        int destLow = low;
-        int destHigh = high;
-        low += off;
-        high += off;
-        int mid = (low + high) >>> 1;
-        mergeSort(dest, src, low, mid, -off);
-        mergeSort(dest, src, mid, high, -off);
-
-        // If list is already sorted, just copy from src to dest. This is an
-        // optimization that results in faster sorts for nearly ordered lists.
-        if (((Comparable) src[mid - 1]).compareTo(src[mid]) <= 0) {
-            System.arraycopy(src, low, dest, destLow, length);
-            return;
-        }
-
-        // Merge sorted halves (now in src) into dest
-        for (int i = destLow, p = low, q = mid; i < destHigh; i++) {
-            if (q >= high || p < mid
-                    && ((Comparable) src[p]).compareTo(src[q]) <= 0)
-                dest[i] = src[p++];
-            else
-                dest[i] = src[q++];
-        }
-    }
-    */
-
-    private static void swap(Object[] x, int a, int b) {
-        Object t = x[a];
-        x[a] = x[b];
-        x[b] = t;
-    }
 }
