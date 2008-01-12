@@ -56,11 +56,6 @@ public class Fun extends VM {
         return buf.toString();
     }
 
-    int trace(double[] stack, int sp, byte op) {
-        code[0]   = op;
-        return exec(stack, sp);
-    }
-
     private static double[] globalStack = new double[128];
 
     public double eval() {
@@ -75,7 +70,6 @@ public class Fun extends VM {
     }
 
     public int exec(double[] s, int p) {
-        int pc = 0; //program counter
         byte[] code = this.code;
         int initialSP = p;
         int constp = 0;
@@ -95,7 +89,8 @@ public class Fun extends VM {
         case 1: a0 = s[p--];
         }
 
-        while (true) {
+        int codeLen = code.length;
+        for (int pc = 0; pc < codeLen; ++pc) {
             switch (code[pc++]) {
             case CONST: s[++p] = consts[constp++]; break;
             case CALL: { 
@@ -160,9 +155,8 @@ public class Fun extends VM {
             case LOAD2: s[++p] = a2; break;
             case LOAD3: s[++p] = a3; break;
             case LOAD4: s[++p] = a4; break;
-
-            case RET: return p;
             }
         }
+        return p;
     }
 }

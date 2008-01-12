@@ -5,7 +5,7 @@ package org.javia.eval;
 public class VM {
 
 public static final byte
-RET = 0,
+RESERVED = 0,
 CONST = 1,
 CALL = 2,
 ADD = 3,
@@ -54,7 +54,7 @@ LOAD4 = 45,
 BYTECODE_END = 46;
 
 public static final String[] opcodeName = {
-"ret",
+"reserved",
 "const",
 "call",
 "add",

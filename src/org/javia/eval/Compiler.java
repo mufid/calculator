@@ -30,9 +30,11 @@ class Compiler extends TokenConsumer {
     double consts[] = new double[MAX_CONSTS];
     byte[] code = new byte[MAX_CODE];
     Fun[] funcs = new Fun[MAX_FUNCS];
+
     double traceConsts[] = new double[1];
     Fun traceFuncs[] = new Fun[1];
-    Fun tracer = new Fun("<tracer>", 0, "<tracer>", new byte[]{VM.RET, VM.RET}, traceConsts, traceFuncs);
+    byte traceCode[] = new byte[1];
+    Fun tracer = new Fun("<tracer>", 0, "<tracer>", traceCode, traceConsts, traceFuncs);
 
     int sp = -1;
     int nConst, pc, nf;
@@ -81,7 +83,8 @@ class Compiler extends TokenConsumer {
             }
         }
         int oldSP = sp;
-        sp = tracer.trace(stack, sp, op);
+        traceCode[0] = op;
+        sp = tracer.exec(stack, sp);
         if (op == Fun.RND) {
             stack[sp] = Double.NaN;
         }
@@ -112,7 +115,6 @@ class Compiler extends TokenConsumer {
         Fun[] trimmedFuncs = new Fun[nf];
         System.arraycopy(funcs, 0, trimmedFuncs, 0, nf);
 
-        code[pc++] = Fun.RET;
         byte[] trimmedCode = new byte[pc];
         System.arraycopy(code, 0, trimmedCode, 0, pc);
 
