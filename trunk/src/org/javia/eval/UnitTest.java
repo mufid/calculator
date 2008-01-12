@@ -19,6 +19,51 @@ package org.javia.eval;
 import org.javia.lib.Log;
 import org.javia.eval.MoreMath;
 
+class EvalCase {
+    String expr;
+    double result;
+    
+    static final double ERR = -13;
+
+    EvalCase(String expr, double result) {
+        this.expr = expr;
+        this.result = result;
+    }
+}
+
+class TestEval {
+    static EvalCase cases[] = {
+        new EvalCase("1", 1),
+        new EvalCase("1+", EvalCase.ERR),
+        new EvalCase("1+1", 2),
+        new EvalCase("1+-1", 0),
+        new EvalCase("-0.5", -.5),
+        new EvalCase("+1e2", 100),
+        new EvalCase("-2^3!", -64),
+        new EvalCase("(-2)^3!", 64),
+        new EvalCase("-2^1^2", -2),
+        new EvalCase("--1", 1)
+    };
+
+    static boolean testEval() {
+        boolean allOk = true;
+        SymbolTable symbols = new SymbolTable();
+        double actual = 0;
+        for (int i = 0; i < cases.length; ++i) {
+            EvalCase c = cases[i];
+            Fun f = FunParser.compile(c.expr, symbols);
+            boolean ok = (f == null && c.result == EvalCase.ERR) || 
+                (f != null && c.result == (actual = f.eval()));
+            if (!ok) {
+                allOk = false;
+                Log.log(c.expr + " expected " + c.result + " got " + actual);
+            }
+        }
+        return allOk;
+    }
+}
+
+
 class FormatCase {
     public FormatCase(int rounding, double v, String s) {
         this.rounding = rounding;
@@ -118,6 +163,7 @@ public class UnitTest {
         cheq(Util.shortApprox(-1.235, 0.4),  -1.2000000000000002);
 
         check(TestFormat.testFormat());
+        check(TestEval.testEval());
 
         if (!allOk) {
             System.exit(1);
