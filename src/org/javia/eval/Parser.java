@@ -72,6 +72,7 @@ public class Parser extends TokenConsumer {
         case Lexer.NUMBER:
         case Lexer.CONST:
         case Lexer.LPAREN:
+        case Lexer.SQRT:
             if (prevType != null && prevType.isOperand) {
                 push(Lexer.TOK_MUL);
             }
@@ -118,16 +119,17 @@ public class Parser extends TokenConsumer {
             } while (top() != null);
             break;
             
-        case Lexer.SUB:
-            if (prevType != null && !prevType.isOperand) {
-                //change SUB to unary minus
-                token = Lexer.TOK_UMIN;
-                stack.push(token);
-                break; //only break inside if, otherwise fall-through
-            }
-            
         default: //operators
             if (prevType == null || !prevType.isOperand) {
+                if (id == Lexer.SUB) {
+                    //change SUB to unary minus
+                    token = Lexer.TOK_UMIN;
+                    stack.push(token);
+                    break;
+                } else if (id == Lexer.ADD) {
+                    // ignore, keep prevType unchanged
+                    return;
+                }
                 throw SyntaxException.get("operator without operand", token);
             }
             popHigher(priority + (token.type.assoc==TokenType.RIGHT ? 1 : 0));

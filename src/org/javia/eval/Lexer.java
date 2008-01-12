@@ -34,7 +34,9 @@ class Lexer {
         COMMA  = 12, 
         LPAREN = 13, 
         RPAREN = 14,
-        END    = 15;
+        END    = 15,
+        SQRT   = 16;
+    //UPLUS  = 17;
         
     static final TokenType
         NUMBER_TYPE = new TokenType(NUMBER, "number", 9, 0, true,  -1),
@@ -42,17 +44,18 @@ class Lexer {
         CALL_TYPE   = new TokenType(CALL,   "call",   0, 0, false, -1);
     
     static final Token
-        TOK_ADD    = new Token(ADD, "+", 3, TokenType.LEFT, false, Fun.ADD),
-        TOK_SUB    = new Token(SUB, "-", 3, TokenType.LEFT, false, Fun.SUB),
+        TOK_ADD    = new Token(ADD, "+", 3, TokenType.LEFT, false, VM.ADD),
+        TOK_SUB    = new Token(SUB, "-", 3, TokenType.LEFT, false, VM.SUB),
 
-        TOK_MUL    = new Token(MUL, "*", 4, TokenType.LEFT, false, Fun.MUL),
-        TOK_DIV    = new Token(DIV, "/", 4, TokenType.LEFT, false, Fun.DIV),
-        TOK_MOD    = new Token(MOD, "%", 4, TokenType.LEFT, false, Fun.MOD),
+        TOK_MUL    = new Token(MUL, "*", 4, TokenType.LEFT, false, VM.MUL),
+        TOK_DIV    = new Token(DIV, "/", 4, TokenType.LEFT, false, VM.DIV),
+        TOK_MOD    = new Token(MOD, "%", 4, TokenType.LEFT, false, VM.MOD),
 
-        TOK_UMIN   = new Token(UMIN, "-", 5, TokenType.PREFIX,  false, Fun.UMIN),
+        TOK_UMIN   = new Token(UMIN, "-", 5, TokenType.PREFIX,  false, VM.UMIN),
+    //TOK_UPLUS  = new Token(UPLUS, "+", 5, TokenType.PREFIX, false, -1),
 
-        TOK_POWER  = new Token(POWER, "^", 6, TokenType.RIGHT,  false, Fun.POWER),
-        TOK_FACT   = new Token(FACT,  "!", 7, TokenType.SUFIX,  true,  Fun.FACT),
+        TOK_POWER  = new Token(POWER, "^", 6, TokenType.RIGHT,  false, VM.POWER),
+        TOK_FACT   = new Token(FACT,  "!", 7, TokenType.SUFIX,  true,  VM.FACT),
 
         TOK_LPAREN = new Token(LPAREN, "(",    1, 0, false, -1),
         TOK_RPAREN = new Token(RPAREN, ")",    2, 0, true,  -1),
@@ -62,7 +65,7 @@ class Lexer {
 
     static final char END_MARKER = '$';
 
-    char[] input;
+    char[] input = new char[32];
     int pos;
 
     Lexer() {
@@ -91,11 +94,15 @@ class Lexer {
 
     void init(String str) {
         int len = str.length();
-        input = new char[len+1];
+        if (input.length < len + 1) {
+            input = new char[len+1];
+        }
         str.getChars(0, len, input, 0);
         input[len] = END_MARKER;
         pos = 0;
     }
+
+    private static final String WHITESPACE = " \n\r\t";
 
     Token nextToken() {
         int p  = pos;
@@ -103,7 +110,7 @@ class Lexer {
         int begin = pos;
 
         //skip white space
-        while (c == ' ' || c == '\t') {
+        while (WHITESPACE.indexOf(c) != -1) {
             c = input[p++];
         }
         pos = p;
@@ -119,7 +126,7 @@ class Lexer {
         case '-': return TOK_SUB;
         case '/': return TOK_DIV;
         }
-        if (c == '^') {
+        if (c == '^') { 
             return TOK_POWER;
         }
 
@@ -134,7 +141,7 @@ class Lexer {
                     c = input[++p];
                 }
                 }
-            if (c == 'E') {
+            if (c == 'E' || c == 'e') {
                 c = input[++p];
                 if (c == '-') {
                     c = input[++p];
@@ -151,26 +158,26 @@ class Lexer {
             } catch (NumberFormatException e) {
                 throw SyntaxException.get("invalid number " + nbStr, null);
             }
-        } else {
-            if (('a' <= c && c <= 'z') ||
-                ('A' <= c && c <= 'Z')) {
-                do {
-                    c = input[++p];
-                } while (('a' <= c && c <= 'z') ||
-                         ('A' <= c && c <= 'Z') ||
-                         ('0' <= c && c <= '9'));
-                String nameValue = String.valueOf(input, begin, p-begin);
-                if (c == '(') {
-                    pos = p + 1;
-                    return new Token(CALL_TYPE, nameValue);
-                } else {
-                    pos = p;
-                    return new Token(CONST_TYPE, nameValue);                    
-                }
-
-            } else {
-                throw SyntaxException.get("invalic character '" + c + "'", null); 
+        } else if (('a' <= c && c <= 'z') ||
+                   ('A' <= c && c <= 'Z')) {
+            do {
+                c = input[++p];
+            } while (('a' <= c && c <= 'z') ||
+                     ('A' <= c && c <= 'Z') ||
+                     ('0' <= c && c <= '9'));
+            String nameValue = String.valueOf(input, begin, p-begin);
+            while (WHITESPACE.indexOf(c) != -1) {
+                c = input[++p];
             }
+            if (c == '(') {
+                pos = p + 1;
+                return new Token(CALL_TYPE, nameValue);
+            } else {
+                pos = p;
+                return new Token(CONST_TYPE, nameValue);                    
+            }
+        } else {
+            throw SyntaxException.get("invalid character '" + c + "'", null); 
         }
     }
     
@@ -178,3 +185,15 @@ class Lexer {
         System.out.println("argv[0] :\n" + FunParser.compile(argv[0], new SymbolTable()));
     }
 }
+
+        /*
+        switch (c) {
+        case '^'      : return TOK_POWER;
+        case '\u0001' : return TOK_MUL;
+        case '\u0002' : return TOK_SUB;
+        case '\u0003' : return TOK_DIV;
+        case '\u0004' : return new Token(CONST_TYPE, "pi");
+        case '\u0005' : return new Token(CONST_TYPE, "phi");
+        case '\u0006' : sqrt
+        }
+        */
