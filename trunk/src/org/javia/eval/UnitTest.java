@@ -42,7 +42,17 @@ class TestEval {
         new EvalCase("-2^3!", -64),
         new EvalCase("(-2)^3!", 64),
         new EvalCase("-2^1^2", -2),
-        new EvalCase("--1", 1)
+        new EvalCase("--1", 1),
+        new EvalCase("-3^--2", -9),
+        new EvalCase("1+2)(2+3", 15),
+        new EvalCase("1+2)!^-2", 1./36),
+        new EvalCase("sin(0)", 0),
+        new EvalCase("cos(0)", 1),
+        new EvalCase("sin(-1--1)", 0),
+        new EvalCase("-(2+1)*-(4/2)", 6),
+        new EvalCase("-.5E-1", -.05),
+        new EvalCase("1E1.5", 5),
+        new EvalCase("2 3 4", 24)
     };
 
     static boolean testEval() {

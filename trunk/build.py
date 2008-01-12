@@ -15,7 +15,8 @@
 # limitations under the License.
 
 bytecodesStr = '''
-RET CONST CALL 
+RESERVED
+CONST CALL 
 ADD SUB MUL DIV MOD
 PI E RND
 UMIN POWER FACT
