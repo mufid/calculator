@@ -20,7 +20,13 @@ import java.util.Stack;
 import java.util.EmptyStackException;
 import org.javia.lib.Log;
 
-public class Parser extends TokenConsumer {
+/* Reverse Polish Notation
+   reads tokens in normal infix order (e.g.: 1 + 2)
+   and outputs them in Reverse Polish order (e.g.: 1 2 +).
+   See Dijkstra's Shunting Yard algorithm: 
+   http://en.wikipedia.org/wiki/Shunting_yard_algorithm
+ */ 
+public class RPN extends TokenConsumer {
     Stack stack = new Stack();
     TokenType prevType;
     TokenConsumer consumer;
