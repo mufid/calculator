@@ -41,7 +41,7 @@ class Compiler extends TokenConsumer {
         this.symbols = symbols;
     }
     
-    void push(Token token) {
+    void push(Token token) throws SyntaxException {
         byte op;
         TokenType type = token.type;
         switch (type.id) {

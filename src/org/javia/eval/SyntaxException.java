@@ -16,7 +16,7 @@
 
 package org.javia.eval;
 
-public class SyntaxException extends RuntimeException {
+public class SyntaxException extends Exception {
     String mes;
     Token token;
     static SyntaxException inst = new SyntaxException();

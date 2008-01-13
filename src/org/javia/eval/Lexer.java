@@ -104,7 +104,7 @@ class Lexer {
 
     private static final String WHITESPACE = " \n\r\t";
 
-    Token nextToken() {
+    Token nextToken() throws SyntaxException {
         int p  = pos;
         char c = input[p++];
         int begin = pos;
