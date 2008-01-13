@@ -16,7 +16,13 @@
 
 package org.javia.eval;
 
-class Compiler extends TokenConsumer {
+/* Optimizing Code Generator
+   Reads tokens in RPN (Reverse Polish Notation) order,
+   and generates VM opcodes,
+   doing constant-folding optimization.
+ */
+
+class OptCodeGen extends TokenConsumer {
     ByteStack code     = new ByteStack();
     DoubleStack consts = new DoubleStack();
     FunStack funcs     = new FunStack();

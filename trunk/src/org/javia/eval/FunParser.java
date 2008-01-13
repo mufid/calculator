@@ -26,8 +26,8 @@ public class FunParser {
     }
 
     private Lexer lexer         = new Lexer();
-    private Compiler compiler   = new Compiler();
-    private Parser parser       = new Parser();
+    private OptCodeGen codeGen  = new OptCodeGen();
+    private RPN rpn             = new RPN();
     private DeclarationParser declParser = new DeclarationParser();
 
     private synchronized Fun compileInt(String source, SymbolTable symbols) {
@@ -65,14 +65,14 @@ public class FunParser {
         for (int i = 0; i < argNames.length; ++i) {
             symbols.add(new Symbol(argNames[i], -1, (byte)(VM.LOAD0 + i)));
         }
-        compiler.start(symbols);
-        parser.setConsumer(compiler);
-        SyntaxException err = lexer.scan(def, parser);
+        codeGen.start(symbols);
+        rpn.setConsumer(codeGen);
+        SyntaxException err = lexer.scan(def, rpn);
         symbols.popFrame();
 
         Fun fun;
         if (err == null) {
-            fun = compiler.getFun(name, arity, source);
+            fun = codeGen.getFun(name, arity, source);
         } else {
             fun = null;
         }
