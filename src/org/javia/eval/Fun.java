@@ -17,6 +17,7 @@
 package org.javia.eval;
 
 import java.util.Random;
+import org.javia.lib.Log;
 
 public class Fun extends VM {
     static final int MAX_STACK = 128;
@@ -62,7 +63,7 @@ public class Fun extends VM {
     }
 
     public double eval() {
-        if (arity != 0) {
+        if (arity > 0) {
             throw new Error("eval() on arity " + arity);
         }
         int sp = exec(globalStack, -1);
@@ -94,7 +95,9 @@ public class Fun extends VM {
 
         int codeLen = code.length;
         for (int pc = 0; pc < codeLen; ++pc) {
-            switch (code[pc++]) {
+            //Log.log("p " + p);
+
+            switch (code[pc]) {
             case CONST: s[++p] = consts[constp++]; break;
             case CALL: { 
                 Fun fun = funcs[funp++];
