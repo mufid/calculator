@@ -19,6 +19,9 @@ package org.javia.eval;
 import java.util.Random;
 
 public class Fun extends VM {
+    static final int MAX_STACK = 128;
+    private static double[] globalStack = new double[128];
+
     private static Random random = new Random();
     private double[] consts;
     private Fun[] funcs;
@@ -38,25 +41,25 @@ public class Fun extends VM {
 
     public String toString() {
         StringBuffer buf = new StringBuffer();
-        buf.append("Fun ").append(source);
-        buf.append("; sub-funcs ").append(funcs.length);
-        /*
-        if (source.length() > 0) {
-            buf.append("\n  source: '").append(source).append("'");
-        }
-        */
-        buf.append("\n  consts: ");
-        for (int i = 0; i < consts.length; ++i) {
-            buf.append("\n    ").append(consts[i]);
-        }
-        buf.append("\n  code: ");
+        buf.append("Fun ").append('"').append(source).append('"');
+        int cpos = 0, fpos = 0;
         for (int i = 0; i < code.length; ++i) {
-            buf.append("\n    ").append(opcodeName[code[i]]);
+            byte op = code[i];
+            buf.append("\n    ").append(opcodeName[op]);
+            if (op == VM.CONST) {
+                buf.append(' ').append(consts[cpos++]);
+            } else if (op == VM.CALL) {
+                buf.append(' ').append(funcs[fpos++].name);
+            }
+        }
+        if (cpos != consts.length) {
+            buf.append("\nuses only ").append(cpos).append(" consts out of ").append(consts.length);
+        }
+        if (fpos != funcs.length) {
+            buf.append("\nuses only ").append(cpos).append(" funcs out of ").append(consts.length);
         }
         return buf.toString();
     }
-
-    private static double[] globalStack = new double[128];
 
     public double eval() {
         if (arity != 0) {
@@ -101,8 +104,9 @@ public class Fun extends VM {
             }
                 
                 //case ANS:      s[++p] = 0;           break; //todo: fix ans
-            case PI:  s[++p] = Math.PI; break;
-            case E:   s[++p] = Math.E;  break;
+                //case PI:  s[++p] = Math.PI; break;
+                //case E:   s[++p] = Math.E;  break;
+
             case RND: s[++p] = random.nextDouble(); break;
                     
             case ADD: s[--p] += s[p+1]; break;
