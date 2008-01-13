@@ -20,7 +20,7 @@ abstract class TokenConsumer {
     void start() {
     }
 
-    abstract void push(Token token);
+    abstract void push(Token token) throws SyntaxException;
 
     void done() {
     }

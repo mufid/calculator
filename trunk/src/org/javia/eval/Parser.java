@@ -50,7 +50,7 @@ public class Parser extends TokenConsumer {
         }
     }
 
-    private void popHigher(int priority) {
+    private void popHigher(int priority) throws SyntaxException {
         Token t = top();
         while (t != null && t.type.priority >= priority) {
             consumer.push(t);
@@ -60,7 +60,7 @@ public class Parser extends TokenConsumer {
         }
     }
 
-    void push(Token token) {
+    void push(Token token) throws SyntaxException {
         //TokenType type = token.type;
         int priority = token.type.priority;
         int id = token.type.id;

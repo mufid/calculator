@@ -36,7 +36,7 @@ class DeclarationParser extends TokenConsumer {
     }
 
     //@Override
-    void push(Token token) {
+    void push(Token token) throws SyntaxException {
         switch (token.type.id) {
         case Lexer.CALL:
             if (name == null) {
