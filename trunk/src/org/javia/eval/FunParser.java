@@ -26,9 +26,12 @@ public class FunParser {
     }
 
     private Lexer lexer         = new Lexer();
-    private OptCodeGen codeGen  = new OptCodeGen();
     private RPN rpn             = new RPN();
     private DeclarationParser declParser = new DeclarationParser();
+
+    private OptCodeGen    optGen    = new OptCodeGen();
+    private SimpleCodeGen simpleGen = new SimpleCodeGen();
+    private SimpleCodeGen codeGen;
 
     private synchronized Fun compileInt(String source, SymbolTable symbols) {
         //, String argNames[]) {
@@ -55,10 +58,12 @@ public class FunParser {
             name     = declParser.name;
             argNames = declParser.argNames;
             arity    = declParser.arity;
+            codeGen  = optGen;
         } else {
             name     = null;
             argNames = DeclarationParser.NO_ARGS;
-            arity    = 0; //arity is not used when name==null
+            arity    = -1;
+            codeGen  = simpleGen;
         }
 
         symbols.pushFrame();        
