@@ -20,7 +20,7 @@ import java.util.Random;
 
 public class Fun extends VM {
     static final int MAX_STACK = 128;
-    private static double[] globalStack = new double[128];
+    private static double[] globalStack = new double[MAX_STACK];
 
     private static Random random = new Random();
     private double[] consts;
