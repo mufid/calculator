@@ -16,36 +16,28 @@
 
 package org.javia.eval;
 
-import java.util.Vector;
-import java.util.Hashtable;
-import org.javia.lib.Log;
-
 class Compiler extends TokenConsumer {
-    private static final int MAX_STACK  = 32;
-    private static final int MAX_CONSTS = 16;
-    private static final int MAX_FUNCS  = 16;
-    private static final int MAX_CODE   = 128;
+    ByteStack code     = new ByteStack();
+    DoubleStack consts = new DoubleStack();
+    FunStack funcs     = new FunStack();
 
-    double stack[]  = new double[MAX_STACK];        
-    double consts[] = new double[MAX_CONSTS];
-    byte[] code = new byte[MAX_CODE];
-    Fun[] funcs = new Fun[MAX_FUNCS];
+    double stack[]  = new double[Fun.MAX_STACK];        
+    int sp = -1;
 
     double traceConsts[] = new double[1];
     Fun traceFuncs[] = new Fun[1];
     byte traceCode[] = new byte[1];
     Fun tracer = new Fun("<tracer>", 0, "<tracer>", traceCode, traceConsts, traceFuncs);
 
-    int sp = -1;
-    int nConst, pc, nf;
-    //int arity;
-
     String argNames[];
     SymbolTable symbols;
 
     void start(SymbolTable symbols) {
         sp = -1;
-        nConst = pc = nf = 0;
+        //nf = 0;
+        code.clear();
+        consts.clear();
+        funcs.clear();
         this.symbols = symbols;
     }
     
@@ -69,7 +61,7 @@ class Compiler extends TokenConsumer {
                 op = symbol.op;
             } else if (symbol.fun != null) { // function call
                 op = Fun.CALL;
-                traceFuncs[0] = funcs[nf++] = symbol.fun;
+                traceFuncs[0] = symbol.fun;
             } else { // variable reference
                 op = Fun.CONST;
                 traceConsts[0] = symbol.value;
@@ -84,40 +76,25 @@ class Compiler extends TokenConsumer {
         }
         int oldSP = sp;
         traceCode[0] = op;
-        sp = tracer.exec(stack, sp);
-        if (op == Fun.RND) {
-            stack[sp] = Double.NaN;
+        if (op != Fun.RND) {
+            sp = tracer.exec(stack, sp);
+        } else {
+            stack[++sp] = Double.NaN;
         }
 
         //constant folding
         if (!Double.isNaN(stack[sp])) {
-            if (op == VM.CALL) {
-                --nf;
-            }
-            //Log.log("op " + VM.opcodeName[op] + " nConst " + nConst);
-            pc -= oldSP + 1 - sp;
-            nConst -= oldSP + 1 - sp;
-            consts[nConst++] = stack[sp];
+            code.pop(oldSP + 1 - sp);
+            consts.pop(oldSP + 1 - sp);
+            consts.push(stack[sp]);
             op = VM.CONST;
-            //Log.log("op " + VM.opcodeName[op] + " nConst " + nConst);
+        } else if (op == VM.CALL) {
+            funcs.push(traceFuncs[0]);
         }
-        code[pc++] = op;
+        code.push(op);
     }
     
     Fun getFun(String name, int arity, String source) {
-        if (pc <= 0) {
-            throw new Error("empty fun");
-        }
-
-        double[] trimmedConsts = new double[nConst];
-        System.arraycopy(consts, 0, trimmedConsts, 0, nConst);
-
-        Fun[] trimmedFuncs = new Fun[nf];
-        System.arraycopy(funcs, 0, trimmedFuncs, 0, nf);
-
-        byte[] trimmedCode = new byte[pc];
-        System.arraycopy(code, 0, trimmedCode, 0, pc);
-
-        return new Fun(name, arity, source, trimmedCode, trimmedConsts, trimmedFuncs);
+        return new Fun(name, arity, source, code.toArray(), consts.toArray(), funcs.toArray());
     }
 }
