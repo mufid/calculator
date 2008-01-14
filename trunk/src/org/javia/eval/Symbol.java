@@ -35,7 +35,7 @@ class Symbol {
             throw new Error("fun without name: " + fun);
         }
 
-        int arity = fun.arity;
+        int arity = fun.arity();
         if (arity == -1) {
             //it's a const
             try {

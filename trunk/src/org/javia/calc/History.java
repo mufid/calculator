@@ -105,7 +105,7 @@ class History {
     DataOut dataOut = new DataOut();
     void enter(String str) {
         Fun fun = FunParser.compile(str, symbols);
-        if (fun != null && fun.arity == 0) {
+        if (fun != null && fun.arity() == 0) {
             try {
                 ans = fun.eval();
             } catch (ArityException e) {

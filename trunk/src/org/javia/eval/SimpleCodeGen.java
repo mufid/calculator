@@ -42,7 +42,7 @@ class SimpleCodeGen extends TokenConsumer {
         TokenType type = token.type;
         switch (type.id) {
         case Lexer.NUMBER:
-            op = Fun.CONST;
+            op = VM.CONST;
             consts.push(token.value);
             break;
             
@@ -55,10 +55,10 @@ class SimpleCodeGen extends TokenConsumer {
             if (symbol.op > 0) { // built-in
                 op = symbol.op;
             } else if (symbol.fun != null) { // function call
-                op = Fun.CALL;
+                op = VM.CALL;
                 funcs.push(symbol.fun);
             } else { // variable reference
-                op = Fun.CONST;
+                op = VM.CONST;
                 consts.push(symbol.value);
             }
             break;

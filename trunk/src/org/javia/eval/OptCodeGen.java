@@ -41,7 +41,7 @@ class OptCodeGen extends SimpleCodeGen {
         TokenType type = token.type;
         switch (type.id) {
         case Lexer.NUMBER:
-            op = Fun.CONST;
+            op = VM.CONST;
             traceConsts[0] = token.value;
             break;
             
@@ -54,10 +54,10 @@ class OptCodeGen extends SimpleCodeGen {
             if (symbol.op > 0) { // built-in
                 op = symbol.op;
             } else if (symbol.fun != null) { // function call
-                op = Fun.CALL;
+                op = VM.CALL;
                 traceFuncs[0] = symbol.fun;
             } else { // variable reference
-                op = Fun.CONST;
+                op = VM.CONST;
                 traceConsts[0] = symbol.value;
             }
             break;
@@ -70,7 +70,7 @@ class OptCodeGen extends SimpleCodeGen {
         }
         int oldSP = sp;
         traceCode[0] = op;
-        if (op != Fun.RND) {
+        if (op != VM.RND) {
             sp = tracer.exec(stack, sp);
         } else {
             stack[++sp] = Double.NaN;
