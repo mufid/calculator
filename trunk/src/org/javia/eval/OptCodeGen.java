@@ -23,7 +23,7 @@ package org.javia.eval;
  */
 
 class OptCodeGen extends SimpleCodeGen {
-    double stack[]  = new double[Fun.MAX_STACK];        
+    double stack[]  = new double[Fun.MAX_STACK_SIZE];        
     int sp = -1;
 
     double traceConsts[] = new double[1];

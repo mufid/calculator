@@ -62,8 +62,13 @@ class TestEval {
         for (int i = 0; i < cases.length; ++i) {
             EvalCase c = cases[i];
             Fun f = FunParser.compile(c.expr, symbols);
-            boolean ok = (f == null && c.result == EvalCase.ERR) || 
-                (f != null && c.result == (actual = f.eval()));
+            boolean ok;
+            try {
+                ok = (f == null && c.result == EvalCase.ERR) || 
+                    (f != null && c.result == (actual = f.eval()));
+            } catch (ArityException e) {
+                ok = c.result == EvalCase.ERR;
+            }
             if (!ok) {
                 allOk = false;
                 Log.log(c.expr + " expected " + c.result + " got " + actual);
