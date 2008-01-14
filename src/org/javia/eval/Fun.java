@@ -20,16 +20,17 @@ import java.util.Random;
 import org.javia.lib.Log;
 
 public class Fun extends VM {
-    static final int MAX_STACK = 128;
-    private static double[] globalStack = new double[MAX_STACK];
+    static final int INI_STACK_SIZE =  16;
+    static final int MAX_STACK_SIZE = 128; // if stack ever grows above this something is wrong
 
+    private static final double[] NO_ARGS = new double[0];
     private static Random random = new Random();
+
     private double[] consts;
     private Fun[] funcs;
     private byte[] code;
-
     public final int arity; 
-    String name, source;
+    public final String name, source;
 
     Fun(String name, int arity, String source, byte[] code, double[] consts, Fun[] funcs) {
         this.name   = name;
@@ -62,18 +63,40 @@ public class Fun extends VM {
         return buf.toString();
     }
 
-    public double eval() {
-        if (arity > 0) {
-            throw new Error("eval() on arity " + arity);
-        }
-        int sp = exec(globalStack, -1);
-        if (sp != 0) {
-            throw new Error("unexpected SP: " + sp);
-        }
-        return globalStack[0];
+    public double eval() throws ArityException {
+        return eval(NO_ARGS);
     }
 
-    public int exec(double[] s, int p) {
+    public double eval(double args[]) throws ArityException {
+        double stack[] = new double[INI_STACK_SIZE];
+        while (true) {
+            try {
+                return eval(args, stack);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                if (stack.length >= MAX_STACK_SIZE) {
+                    throw e;
+                }
+                Log.log("Fun " + name + ": growing stack to " + (stack.length << 1)); 
+                stack = new double[stack.length << 1];
+            }
+        }
+    }
+
+    public double eval(double args[], double stack[]) throws ArityException {
+        // check if arity matches the number of arguments passed (args.length)
+        if (!(arity == args.length || (arity == -1 && args.length == 0))) {
+            throw new ArityException("Expected " + arity + " arguments, got " + args.length);
+        }
+
+        System.arraycopy(args, 0, stack, 0, args.length);
+        int sp = exec(stack, -1);
+        if (sp != 0) {
+            throw new Error("stack pointer after eval: expected 0, got " + sp);
+        }
+        return stack[0];
+    }
+    
+    int exec(double[] s, int p) {
         byte[] code = this.code;
         int initialSP = p;
         int constp = 0;
@@ -106,10 +129,6 @@ public class Fun extends VM {
                 break;
             }
                 
-                //case ANS:      s[++p] = 0;           break; //todo: fix ans
-                //case PI:  s[++p] = Math.PI; break;
-                //case E:   s[++p] = Math.E;  break;
-
             case RND: s[++p] = random.nextDouble(); break;
                     
             case ADD: s[--p] += s[p+1]; break;

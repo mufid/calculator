@@ -38,7 +38,11 @@ class Symbol {
         int arity = fun.arity;
         if (arity == -1) {
             //it's a const
-            this.value = fun.eval();
+            try {
+                this.value = fun.eval();
+            } catch (ArityException e) {
+                throw new Error(""+e);
+            }
         } else {
             this.fun = fun;            
         }

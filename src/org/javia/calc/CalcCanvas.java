@@ -30,6 +30,7 @@ import org.javia.eval.FunParser;
 import org.javia.eval.SymbolTable;
 import org.javia.eval.Fun;
 import org.javia.eval.Util;
+import org.javia.eval.ArityException;
 
 class CalcCanvas extends ImageCanvas {
     static final int 
@@ -164,8 +165,12 @@ class CalcCanvas extends ImageCanvas {
     void updateResult() {
         Fun func = FunParser.compile(editor.toString(), symbols);
         if (func != null) {
-            String strResult = func.arity > 0 ?
-                "function" : format(func.eval());
+            String strResult;
+            try {
+                strResult = format(func.eval());
+            } catch (ArityException e) {
+                strResult = "function";
+            }
             drawResultString(strResult);
         } else {
             /*
