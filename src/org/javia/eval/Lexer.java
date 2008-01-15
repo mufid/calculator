@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Mihai Preda.
+ * Copyright (C) 2007-2008 Mihai Preda.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,15 +174,3 @@ class Lexer {
         System.out.println("argv[0] :\n" + FunParser.compile(argv[0], new SymbolTable()));
     }
 }
-
-        /*
-        switch (c) {
-        case '^'      : return TOK_POWER;
-        case '\u0001' : return TOK_MUL;
-        case '\u0002' : return TOK_SUB;
-        case '\u0003' : return TOK_DIV;
-        case '\u0004' : return new Token(CONST_TYPE, "pi");
-        case '\u0005' : return new Token(CONST_TYPE, "phi");
-        case '\u0006' : sqrt
-        }
-        */

@@ -47,6 +47,9 @@ public class CompiledFunction extends Function {
         StringBuffer buf = new StringBuffer();
         //buf.append("Fun ").append('"').append(source).append('"');
         int cpos = 0, fpos = 0;
+        if (arity != 0) {
+            buf.append("arity ").append(arity).append("; ");
+        }
         for (int i = 0; i < code.length; ++i) {
             byte op = code[i];
             buf.append(VM.opcodeName[op]);
@@ -55,7 +58,7 @@ public class CompiledFunction extends Function {
             } else if (op == VM.CALL) {
                 buf.append(" {").append(funcs[fpos++].toString()).append('}');
             }
-            buf.append(';');
+            buf.append("; ");
         }
         if (cpos != consts.length) {
             buf.append("\nuses only ").append(cpos).append(" consts out of ").append(consts.length);

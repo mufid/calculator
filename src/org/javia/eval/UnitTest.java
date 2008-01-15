@@ -23,7 +23,7 @@ class EvalCase {
     String expr;
     double result;
     
-    static final double ERR = -13;
+    static final double ERR = -2, FUN = -3;
 
     EvalCase(String expr, double result) {
         this.expr = expr;
@@ -55,8 +55,14 @@ class TestEval {
         new EvalCase("2 3 4", 24),
         new EvalCase("pi", Math.PI),
         new EvalCase("e", Math.E),
-        new EvalCase("sin(pi/2)", 1)
+        new EvalCase("sin(pi/2)", 1),
+        new EvalCase("f=sin(2x)", EvalCase.FUN),
+        new EvalCase("f(pi/2)", 0)
     };
+
+    private static boolean equal(double a, double b) {
+        return Math.abs(a-b) < 1E-15;
+    }
 
     static boolean testEval() {
         boolean allOk = true;
@@ -66,12 +72,19 @@ class TestEval {
             EvalCase c = cases[i];
             Function f = FunParser.compile(c.expr, symbols);
             boolean ok;
-            try {
-                ok = (f == null && c.result == EvalCase.ERR) || 
-                    (f != null && c.result == (actual = f.eval()));
-            } catch (ArityException e) {
-                ok = c.result == EvalCase.ERR;
-            }
+            if (f == null) {
+                ok = equal(c.result, actual=EvalCase.ERR);
+            } else {
+                if (f.arity() == 0) {
+                    try {
+                        ok = equal(c.result, actual=f.eval());
+                    } catch (ArityException e) {
+                        throw new Error("internal error: ArityException on arity 0");
+                    }
+                } else {
+                    ok = equal(c.result, actual=EvalCase.FUN);
+                }
+            } 
             if (!ok) {
                 allOk = false;
                 Log.log(c.expr + " expected " + c.result + " got " + actual);
