@@ -19,7 +19,7 @@ package org.javia.eval;
 import java.util.Random;
 import org.javia.lib.Log;
 
-public class CompiledFunction extends Function {
+class CompiledFunction extends Function {
     static final int INI_STACK_SIZE =  16;
     static final int MAX_STACK_SIZE = 128; // if stack ever grows above this something is wrong
     private static Random random = new Random();
@@ -28,12 +28,9 @@ public class CompiledFunction extends Function {
     private Function funcs[];
     private byte code[];
     private final int arity; // >= 0
-    //public final String name, source;
 
     CompiledFunction(int arity, byte[] code, double[] consts, Function funcs[]) {
-        //this.name   = name;
         this.arity  = arity;
-        //this.source = source;
         this.code   = code;
         this.consts = consts;
         this.funcs  = funcs;
@@ -45,7 +42,6 @@ public class CompiledFunction extends Function {
 
     public String toString() {
         StringBuffer buf = new StringBuffer();
-        //buf.append("Fun ").append('"').append(source).append('"');
         int cpos = 0, fpos = 0;
         if (arity != 0) {
             buf.append("arity ").append(arity).append("; ");
@@ -85,7 +81,6 @@ public class CompiledFunction extends Function {
     }
 
     public double eval(double args[], double stack[]) throws ArityException {
-        // check if arity matches the number of arguments passed (args.length)
         if (arity != args.length) {
             throw new ArityException("Expected " + arity + " arguments, got " + args.length);
         }

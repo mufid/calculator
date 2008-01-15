@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Mihai Preda.
+ * Copyright (C) 2007-2008 Mihai Preda.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,10 @@ class TestEval {
         new EvalCase("b=a+1", 4),
         new EvalCase("f(x, y) = x*(y+1)", EvalCase.FUN),
         new EvalCase("f(a, b-a)", 6),
-        new EvalCase("f(a pi/4)", -1)
+        new EvalCase("f(a pi/4)", -1),
+        new EvalCase("  f (  1  +  1  ,  a  +  1  )", 10),
+        new EvalCase("  g  (  foo  )  =  f (f(foo, 1)pi/2)", EvalCase.FUN),
+        new EvalCase("g(.5*2)", 0)
     };
 
     private static boolean equal(double a, double b) {
@@ -75,7 +78,7 @@ class TestEval {
         double actual = 0;
         for (int i = 0; i < cases.length; ++i) {
             EvalCase c = cases[i];
-            Function f = FunParser.compile(c.expr, symbols);
+            Function f = Compiler.compile(c.expr, symbols);
             boolean ok;
             if (f == null) {
                 ok = equal(c.result, actual=EvalCase.ERR);

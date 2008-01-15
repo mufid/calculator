@@ -26,7 +26,7 @@ import org.javia.lib.midp.ImageCanvas;
 import org.javia.lib.Log;
 import org.javia.lib.DataOut;
 
-import org.javia.eval.FunParser;
+import org.javia.eval.Compiler;
 import org.javia.eval.SymbolTable;
 import org.javia.eval.Function;
 import org.javia.eval.Util;
@@ -163,7 +163,7 @@ class CalcCanvas extends ImageCanvas {
     }
 
     void updateResult() {
-        Function fun = FunParser.compile(editor.toString(), symbols);
+        Function fun = Compiler.compile(editor.toString(), symbols);
         String strResult = null;
         if (fun != null) {
             try {

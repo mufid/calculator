@@ -21,7 +21,7 @@ import java.io.*;
 
 import org.javia.lib.*;
 import org.javia.eval.SymbolTable;
-import org.javia.eval.FunParser;
+import org.javia.eval.Compiler;
 import org.javia.eval.Function;
 import org.javia.eval.ArityException;
 
@@ -104,7 +104,7 @@ class History {
 
     DataOut dataOut = new DataOut();
     void enter(String str) {
-        Function fun = FunParser.compile(str, symbols);
+        Function fun = Compiler.compile(str, symbols);
         if (fun != null && fun.arity() == 0) {
             try {
                 ans = fun.eval();
