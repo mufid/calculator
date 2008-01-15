@@ -20,18 +20,19 @@ import java.util.Vector;
 
 class DeclarationParser extends TokenConsumer {
     static final String NO_ARGS[] = new String[0];
-    static final int MAX_ARITY = 5;
+    static final String IMPLICIT_ARGS[] = {"x", "y", "z"};
 
+    static final int UNKNOWN_ARITY = -2;
+    static final int MAX_ARITY = 5;
+        
     String name;
-    String argNames[];
-    int arity = -1;
+    int arity = UNKNOWN_ARITY;
     Vector args = new Vector();
 
     //@Override
     void start() {
         name = null;
-        argNames = null;
-        arity = -1;
+        arity = UNKNOWN_ARITY;
         args.setSize(0);
     }
 
@@ -41,6 +42,7 @@ class DeclarationParser extends TokenConsumer {
         case Lexer.CALL:
             if (name == null) {
                 name = token.name;
+                arity = 0;
             } else {
                 throw SyntaxException.get("repeated CALL in declaration", token);
             }
@@ -48,7 +50,8 @@ class DeclarationParser extends TokenConsumer {
 
         case Lexer.CONST:
             args.addElement(token.name);
-            if (args.size() > MAX_ARITY) {
+            ++arity;
+            if (arity > MAX_ARITY) {
                 throw SyntaxException.get("Arity too large " + arity, token);
             }
             break;
@@ -62,15 +65,13 @@ class DeclarationParser extends TokenConsumer {
         }
     }
     
-    //@Override
-    void done() {
-        arity = args.size();
-        if (arity == 0) {
-            argNames = NO_ARGS;
-        } else {
-            argNames = new String[args.size()];
+    String[] argNames() {
+        if (arity > 0) {
+            String argNames[] = new String[arity];
             args.copyInto(argNames);
-            args.setSize(0);
+            return argNames;
+        } else {
+            return NO_ARGS;
         }
     }
 }

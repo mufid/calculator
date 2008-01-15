@@ -43,10 +43,12 @@ public class RPN extends TokenConsumer {
     }
 
     //@Override
+    /*
     void done() {
         consumer.done();
         consumer = null;
     }
+    */
 
     private Token top() {
         try {

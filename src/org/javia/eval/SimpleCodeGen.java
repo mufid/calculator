@@ -30,11 +30,16 @@ class SimpleCodeGen extends TokenConsumer {
     String argNames[];
     SymbolTable symbols;
 
-    void start(SymbolTable symbols) {
+    SimpleCodeGen setSymbols(SymbolTable symbols) {
+        this.symbols = symbols;
+        return this;
+    }
+
+    //@Override
+    void start() {
         code.clear();
         consts.clear();
         funcs.clear();
-        this.symbols = symbols;
     }
     
     void push(Token token) throws SyntaxException {
@@ -72,7 +77,7 @@ class SimpleCodeGen extends TokenConsumer {
         code.push(op);
     }
     
-    CompiledFunction getFun(String name, int arity, String source) {
-        return new CompiledFunction(name, arity, source, code.toArray(), consts.toArray(), funcs.toArray());
+    CompiledFunction getFun(int arity) {
+        return new CompiledFunction(arity, code.toArray(), consts.toArray(), funcs.toArray());
     }
 }

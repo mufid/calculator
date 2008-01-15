@@ -29,13 +29,18 @@ class OptCodeGen extends SimpleCodeGen {
     double traceConsts[] = new double[1];
     Function traceFuncs[] = new Function[1];
     byte traceCode[] = new byte[1];
-    CompiledFunction tracer = new CompiledFunction("<tracer>", 0, "<tracer>", traceCode, traceConsts, traceFuncs);
+    CompiledFunction tracer = new CompiledFunction(0, traceCode, traceConsts, traceFuncs);
 
-    void start(SymbolTable symbols) {
+    int intrinsicArity;
+
+    //@Override
+    void start() {
         super.start();
         sp = -1;
+        intrinsicArity = 0;
     }
-    
+
+    //@Override
     void push(Token token) throws SyntaxException {
         byte op;
         TokenType type = token.type;
@@ -53,6 +58,12 @@ class OptCodeGen extends SimpleCodeGen {
             }
             if (symbol.op > 0) { // built-in
                 op = symbol.op;
+                if (op >= VM.LOAD0 && op <= VM.LOAD4) {
+                    int arg = op - VM.LOAD0;
+                    if (arg + 1 > intrinsicArity) {
+                        intrinsicArity = arg + 1;
+                    }
+                }
             } else if (symbol.fun != null) { // function call
                 op = VM.CALL;
                 traceFuncs[0] = symbol.fun;
