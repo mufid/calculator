@@ -23,9 +23,9 @@ package org.javia.eval;
  */
 
 class SimpleCodeGen extends TokenConsumer {
-    ByteStack code     = new ByteStack();
-    DoubleStack consts = new DoubleStack();
-    FunStack funcs     = new FunStack();
+    ByteStack code      = new ByteStack();
+    DoubleStack consts  = new DoubleStack();
+    FunctionStack funcs = new FunctionStack();
 
     String argNames[];
     SymbolTable symbols;
@@ -72,7 +72,7 @@ class SimpleCodeGen extends TokenConsumer {
         code.push(op);
     }
     
-    Fun getFun(String name, int arity, String source) {
-        return new Fun(name, arity, source, code.toArray(), consts.toArray(), funcs.toArray());
+    CompiledFunction getFun(String name, int arity, String source) {
+        return new CompiledFunction(name, arity, source, code.toArray(), consts.toArray(), funcs.toArray());
     }
 }

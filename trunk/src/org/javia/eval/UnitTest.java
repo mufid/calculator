@@ -61,7 +61,7 @@ class TestEval {
         double actual = 0;
         for (int i = 0; i < cases.length; ++i) {
             EvalCase c = cases[i];
-            Fun f = FunParser.compile(c.expr, symbols);
+            Function f = FunParser.compile(c.expr, symbols);
             boolean ok;
             try {
                 ok = (f == null && c.result == EvalCase.ERR) || 

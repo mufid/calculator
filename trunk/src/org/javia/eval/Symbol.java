@@ -21,7 +21,7 @@ class Symbol {
     private int arity;
 
     byte op;
-    Fun fun;
+    Function fun;
     double value = 0;
 
     Symbol(String name, int arity, byte op) {
@@ -29,8 +29,8 @@ class Symbol {
         this.op = op;        
     }
 
-    Symbol(Fun fun) {
-        String name = fun.name;
+    Symbol(String name, Function fun) {
+        //String name = fun.name;
         if (name == null) {
             throw new Error("fun without name: " + fun);
         }
