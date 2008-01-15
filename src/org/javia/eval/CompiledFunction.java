@@ -176,8 +176,6 @@ public class CompiledFunction extends Function {
             case VM.ACOSH: s[p] = MoreMath.acosh(s[p]); break;
             case VM.ATANH: s[p] = MoreMath.atanh(s[p]); break;
                     
-                //INT: s[p] = MoreMath.trunc(s[p]);
-                //FRAC:
             case VM.ABS:   s[p] = Math.abs(s[p]); break;
             case VM.FLOOR: s[p] = Math.floor(s[p]); break;
             case VM.CEIL:  s[p] = Math.ceil(s[p]); break;

@@ -18,9 +18,9 @@ package org.javia.eval;
 
 public class Token {
     final TokenType type;
-    double value = 0; //for NUMBER only
+    double value = 0;    //for NUMBER only
     String name  = null; //for CONST & CALL
-    int arity = 0; //for CALL only
+    int arity = 0;       //for CONST & CALL
 
     Token(TokenType type) {
         this.type = type;
@@ -37,10 +37,12 @@ public class Token {
 
     Token(TokenType type, String alpha) {
         this(type);
+        if (type == Lexer.CONST_TYPE) {
+            arity = Symbol.CONST_ARITY;
+        }
         this.name  = alpha;
     }
     
-
     public String toString() {
         switch (type.id) {
         case Lexer.NUMBER:
