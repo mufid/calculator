@@ -91,6 +91,7 @@ public class FunParser {
                                          SymbolTable symbols) {
         symbols.pushFrame();        
         for (int i = 0; i < args.length; ++i) {
+            //Log.log("arg " + args[i]);
             symbols.add(new Symbol(args[i], Symbol.CONST_ARITY, (byte)(VM.LOAD0 + i)));
         }
         rpn.setConsumer(optGen.setSymbols(symbols));

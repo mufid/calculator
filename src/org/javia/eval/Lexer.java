@@ -94,15 +94,13 @@ class Lexer {
     }
 
     Token nextToken() throws SyntaxException {
-        int p  = pos;
-        char c = input[p++];
-        int begin = pos;
-
-        //skip white space
-        while (WHITESPACE.indexOf(c) != -1) {
-            c = input[p++];
+        while (WHITESPACE.indexOf(input[pos]) != -1) {
+            ++pos;
         }
-        pos = p;
+
+        char c = input[pos];
+        int begin = pos++;
+
         switch (c) {
         case '!': return TOK_FACT;
         case END_MARKER: return TOK_END;
@@ -119,7 +117,7 @@ class Lexer {
             return TOK_POWER;
         }
 
-        --p;
+        int p  = pos-1;
         if (('0' <= c && c <= '9') || c == '.') {
             while ('0' <= c && c <= '9') {
                 c = input[++p];
