@@ -117,28 +117,28 @@ class Lexer {
             return TOK_POWER;
         }
 
-        int p  = pos-1;
+        int p  = pos;
         if (('0' <= c && c <= '9') || c == '.') {
             while ('0' <= c && c <= '9') {
-                c = input[++p];
+                c = input[p++];
             } 
             if (c == '.') {
-                c = input[++p];
+                c = input[p++];
                 while ('0' <= c && c <= '9') {
-                    c = input[++p];
+                    c = input[p++];
                 }
                 }
             if (c == 'E' || c == 'e') {
-                c = input[++p];
+                c = input[p++];
                 if (c == '-') {
-                    c = input[++p];
+                    c = input[p++];
                 }
                 while ('0' <= c && c <= '9') {
-                    c = input[++p];
+                    c = input[p++];
                 }
             }
-            pos = p;
-            String nbStr = String.valueOf(input, begin, p-begin);
+            pos = p-1;
+            String nbStr = String.valueOf(input, begin, p-1-begin);
             try {
                 double numberValue = Double.parseDouble(nbStr);
                 return new Token(NUMBER_TYPE, numberValue);
@@ -148,27 +148,23 @@ class Lexer {
         } else if (('a' <= c && c <= 'z') ||
                    ('A' <= c && c <= 'Z')) {
             do {
-                c = input[++p];
+                c = input[p++];
             } while (('a' <= c && c <= 'z') ||
                      ('A' <= c && c <= 'Z') ||
                      ('0' <= c && c <= '9'));
-            String nameValue = String.valueOf(input, begin, p-begin);
+            String nameValue = String.valueOf(input, begin, p-1-begin);
             while (WHITESPACE.indexOf(c) != -1) {
-                c = input[++p];
+                c = input[p++];
             }
             if (c == '(') {
-                pos = p + 1;
+                pos = p;
                 return new Token(CALL_TYPE, nameValue);
             } else {
-                pos = p;
+                pos = p-1;
                 return new Token(CONST_TYPE, nameValue);                    
             }
         } else {
             throw SyntaxException.get("invalid character '" + c + "'", null); 
         }
-    }
-    
-    public static void main(String[] argv) {
-        System.out.println("argv[0] :\n" + FunParser.compile(argv[0], new SymbolTable()));
     }
 }

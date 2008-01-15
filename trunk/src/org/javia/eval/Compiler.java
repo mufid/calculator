@@ -16,15 +16,18 @@
 
 package org.javia.eval;
 
-import org.javia.lib.Log;
+//import org.javia.lib.Log;
 
-public class FunParser {
-    private static FunParser funParser = new FunParser();
-
-    public static CompiledFunction compile(String source, SymbolTable symbols) {
-        return funParser.compileDefinition(source, symbols);
+public class Compiler {
+    public static Function compile(String source, SymbolTable symbols) {
+        return compiler.compileDefinition(source, symbols);
     }
 
+    public static void main(String[] argv) {
+        System.out.println("argv[0] :\n" + compile(argv[0], new SymbolTable()));
+    }
+
+    private static Compiler compiler = new Compiler();
     private Lexer lexer         = new Lexer();
     private RPN rpn             = new RPN();
     private DeclarationParser declParser = new DeclarationParser();
