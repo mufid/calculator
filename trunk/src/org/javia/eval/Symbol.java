@@ -17,6 +17,8 @@
 package org.javia.eval;
 
 class Symbol {
+    static final int CONST_ARITY = -3;
+
     private String name;
     private int arity;
 
@@ -30,27 +32,15 @@ class Symbol {
     }
 
     Symbol(String name, Function fun) {
-        //String name = fun.name;
         if (name == null) {
-            throw new Error("fun without name: " + fun);
+            throw new Error("Symbol without name: " + fun);
         }
-
-        int arity = fun.arity();
-        if (arity == -1) {
-            //it's a const
-            try {
-                this.value = fun.eval();
-            } catch (ArityException e) {
-                throw new Error(""+e);
-            }
-        } else {
-            this.fun = fun;            
-        }
-        setKey(name, arity);
+        setKey(name, fun.arity());
+        this.fun = fun;
     }
 
     Symbol(String name, double value) {
-        setKey(name, -1);
+        setKey(name, CONST_ARITY);
         this.value = value;
     }
 

@@ -27,13 +27,13 @@ public class CompiledFunction extends Function {
     private double consts[];
     private Function funcs[];
     private byte code[];
-    private final int arity; 
-    public final String name, source;
+    private final int arity; // >= 0
+    //public final String name, source;
 
-    CompiledFunction(String name, int arity, String source, byte[] code, double[] consts, Function funcs[]) {
-        this.name   = name;
+    CompiledFunction(int arity, byte[] code, double[] consts, Function funcs[]) {
+        //this.name   = name;
         this.arity  = arity;
-        this.source = source;
+        //this.source = source;
         this.code   = code;
         this.consts = consts;
         this.funcs  = funcs;
@@ -45,22 +45,17 @@ public class CompiledFunction extends Function {
 
     public String toString() {
         StringBuffer buf = new StringBuffer();
-        buf.append("Fun ").append('"').append(source).append('"');
+        //buf.append("Fun ").append('"').append(source).append('"');
         int cpos = 0, fpos = 0;
         for (int i = 0; i < code.length; ++i) {
             byte op = code[i];
-            buf.append("\n    ").append(VM.opcodeName[op]);
+            buf.append(VM.opcodeName[op]);
             if (op == VM.CONST) {
                 buf.append(' ').append(consts[cpos++]);
             } else if (op == VM.CALL) {
-                Function f = funcs[fpos++];
-                buf.append(' ');                
-                if (f instanceof CompiledFunction) {
-                    buf.append(((CompiledFunction) f).name);
-                } else {
-                    buf.append(f.toString());
-                }
+                buf.append(" {").append(funcs[fpos++].toString()).append('}');
             }
+            buf.append(';');
         }
         if (cpos != consts.length) {
             buf.append("\nuses only ").append(cpos).append(" consts out of ").append(consts.length);
@@ -80,7 +75,7 @@ public class CompiledFunction extends Function {
                 if (stack.length >= MAX_STACK_SIZE) {
                     throw e;
                 }
-                Log.log("CompiledFunction " + name + ": growing stack to " + (stack.length << 1)); 
+                Log.log("growing stack to " + (stack.length << 1)); 
                 stack = new double[stack.length << 1];
             }
         }
@@ -88,7 +83,7 @@ public class CompiledFunction extends Function {
 
     public double eval(double args[], double stack[]) throws ArityException {
         // check if arity matches the number of arguments passed (args.length)
-        if (!(arity == args.length || (arity == -1 && args.length == 0))) {
+        if (arity != args.length) {
             throw new ArityException("Expected " + arity + " arguments, got " + args.length);
         }
 

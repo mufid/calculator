@@ -39,9 +39,9 @@ class Lexer {
     //UPLUS  = 17;
         
     static final TokenType
-        NUMBER_TYPE = new TokenType(NUMBER, "number", 9, 0, true,  -1),
-        CONST_TYPE  = new TokenType(CONST,  "alpha",  9, 0, true,  -1),
-        CALL_TYPE   = new TokenType(CALL,   "call",   0, 0, false, -1);
+        NUMBER_TYPE = new TokenType(NUMBER, "number", 9, 0, true,  0),
+        CONST_TYPE  = new TokenType(CONST,  "alpha",  9, 0, true,  0),
+        CALL_TYPE   = new TokenType(CALL,   "call",   0, 0, false, 0);
     
     static final Token
         TOK_ADD    = new Token(ADD, "+", 3, TokenType.LEFT, false, VM.ADD),
@@ -52,21 +52,19 @@ class Lexer {
         TOK_MOD    = new Token(MOD, "%", 4, TokenType.LEFT, false, VM.MOD),
 
         TOK_UMIN   = new Token(UMIN, "-", 5, TokenType.PREFIX,  false, VM.UMIN),
-    //TOK_UPLUS  = new Token(UPLUS, "+", 5, TokenType.PREFIX, false, -1),
 
         TOK_POWER  = new Token(POWER, "^", 6, TokenType.RIGHT,  false, VM.POWER),
         TOK_FACT   = new Token(FACT,  "!", 7, TokenType.SUFIX,  true,  VM.FACT),
 
-        TOK_LPAREN = new Token(LPAREN, "(",    1, 0, false, -1),
-        TOK_RPAREN = new Token(RPAREN, ")",    2, 0, true,  -1),
-        TOK_COMMA  = new Token(COMMA,  ",",    1, 0, false,  -1),
-        TOK_END    = new Token(END,   "end",   0, 0, false, -1);
-    //TOK_ERROR  = new Token(ERROR, "error", 0, 0, false, -1);
+        TOK_LPAREN = new Token(LPAREN, "(",    1, 0, false, 0),
+        TOK_RPAREN = new Token(RPAREN, ")",    2, 0, true,  0),
+        TOK_COMMA  = new Token(COMMA,  ",",    1, 0, false, 0),
+        TOK_END    = new Token(END,   "end",   0, 0, false, 0);
 
-    static final char END_MARKER = '$';
-
-    char[] input = new char[32];
-    int pos;
+    private static final String WHITESPACE = " \n\r\t";
+    private static final char END_MARKER = '$';
+    private char[] input = new char[32];
+    private int pos;
 
     Lexer() {
         init("");
@@ -76,20 +74,13 @@ class Lexer {
         init(str);
     }
 
-    SyntaxException scan(String str, TokenConsumer consumer) {
+    void scan(String str, TokenConsumer consumer) throws SyntaxException {
         init(str);
         consumer.start();
         Token token;
-        try {
-            do {
-                consumer.push(token = nextToken());
-            } while (token != TOK_END);
-        } catch (SyntaxException e) {
-            Log.log("error on '" + str + "' : " + e + " : " + e.token);
-            return e;
-        }
-        consumer.done();
-        return null;
+        do {
+            consumer.push(token = nextToken());
+        } while (token != TOK_END);
     }
 
     void init(String str) {
@@ -101,8 +92,6 @@ class Lexer {
         input[len] = END_MARKER;
         pos = 0;
     }
-
-    private static final String WHITESPACE = " \n\r\t";
 
     Token nextToken() throws SyntaxException {
         int p  = pos;

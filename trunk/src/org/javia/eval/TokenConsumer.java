@@ -22,6 +22,8 @@ abstract class TokenConsumer {
 
     abstract void push(Token token) throws SyntaxException;
 
+    /*
     void done() {
     }
+    */
 }

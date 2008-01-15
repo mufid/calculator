@@ -22,7 +22,7 @@ public class FunParser {
     private static FunParser funParser = new FunParser();
 
     public static CompiledFunction compile(String source, SymbolTable symbols) {
-        return funParser.compileInt(source, symbols);
+        return funParser.compileDefinition(source, symbols);
     }
 
     private Lexer lexer         = new Lexer();
@@ -30,10 +30,10 @@ public class FunParser {
     private DeclarationParser declParser = new DeclarationParser();
 
     private OptCodeGen    optGen    = new OptCodeGen();
-    private SimpleCodeGen simpleGen = new SimpleCodeGen();
-    private SimpleCodeGen codeGen;
+    //private SimpleCodeGen simpleGen = new SimpleCodeGen();
+    //private SimpleCodeGen codeGen;
 
-    private synchronized CompiledFunction compileInt(String source, SymbolTable symbols) {
+    private synchronized CompiledFunction compileDefinition(String source, SymbolTable symbols) {
         //, String argNames[]) {
         int equalPos = source.indexOf('=');
         String decl, def;
@@ -47,46 +47,63 @@ public class FunParser {
         }
 
         String name;
-        String argNames[];
+        String argNames[] = null;
         int arity;
 
         if (decl != null) {
-            SyntaxException err = lexer.scan(decl, declParser);
-            if (err != null) {
+            try {
+                lexer.scan(decl, declParser);
+            } catch (SyntaxException e) {
+                Log.log("error on '" + decl + "' : " + e + " : " + e.token);
                 return null;
             }
             name     = declParser.name;
-            argNames = declParser.argNames;
+            argNames = declParser.argNames();
             arity    = declParser.arity;
-            codeGen  = optGen;
         } else {
             name     = null;
-            argNames = DeclarationParser.NO_ARGS;
-            arity    = -1;
-            codeGen  = simpleGen;
+            arity    = DeclarationParser.UNKNOWN_ARITY;
         }
 
-        symbols.pushFrame();        
-        for (int i = 0; i < argNames.length; ++i) {
-            symbols.add(new Symbol(argNames[i], -1, (byte)(VM.LOAD0 + i)));
+        boolean isUnknownArity = arity == DeclarationParser.UNKNOWN_ARITY;
+        if (isUnknownArity) {
+            argNames = DeclarationParser.IMPLICIT_ARGS;
         }
-        codeGen.start(symbols);
-        rpn.setConsumer(codeGen);
-        SyntaxException err = lexer.scan(def, rpn);
-        symbols.popFrame();
 
-        CompiledFunction fun;
-        if (err == null) {
-            fun = codeGen.getFun(name, arity, source);
-        } else {
-            fun = null;
-        }
+        CompiledFunction fun = compileBody(def, argNames, isUnknownArity, symbols);
         Log.log("compile '" + source + "': " + fun);
-
         if (name != null && fun != null) {
-            symbols.add(new Symbol(name, fun));
+            if (isUnknownArity && fun.arity() == 0) {
+                try {
+                    symbols.add(new Symbol(name, fun.eval()));
+                } catch (ArityException e) {
+                    throw new Error(""+e);
+                }                
+            } else {
+                symbols.add(new Symbol(name, fun));
+            }
+        }
+        return fun;
+    }
+
+    private CompiledFunction compileBody(String body, 
+                                         String args[], boolean isUnknownArity,
+                                         SymbolTable symbols) {
+        symbols.pushFrame();        
+        for (int i = 0; i < args.length; ++i) {
+            symbols.add(new Symbol(args[i], Symbol.CONST_ARITY, (byte)(VM.LOAD0 + i)));
+        }
+        rpn.setConsumer(optGen.setSymbols(symbols));
+        try {
+            lexer.scan(body, rpn);
+        } catch (SyntaxException e) {
+            Log.log("error on '" + body + "' : " + e + " : " + e.token);
+            return null;
+        } finally {
+            symbols.popFrame();
         }
 
-        return fun;
+        int arity = isUnknownArity ? optGen.intrinsicArity : args.length;
+        return optGen.getFun(arity);
     }
 }
