@@ -18,17 +18,17 @@ package org.javia.eval;
 
 import org.javia.lib.Log;
 
-class FunStack {
-    private Fun[] data = new Fun[8];
+class FunctionStack {
+    private Function[] data = new Function[8];
     private int size = 0;
 
     void clear() {
         size = 0;
     }
 
-    void push(Fun b) {
+    void push(Function b) {
         if (size >= data.length) {
-            Fun[] newData = new Fun[data.length << 1];
+            Function[] newData = new Function[data.length << 1];
             System.arraycopy(data, 0, newData, 0, data.length);
             data = newData;
         }
@@ -39,8 +39,8 @@ class FunStack {
         size -= cnt;
     }
 
-    Fun[] toArray() {
-        Fun[] trimmed = new Fun[size];
+    Function[] toArray() {
+        Function[] trimmed = new Function[size];
         System.arraycopy(data, 0, trimmed, 0, size);
         return trimmed;
     }

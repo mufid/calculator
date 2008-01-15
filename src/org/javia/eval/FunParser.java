@@ -21,7 +21,7 @@ import org.javia.lib.Log;
 public class FunParser {
     private static FunParser funParser = new FunParser();
 
-    public static Fun compile(String source, SymbolTable symbols) {
+    public static CompiledFunction compile(String source, SymbolTable symbols) {
         return funParser.compileInt(source, symbols);
     }
 
@@ -33,7 +33,7 @@ public class FunParser {
     private SimpleCodeGen simpleGen = new SimpleCodeGen();
     private SimpleCodeGen codeGen;
 
-    private synchronized Fun compileInt(String source, SymbolTable symbols) {
+    private synchronized CompiledFunction compileInt(String source, SymbolTable symbols) {
         //, String argNames[]) {
         int equalPos = source.indexOf('=');
         String decl, def;
@@ -75,7 +75,7 @@ public class FunParser {
         SyntaxException err = lexer.scan(def, rpn);
         symbols.popFrame();
 
-        Fun fun;
+        CompiledFunction fun;
         if (err == null) {
             fun = codeGen.getFun(name, arity, source);
         } else {
@@ -84,7 +84,7 @@ public class FunParser {
         Log.log("compile '" + source + "': " + fun);
 
         if (name != null && fun != null) {
-            symbols.add(new Symbol(fun));
+            symbols.add(new Symbol(name, fun));
         }
 
         return fun;

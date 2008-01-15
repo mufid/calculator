@@ -19,7 +19,7 @@ package org.javia.eval;
 import java.util.Random;
 import org.javia.lib.Log;
 
-public class Fun extends Function {
+public class CompiledFunction extends Function {
     static final int INI_STACK_SIZE =  16;
     static final int MAX_STACK_SIZE = 128; // if stack ever grows above this something is wrong
     private static Random random = new Random();
@@ -30,7 +30,7 @@ public class Fun extends Function {
     private final int arity; 
     public final String name, source;
 
-    Fun(String name, int arity, String source, byte[] code, double[] consts, Fun[] funcs) {
+    CompiledFunction(String name, int arity, String source, byte[] code, double[] consts, Function funcs[]) {
         this.name   = name;
         this.arity  = arity;
         this.source = source;
@@ -55,8 +55,8 @@ public class Fun extends Function {
             } else if (op == VM.CALL) {
                 Function f = funcs[fpos++];
                 buf.append(' ');                
-                if (f instanceof Fun) {
-                    buf.append(((Fun) f).name);
+                if (f instanceof CompiledFunction) {
+                    buf.append(((CompiledFunction) f).name);
                 } else {
                     buf.append(f.toString());
                 }
@@ -80,7 +80,7 @@ public class Fun extends Function {
                 if (stack.length >= MAX_STACK_SIZE) {
                     throw e;
                 }
-                Log.log("Fun " + name + ": growing stack to " + (stack.length << 1)); 
+                Log.log("CompiledFunction " + name + ": growing stack to " + (stack.length << 1)); 
                 stack = new double[stack.length << 1];
             }
         }
@@ -122,14 +122,12 @@ public class Fun extends Function {
 
         int codeLen = code.length;
         for (int pc = 0; pc < codeLen; ++pc) {
-            //Log.log("p " + p);
-
             switch (code[pc]) {
             case VM.CONST: s[++p] = consts[constp++]; break;
             case VM.CALL: { 
                 Function f = funcs[funp++];
-                if (f instanceof Fun) { 
-                    p = ((Fun) f).exec(s, p);
+                if (f instanceof CompiledFunction) { 
+                    p = ((CompiledFunction) f).exec(s, p);
                 } else {
                     double args[];
                     int arity = f.arity();
@@ -201,6 +199,8 @@ public class Fun extends Function {
             case VM.LOAD2: s[++p] = a2; break;
             case VM.LOAD3: s[++p] = a3; break;
             case VM.LOAD4: s[++p] = a4; break;
+            default:
+                throw new Error("Unknown opcode " + code[pc]);
             }
         }
         return p;

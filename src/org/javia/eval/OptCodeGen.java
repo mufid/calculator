@@ -23,13 +23,13 @@ package org.javia.eval;
  */
 
 class OptCodeGen extends SimpleCodeGen {
-    double stack[]  = new double[Fun.MAX_STACK_SIZE];        
+    double stack[]  = new double[CompiledFunction.MAX_STACK_SIZE];        
     int sp = -1;
 
     double traceConsts[] = new double[1];
-    Fun traceFuncs[] = new Fun[1];
+    Function traceFuncs[] = new Function[1];
     byte traceCode[] = new byte[1];
-    Fun tracer = new Fun("<tracer>", 0, "<tracer>", traceCode, traceConsts, traceFuncs);
+    CompiledFunction tracer = new CompiledFunction("<tracer>", 0, "<tracer>", traceCode, traceConsts, traceFuncs);
 
     void start(SymbolTable symbols) {
         super.start();
