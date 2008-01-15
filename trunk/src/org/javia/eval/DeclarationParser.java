@@ -32,7 +32,6 @@ class DeclarationParser extends TokenConsumer {
     //@Override
     void start() {
         name = null;
-        arity = UNKNOWN_ARITY;
         args.setSize(0);
     }
 
@@ -49,15 +48,23 @@ class DeclarationParser extends TokenConsumer {
             break;
 
         case Lexer.CONST:
-            args.addElement(token.name);
-            ++arity;
-            if (arity > MAX_ARITY) {
-                throw SyntaxException.get("Arity too large " + arity, token);
+            if (name == null) {
+                name = token.name;
+                arity = UNKNOWN_ARITY;
+            } else if (arity >= 0) {
+                args.addElement(token.name);
+                ++arity;
+                if (arity > MAX_ARITY) {
+                    throw SyntaxException.get("Arity too large " + arity, token);
+                }
+            } else {
+                throw SyntaxException.get("Invalid declaration", token);
             }
             break;
 
         case Lexer.RPAREN:            
         case Lexer.COMMA:
+        case Lexer.END:
             break;
 
         default:
