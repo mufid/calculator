@@ -52,7 +52,10 @@ class TestEval {
         new EvalCase("-(2+1)*-(4/2)", 6),
         new EvalCase("-.5E-1", -.05),
         new EvalCase("1E1.5", 5),
-        new EvalCase("2 3 4", 24)
+        new EvalCase("2 3 4", 24),
+        new EvalCase("pi", Math.PI),
+        new EvalCase("e", Math.E),
+        new EvalCase("sin(pi/2)", 1)
     };
 
     static boolean testEval() {

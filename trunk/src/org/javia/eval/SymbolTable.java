@@ -21,22 +21,41 @@ import java.util.Stack;
 import java.util.Vector;
 
 public class SymbolTable {
-    //Hashtable<Symbol, Symbol>
-    private Hashtable symbols = new Hashtable();
+    private final static Symbol builtin[];
+    private static Symbol shell = new Symbol(null, 0);
 
-    //Vector<Symbol>
-    private Vector delta = null;
+    private Hashtable symbols = new Hashtable(); //Hashtable<Symbol, Symbol>
+    private Vector delta = null;                 //Vector<Symbol>
+    private Stack frames = new Stack();          //Stack<Vector>
 
-    //Stack<Vector>
-    private Stack frames = new Stack();
-
-    public SymbolTable() {
+    static {
+        Vector builtinVect = new Vector();
         int arity;
         for (byte i = 0; i < VM.BYTECODE_END; ++i) {
             if ((arity = VM.builtinArity[i]) >= 0) {
-                add(new Symbol(VM.opcodeName[i], arity, i));
+                builtinVect.addElement(new Symbol(VM.opcodeName[i], arity, i));
             }
         }
+        builtinVect.addElement(new Symbol("pi", Math.PI));
+        builtinVect.addElement(new Symbol("e", Math.E));
+        int size = builtinVect.size();
+        builtin = new Symbol[size];
+        builtinVect.copyInto(builtin);
+    }
+    
+    public SymbolTable() {
+        for (int i = 0; i < builtin.length; ++i) {
+            Symbol s = builtin[i];
+            symbols.put(s, s);
+        }
+    }
+
+    public void add(String name, Function f) {
+        add(new Symbol(name, f));
+    }
+
+    public void add(String name, double value) {
+        add(new Symbol(name, value));
     }
 
     void add(Symbol s) {
@@ -47,7 +66,6 @@ public class SymbolTable {
         delta.addElement(previous != null ? previous : Symbol.newEmpty(s));
     }
 
-    static private Symbol shell = new Symbol(null, 0);
     synchronized Symbol lookup(String name, int arity) {
         return (Symbol) symbols.get(shell.setKey(name, arity));
     }

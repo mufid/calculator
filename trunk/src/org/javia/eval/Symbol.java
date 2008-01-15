@@ -32,9 +32,6 @@ class Symbol {
     }
 
     Symbol(String name, Function fun) {
-        if (name == null) {
-            throw new Error("Symbol without name: " + fun);
-        }
         setKey(name, fun.arity());
         this.fun = fun;
     }
