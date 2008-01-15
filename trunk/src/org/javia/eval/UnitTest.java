@@ -57,7 +57,12 @@ class TestEval {
         new EvalCase("e", Math.E),
         new EvalCase("sin(pi/2)", 1),
         new EvalCase("f=sin(2x)", EvalCase.FUN),
-        new EvalCase("f(pi/2)", 0)
+        new EvalCase("f(pi/2)", 0),
+        new EvalCase("a=3", 3),
+        new EvalCase("b=a+1", 4),
+        new EvalCase("f(x, y) = x*(y+1)", EvalCase.FUN),
+        new EvalCase("f(a, b-a)", 6),
+        new EvalCase("f(a pi/4)", -1)
     };
 
     private static boolean equal(double a, double b) {
