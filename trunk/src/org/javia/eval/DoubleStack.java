@@ -16,8 +16,6 @@
 
 package org.javia.eval;
 
-import org.javia.lib.Log;
-
 class DoubleStack {
     private double[] data = new double[8];
     private int size = 0;
