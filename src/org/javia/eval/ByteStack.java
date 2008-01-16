@@ -16,8 +16,6 @@
 
 package org.javia.eval;
 
-import org.javia.lib.Log;
-
 class ByteStack {
     private byte[] data = new byte[8];
     private int size = 0;

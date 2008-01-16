@@ -18,7 +18,6 @@ package org.javia.eval;
 
 import java.util.Stack;
 import java.util.EmptyStackException;
-import org.javia.lib.Log;
 
 /* Reverse Polish Notation
    reads tokens in normal infix order (e.g.: 1 + 2)

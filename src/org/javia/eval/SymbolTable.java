@@ -50,12 +50,30 @@ public class SymbolTable {
         }
     }
 
-    public void add(String name, Function f) {
+    public void addFunction(String name, Function f) {
         add(new Symbol(name, f));
     }
 
-    public void add(String name, double value) {
+    public void addConstant(String name, double value) {
         add(new Symbol(name, value));
+    }
+
+    void addArguments(String args[]) {
+        for (int i = 0; i < args.length; ++i) {
+            add(new Symbol(args[i], Symbol.CONST_ARITY, (byte)(VM.LOAD0 + i)));
+        }
+    }
+
+    void addDefinition(String name, Function fun, boolean canBeConst) {
+        if (canBeConst && fun.arity() == 0) {
+            try {
+                addConstant(name, fun.eval());
+            } catch (ArityException e) {
+                throw new Error(""+e); //never
+            }                
+        } else {
+            addFunction(name, fun);
+        }
     }
 
     void add(Symbol s) {

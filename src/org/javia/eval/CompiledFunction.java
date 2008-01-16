@@ -17,11 +17,10 @@
 package org.javia.eval;
 
 import java.util.Random;
-import org.javia.lib.Log;
 
 class CompiledFunction extends Function {
     static final int INI_STACK_SIZE =  16;
-    static final int MAX_STACK_SIZE = 128; // if stack ever grows above this something is wrong
+    static final int MAX_STACK_SIZE = 128; //if stack ever grows above this likely something is wrong
     private static Random random = new Random();
 
     private double consts[];
@@ -74,7 +73,7 @@ class CompiledFunction extends Function {
                 if (stack.length >= MAX_STACK_SIZE) {
                     throw e;
                 }
-                Log.log("growing stack to " + (stack.length << 1)); 
+                //Log.log("growing stack to " + (stack.length << 1)); 
                 stack = new double[stack.length << 1];
             }
         }

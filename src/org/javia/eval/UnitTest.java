@@ -16,8 +16,8 @@
 
 package org.javia.eval;
 
-import org.javia.lib.Log;
 import org.javia.eval.MoreMath;
+import org.javia.eval.Log;
 
 class EvalCase {
     String expr;
@@ -76,9 +76,10 @@ class TestEval {
         boolean allOk = true;
         SymbolTable symbols = new SymbolTable();
         double actual = 0;
+        Compiler compiler = new Compiler();
         for (int i = 0; i < cases.length; ++i) {
             EvalCase c = cases[i];
-            Function f = Compiler.compile(c.expr, symbols);
+            Function f = compiler.compileAndDefine(c.expr, symbols);
             boolean ok;
             if (f == null) {
                 ok = equal(c.result, actual=EvalCase.ERR);

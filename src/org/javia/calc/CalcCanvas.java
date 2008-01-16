@@ -83,6 +83,7 @@ class CalcCanvas extends ImageCanvas {
     static int clientW, historyH;
 
     SymbolTable symbols = new SymbolTable();
+    Compiler compiler = new Compiler();
 
     CalcCanvas() {
         screenW = getWidth();
@@ -102,7 +103,7 @@ class CalcCanvas extends ImageCanvas {
         clientW = screenW - 2*clientX;
         editor      = new CursorBox(clientW, font, maxEditLines);
         historyWrap = new EditBox(clientW, historyFont, 4);
-        history = new History(symbols);
+        history     = new History(compiler, symbols);
         DataInputStream is = Calc.rs.readIS(Calc.RS_CURRENT);
         updateFromHistEntry(is == null ? new HistEntry("1+1") : new HistEntry(is));
         if (is == null) {
@@ -163,7 +164,7 @@ class CalcCanvas extends ImageCanvas {
     }
 
     void updateResult() {
-        Function fun = Compiler.compile(editor.toString(), symbols);
+        Function fun = compiler.compile(editor.toString(), symbols);
         String strResult = null;
         if (fun != null) {
             try {

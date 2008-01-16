@@ -16,98 +16,64 @@
 
 package org.javia.eval;
 
-//import org.javia.lib.Log;
-
 public class Compiler {
-    public static Function compile(String source, SymbolTable symbols) {
-        return compiler.compileDefinition(source, symbols);
-    }
-
     public static void main(String[] argv) {
-        System.out.println("argv[0] :\n" + compile(argv[0], new SymbolTable()));
+        System.out.println(argv[0] + ":\n" + (new Compiler()).compile(argv[0]));
     }
 
-    private static Compiler compiler = new Compiler();
-    private Lexer lexer         = new Lexer();
-    private RPN rpn             = new RPN();
+    private Lexer lexer = new Lexer();
+    private RPN rpn     = new RPN();
     private DeclarationParser declParser = new DeclarationParser();
+    private OptCodeGen codeGen = new OptCodeGen();
+    private Declaration decl = new Declaration();
+    private SymbolTable defaultSymbols = new SymbolTable();
 
-    private OptCodeGen    optGen    = new OptCodeGen();
-    //private SimpleCodeGen simpleGen = new SimpleCodeGen();
-    //private SimpleCodeGen codeGen;
+    public Function compile(String source) {
+        return compile(source, defaultSymbols);
+    }
 
-    private synchronized CompiledFunction compileDefinition(String source, SymbolTable symbols) {
-        //, String argNames[]) {
-        int equalPos = source.indexOf('=');
-        String decl, def;
+    public Function compile(String source, SymbolTable symbols) {
+        return compile(source, symbols, false);
+    }
 
-        if (equalPos == -1) {
-            decl = null;
-            def  = source;
-        } else {
-            decl = source.substring(0, equalPos);
-            def  = source.substring(equalPos + 1);
+    public Function compileAndDefine(String source, SymbolTable symbols) {
+        return compile(source, symbols, true);
+    }
+
+    public synchronized Function compile(String source, SymbolTable symbols, boolean addDefinition) {
+        try {
+            decl.parse(source, lexer, declParser);
+        } catch (SyntaxException e) {
+            Log.log("error on '" + decl + "' : " + e + " : " + e.token);
+            return null;
         }
-
-        String name;
-        String argNames[] = null;
-        int arity;
-
-        if (decl != null) {
-            try {
-                lexer.scan(decl, declParser);
-            } catch (SyntaxException e) {
-                Log.log("error on '" + decl + "' : " + e + " : " + e.token);
-                return null;
-            }
-            name     = declParser.name;
-            argNames = declParser.argNames();
-            arity    = declParser.arity;
-        } else {
-            name     = null;
-            arity    = DeclarationParser.UNKNOWN_ARITY;
-        }
-
-        boolean isUnknownArity = arity == DeclarationParser.UNKNOWN_ARITY;
-        if (isUnknownArity) {
-            argNames = DeclarationParser.IMPLICIT_ARGS;
-        }
-
-        CompiledFunction fun = compileBody(def, argNames, isUnknownArity, symbols);
+        Function fun = compileExpression(decl.expression, symbols, decl.args, decl.arity);
         Log.log("compile '" + source + "': " + fun);
-        if (name != null && fun != null) {
-            if (isUnknownArity && fun.arity() == 0) {
-                try {
-                    symbols.add(new Symbol(name, fun.eval()));
-                } catch (ArityException e) {
-                    throw new Error(""+e);
-                }                
-            } else {
-                symbols.add(new Symbol(name, fun));
-            }
+        if (decl.name != null && fun != null && addDefinition) {
+            symbols.addDefinition(decl.name, fun, decl.arity==DeclarationParser.UNKNOWN_ARITY);
         }
         return fun;
     }
+        
+    CompiledFunction compileExpression(String body, SymbolTable symbols, String args[], int arity) {
+        symbols.pushFrame();
+        symbols.addArguments(args);
+        CompiledFunction fun = compileExpression(body, symbols, arity);
+        symbols.popFrame();
+        return fun;
+    }
 
-    private CompiledFunction compileBody(String body, 
-                                         String args[], boolean isUnknownArity,
-                                         SymbolTable symbols) {
-        symbols.pushFrame();        
-        for (int i = 0; i < args.length; ++i) {
-            //Log.log("arg " + args[i]);
-            symbols.add(new Symbol(args[i], Symbol.CONST_ARITY, (byte)(VM.LOAD0 + i)));
-        }
-        rpn.setConsumer(optGen.setSymbols(symbols));
+    CompiledFunction compileExpression(String body, SymbolTable symbols, int arity) {
+        rpn.setConsumer(codeGen.setSymbols(symbols));
         try {
             lexer.scan(body, rpn);
         } catch (SyntaxException e) {
             Log.log("error on '" + body + "' : " + e + " : " + e.token);
             return null;
-        } finally {
-            symbols.popFrame();
         }
-
-        int arity = isUnknownArity ? optGen.intrinsicArity : args.length;
-        return optGen.getFun(arity);
+        if (arity == DeclarationParser.UNKNOWN_ARITY) {
+            arity = codeGen.intrinsicArity;
+        }
+        return codeGen.getFun(arity);
     }
 }

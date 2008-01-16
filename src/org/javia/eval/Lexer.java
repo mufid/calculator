@@ -16,8 +16,6 @@
 
 package org.javia.eval;
 
-import org.javia.lib.Log;
-
 class Lexer {
     static final int
         ADD = 1, 

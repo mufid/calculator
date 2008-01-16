@@ -31,12 +31,14 @@ class History {
     private int historyPos;
     private Vector history;
     private SymbolTable symbols;
-    
+    private Compiler compiler;
+
     int posMaxSeq = -1;
     int maxSeq = 0;
 
-    History(SymbolTable symbols) {
+    History(Compiler compiler, SymbolTable symbols) {
         this.symbols = symbols;
+        this.compiler = compiler;
         historyPos = 0;
         
         Vector v = new Vector(Calc.RS_MAX_HIST);
@@ -104,7 +106,7 @@ class History {
 
     DataOut dataOut = new DataOut();
     void enter(String str) {
-        Function fun = Compiler.compile(str, symbols);
+        Function fun = compiler.compile(str, symbols);
         if (fun != null && fun.arity() == 0) {
             try {
                 ans = fun.eval();

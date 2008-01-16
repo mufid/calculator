@@ -16,8 +16,6 @@
 
 package org.javia.eval;
 
-import org.javia.lib.Log;
-
 class FunctionStack {
     private Function[] data = new Function[8];
     private int size = 0;
