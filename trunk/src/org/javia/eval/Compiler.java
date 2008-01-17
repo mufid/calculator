@@ -16,19 +16,60 @@
 
 package org.javia.eval;
 
+/**
+   Compiles a textual arithmetic expression to a {@link Function}.<p>
+
+   Usage example: 
+   <code>
+   (new Compiler()).compile("1+1").eval();
+   </code>
+*/
 public class Compiler {
+    /**
+       Takes a single command-line argument, an expression, and compiles it.
+     */
     public static void main(String[] argv) {
-        System.out.println(argv[0] + ":\n" + (new Compiler()).compile(argv[0]));
+        if (argv.length == 0) {
+            System.out.println("example usage: Compiler \"1+1\"");
+        } else {
+            System.out.println("Compiling " + argv[0] + ":\n" + (new Compiler()).compile(argv[0]));
+        }
     }
 
+    /**
+       Compiles an expression using the default {@link SymbolTable}.
+       @param source the expression
+       @return the function evaluating the expression. 
+       If the expression has no arguments, this function has zero arity and calling
+       <code>eval</code> on it gives the value of the expression.<p>
+
+       Returns <code>null</code> if there are errors compiling the expression.
+    */
     public Function compile(String source) {
         return compile(source, defaultSymbols);
     }
 
+    /**
+       Compiles the expression in the context of the given SymbolTable.
+       @param source the expression
+       @param symbols the SymbolTable used for parsing the expression.
+       The symbols are left unchanged (are not modified).
+       @return the function evaluating the expression, 
+       or <code>null</code> if there were errors compiling the expression.
+    */
     public Function compile(String source, SymbolTable symbols) {
         return compile(source, symbols, false);
     }
 
+    /**
+       Compiles the expression in the context of the given SymbolTable,
+       updating the symbols if the expression is a function or constant definition.
+       @param source the expression, e.g. "foo(n)=n^2"
+       @param symbols the SymbolTable used for parsing the expression.
+       The symbols are updated if the expression is a function or constant definition.
+       @return the function evaluating the expression,
+       or <code>null</code> if there were errors compiling the expression.
+    */
     public Function compileAndDefine(String source, SymbolTable symbols) {
         return compile(source, symbols, true);
     }

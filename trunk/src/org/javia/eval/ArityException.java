@@ -17,7 +17,11 @@
 package org.javia.eval;
 
 
-// signals that a function was called with a wrong number of arguments
+/** 
+    Thrown when a {@link Function} is evaluated with a wrong number of arguments 
+    (when the number of arguments is not equal to the function's arity).
+*/
+
 public class ArityException extends Exception {
     public ArityException(String mes) {
         super(mes);

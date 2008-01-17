@@ -186,7 +186,15 @@ class TestFormat {
     }
 }
 
+/**
+   Runs some unit-tests.<p>
+   Usage: java -cp arity.jar org.javia.eval.UnitTest
+*/
 public class UnitTest {
+
+    /**
+       Runs unit-tests.
+     */
     public static void main(String argv[]) {
         //UnitTest tester = new UnitTest();
         checkCounter = 0;
