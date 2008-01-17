@@ -20,7 +20,25 @@ import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
 
+/**
+   The collection of names (<em>symbols</em>) used for parsing an expression 
+   (the context in which the parsing takes place).<p>
+
+   Each symbol maps to either a {@link Function} or a constant.<p>
+
+   A symbol is identified by the pair (name, arity).
+   So a constant and a function with the same name,
+   or two function with the same name but with different arity 
+   are distinct symbols.<p>
+
+   The SymbolTable is organized as a stack of <em>frames</em>. 
+ */
+
 public class SymbolTable {
+
+    /**
+       Returns the default SymbolTable which contains the built-in symbols.
+    */
     public SymbolTable() {
         for (int i = 0; i < builtin.length; ++i) {
             Symbol s = builtin[i];
@@ -28,13 +46,55 @@ public class SymbolTable {
         }
     }
 
-    public void addFunction(String name, Function f) {
-        add(new Symbol(name, f));
+    /**
+       Adds a new function symbol to the top-most frame of this SymbolTable.
+       @param name the name of the function (e.g. "sin")
+       @param function the function to which the name maps
+    */    
+    public void addFunction(String name, Function function) {
+        add(new Symbol(name, function));
     }
 
+    /**
+       Adds a new constant symbol to the top-most frame of this SymbolTable.
+       @param name the name of the constant (e.g. "pi")
+       @param value the value of the constant
+    */
     public void addConstant(String name, double value) {
         add(new Symbol(name, value));
     }
+
+    /**
+       Pushes a new top frame.<p>
+
+       All modifications (defining new symbols) happen in the top-most frame.
+       When the frame is pop-ed the modifications that happened in it are reverted.
+    */
+    public void pushFrame() {
+        frames.push(delta);
+        delta = null;
+    }
+
+    /**
+       Pops the top frame.<p>
+
+       All the modifications done since this frame was pushed are reverted.
+       @throws EmptyStackException if there were fewer <code>pushFrame</code> than <code>popFrame</code>.
+    */
+    public void popFrame() {
+        if (delta != null) {
+            for (int i = delta.size() - 1; i >= 0; --i) {
+                Symbol previous = (Symbol) delta.elementAt(i);
+                if (previous.isEmpty()) {
+                    symbols.remove(previous);
+                } else {
+                    symbols.put(previous, previous);
+                }
+            }
+        }
+        delta = (Vector) frames.pop();
+    }
+
 
 
     //--- non-public below
@@ -89,24 +149,5 @@ public class SymbolTable {
 
     synchronized Symbol lookup(String name, int arity) {
         return (Symbol) symbols.get(shell.setKey(name, arity));
-    }
-
-    void pushFrame() {
-        frames.push(delta);
-        delta = null;
-    }
-
-    void popFrame() {
-        if (delta != null) {
-            for (int i = delta.size() - 1; i >= 0; --i) {
-                Symbol previous = (Symbol) delta.elementAt(i);
-                if (previous.isEmpty()) {
-                    symbols.remove(previous);
-                } else {
-                    symbols.put(previous, previous);
-                }
-            }
-        }
-        delta = (Vector) frames.pop();
     }
 }

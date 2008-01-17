@@ -16,10 +16,33 @@
 
 package org.javia.eval;
 
+/**
+   Abstract base class for functions.<p>
+   A function has an arity (the number of arguments), and a way for evaluation
+   given the values of the arguments.<p>
+   Derive from this class to create user-defined functions.
+ */
+
 abstract public class Function {
+
+    /**
+       Gives the arity of this function. 
+       @return the arity (the number of arguments). Arity >= 0.
+    */
     abstract public int arity();
+
+    /**
+       Evaluates the function given the argument values.
+       @param args array containing the arguments. 
+       The length of the array must exactly match the arity.
+       @return the value of the function
+    */
     abstract public double eval(double args[]) throws ArityException;
 
+    /**
+       Evaluates a 0-arity function (a function with no arguments).
+       @return the value of the function
+    */
     public double eval() throws ArityException {
         return eval(NO_ARGS);
     }
