@@ -17,12 +17,12 @@
 package org.javia.eval;
 
 abstract public class Function {
-    static final double NO_ARGS[] = new double[0];
-
     abstract public int arity();
     abstract public double eval(double args[]) throws ArityException;
 
     public double eval() throws ArityException {
         return eval(NO_ARGS);
     }
+
+    static final double NO_ARGS[] = new double[0];
 }
