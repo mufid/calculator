@@ -21,13 +21,6 @@ public class Compiler {
         System.out.println(argv[0] + ":\n" + (new Compiler()).compile(argv[0]));
     }
 
-    private Lexer lexer = new Lexer();
-    private RPN rpn     = new RPN();
-    private DeclarationParser declParser = new DeclarationParser();
-    private OptCodeGen codeGen = new OptCodeGen();
-    private Declaration decl = new Declaration();
-    private SymbolTable defaultSymbols = new SymbolTable();
-
     public Function compile(String source) {
         return compile(source, defaultSymbols);
     }
@@ -40,7 +33,14 @@ public class Compiler {
         return compile(source, symbols, true);
     }
 
-    public synchronized Function compile(String source, SymbolTable symbols, boolean addDefinition) {
+    static private final SymbolTable defaultSymbols = new SymbolTable();
+    private Lexer lexer = new Lexer();
+    private RPN rpn     = new RPN();
+    private DeclarationParser declParser = new DeclarationParser();
+    private OptCodeGen codeGen = new OptCodeGen();
+    private Declaration decl   = new Declaration();
+
+    private synchronized Function compile(String source, SymbolTable symbols, boolean addDefinition) {
         try {
             decl.parse(source, lexer, declParser);
         } catch (SyntaxException e) {
@@ -55,7 +55,7 @@ public class Compiler {
         return fun;
     }
         
-    CompiledFunction compileExpression(String body, SymbolTable symbols, String args[], int arity) {
+    private CompiledFunction compileExpression(String body, SymbolTable symbols, String args[], int arity) {
         symbols.pushFrame();
         symbols.addArguments(args);
         CompiledFunction fun = compileExpression(body, symbols, arity);
@@ -63,7 +63,7 @@ public class Compiler {
         return fun;
     }
 
-    CompiledFunction compileExpression(String body, SymbolTable symbols, int arity) {
+    private CompiledFunction compileExpression(String body, SymbolTable symbols, int arity) {
         rpn.setConsumer(codeGen.setSymbols(symbols));
         try {
             lexer.scan(body, rpn);

@@ -25,7 +25,7 @@ import java.util.EmptyStackException;
    See Dijkstra's Shunting Yard algorithm: 
    http://en.wikipedia.org/wiki/Shunting_yard_algorithm
  */ 
-public class RPN extends TokenConsumer {
+class RPN extends TokenConsumer {
     Stack stack = new Stack();
     TokenType prevType;
     TokenConsumer consumer;

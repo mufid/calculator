@@ -18,7 +18,7 @@
 package org.javia.eval;
 
 // This class is a replacement for BaseMath.java to be used on Java 1.5 and later
-public class BaseMath {
+class BaseMath {
     public static final double atan(double x) {
         return Math.atan(x);
     }

@@ -16,7 +16,7 @@
 
 package org.javia.eval;
 
-public class Token {
+class Token {
     final TokenType type;
     double value = 0;    //for NUMBER only
     String name  = null; //for CONST & CALL

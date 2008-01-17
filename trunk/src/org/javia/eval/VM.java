@@ -2,7 +2,7 @@
 
 package org.javia.eval;
 
-public class VM {
+class VM {
 
 public static final byte
 RESERVED = 0,

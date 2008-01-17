@@ -29,7 +29,7 @@
 
 package org.javia.eval;
 
-public class BaseMath {
+class BaseMath {
     private static final int HI(double x) {
         return (int)(Double.doubleToLongBits(x) >> 32);
     }

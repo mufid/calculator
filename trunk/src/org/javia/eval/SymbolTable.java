@@ -21,28 +21,6 @@ import java.util.Stack;
 import java.util.Vector;
 
 public class SymbolTable {
-    private final static Symbol builtin[];
-    private static Symbol shell = new Symbol(null, 0);
-
-    private Hashtable symbols = new Hashtable(); //Hashtable<Symbol, Symbol>
-    private Vector delta = null;                 //Vector<Symbol>
-    private Stack frames = new Stack();          //Stack<Vector>
-
-    static {
-        Vector builtinVect = new Vector();
-        int arity;
-        for (byte i = 0; i < VM.BYTECODE_END; ++i) {
-            if ((arity = VM.builtinArity[i]) >= 0) {
-                builtinVect.addElement(new Symbol(VM.opcodeName[i], arity, i));
-            }
-        }
-        builtinVect.addElement(new Symbol("pi", Math.PI));
-        builtinVect.addElement(new Symbol("e", Math.E));
-        int size = builtinVect.size();
-        builtin = new Symbol[size];
-        builtinVect.copyInto(builtin);
-    }
-    
     public SymbolTable() {
         for (int i = 0; i < builtin.length; ++i) {
             Symbol s = builtin[i];
@@ -58,6 +36,31 @@ public class SymbolTable {
         add(new Symbol(name, value));
     }
 
+
+    //--- non-public below
+
+    private final static Symbol builtin[];
+    private static Symbol shell = new Symbol(null, 0);
+
+    private Hashtable symbols = new Hashtable(); //Hashtable<Symbol, Symbol>
+    private Vector delta = null;                 //Vector<Symbol>
+    private Stack frames = new Stack();          //Stack<Vector>
+
+    static {
+        Vector vect = new Vector();
+        int arity;
+        for (byte i = 0; i < VM.BYTECODE_END; ++i) {
+            if ((arity = VM.builtinArity[i]) >= 0) {
+                vect.addElement(new Symbol(VM.opcodeName[i], arity, i));
+            }
+        }
+        vect.addElement(new Symbol("pi", Math.PI));
+        vect.addElement(new Symbol("e", Math.E));
+        int size = vect.size();
+        builtin = new Symbol[size];
+        vect.copyInto(builtin);
+    }
+    
     void addArguments(String args[]) {
         for (int i = 0; i < args.length; ++i) {
             add(new Symbol(args[i], Symbol.CONST_ARITY, (byte)(VM.LOAD0 + i)));

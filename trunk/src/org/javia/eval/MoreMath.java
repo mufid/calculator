@@ -17,7 +17,7 @@
 
 package org.javia.eval;
 
-public class MoreMath extends BaseMath {
+class MoreMath extends BaseMath {
     private static final double LOG2E  = 1.4426950408889634074;
 
     public static final double asinh(double x) {
