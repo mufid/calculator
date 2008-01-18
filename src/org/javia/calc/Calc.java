@@ -23,10 +23,8 @@ import javax.microedition.midlet.MIDlet;
 //import org.javia.lib.*;
 import org.javia.lib.midp.*;
 import org.javia.lib.Log;
-import org.javia.eval.UnitTest;
 
 public final class Calc extends BasicMIDlet implements CommandListener, Runnable {
-    static UnitTest dummy;
     static Calc self;
         
     static Display display;
