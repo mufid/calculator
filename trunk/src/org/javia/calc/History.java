@@ -20,10 +20,10 @@ import java.util.*;
 import java.io.*;
 
 import org.javia.lib.*;
-import org.javia.eval.SymbolTable;
-import org.javia.eval.Compiler;
-import org.javia.eval.Function;
-import org.javia.eval.ArityException;
+import org.javia.arity.SymbolTable;
+import org.javia.arity.Compiler;
+import org.javia.arity.Function;
+import org.javia.arity.ArityException;
 
 class History {
     static double ans = 0;

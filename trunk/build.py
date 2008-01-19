@@ -26,7 +26,7 @@ shortCls = 'c',
 version = '0.2.0',
 vendor  = 'Mihai Preda',
 infoUrl = 'http://calculator.javia.org/',
-classpath = ['libs/arity-1.0.0-midp-obfuscated.jar'],
+classpath = ['libs/arity.jar'],
 extralibs = [],
 fileName  = 'calculator'
 )
