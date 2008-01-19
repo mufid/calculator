@@ -26,11 +26,11 @@ import org.javia.lib.midp.ImageCanvas;
 import org.javia.lib.Log;
 import org.javia.lib.DataOut;
 
-import org.javia.eval.Compiler;
-import org.javia.eval.SymbolTable;
-import org.javia.eval.Function;
-import org.javia.eval.Util;
-import org.javia.eval.ArityException;
+import org.javia.arity.Compiler;
+import org.javia.arity.SymbolTable;
+import org.javia.arity.Function;
+import org.javia.arity.Util;
+import org.javia.arity.ArityException;
 
 class CalcCanvas extends ImageCanvas {
     static final int 
