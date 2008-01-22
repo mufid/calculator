@@ -27,10 +27,7 @@ import org.javia.lib.Log;
 import org.javia.lib.DataOut;
 
 import org.javia.arity.Compiler;
-import org.javia.arity.SymbolTable;
-import org.javia.arity.Function;
-import org.javia.arity.Util;
-import org.javia.arity.ArityException;
+import org.javia.arity.*;
 
 class CalcCanvas extends ImageCanvas {
     static final int 
@@ -163,22 +160,35 @@ class CalcCanvas extends ImageCanvas {
         screenGraphics.fillRect(1, Y[HISTORY] - 2 - spaceHist, screenW-2, spaceHist);
     }
 
-    void updateResult() {
-        Function fun = compiler.compile(editor.toString(), symbols);
-        String strResult = null;
-        if (fun != null) {
-            try {
-                strResult = format(fun.eval());
-            } catch (ArityException e) {
-                strResult = "function";
-            }
-            drawResultString(strResult);
+    private static String replaceAll(String str, String what, String repl) {
+        int pos = str.indexOf(what);
+        while (pos != -1) {
+            str = str.substring(0, pos) + repl + str.substring(pos + what.length());
+            pos = str.indexOf(what);
         }
-        drawResultString(null);
+        Log.log("replaced: '"+str+"'");
+        return str;
+    }
+
+    void updateResult() {
+        try {
+            String str = editor.toString();
+            str = replaceAll(str, "\u03c0", " pi ");
+            Function fun = compiler.compile(str, symbols);
+            try {
+                drawResultString(fun.arity()==0 ? format(fun.eval()) : "function");
+            } catch (ArityException e) {
+                throw new Error(""+e);
+            }
+        } catch (SyntaxException e) {
+            Log.log(""+e);
+            drawResultString(null);
+        }
     }
 
     private boolean resultEmpty = false;
     private void drawResultString(String str) {
+        Log.log("result " + str);
         boolean changed = false;
         if (!resultEmpty) {
             screenGraphics.setColor(bgCol[RESULT]);

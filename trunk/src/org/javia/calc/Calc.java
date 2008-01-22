@@ -109,6 +109,7 @@ public final class Calc extends BasicMIDlet implements CommandListener, Runnable
                             }, cfg.roundingDigits == 1 ? 0 : 1
                             )
                     }),
+                /*
                 new Menu("Plot settings", new Cmd[] {
                         new Menu("Axes", new Cmd[] {
                                 new Cmd("Draw axes", CMD_AXES_YES),
@@ -126,6 +127,7 @@ public final class Calc extends BasicMIDlet implements CommandListener, Runnable
                         }, cfg.aspectRatio1 ? 0 : 1
                         )
                 }),
+                */
                 new Cmd("Help",  CMD_HELP),
                 new Cmd("About", CMD_ABOUT),
                 new Cmd("Exit",  CMD_EXIT)
