@@ -20,10 +20,8 @@ import java.util.*;
 import java.io.*;
 
 import org.javia.lib.*;
-import org.javia.arity.SymbolTable;
+import org.javia.arity.*;
 import org.javia.arity.Compiler;
-import org.javia.arity.Function;
-import org.javia.arity.ArityException;
 
 class History {
     static double ans = 0;
@@ -106,13 +104,17 @@ class History {
 
     DataOut dataOut = new DataOut();
     void enter(String str) {
-        Function fun = compiler.compile(str, symbols);
-        if (fun != null && fun.arity() == 0) {
-            try {
-                ans = fun.eval();
-            } catch (ArityException e) {
-                throw new Error(""+e);
+        try {
+            Function fun = compiler.compile(str, symbols);
+            if (fun.arity() == 0) {
+                try {
+                    ans = fun.eval();
+                } catch (ArityException e) {
+                    throw new Error(""+e);
+                }
             }
+        } catch (SyntaxException e) {
+            
         }
         ((HistEntry)history.elementAt(historyPos)).flush();
         if (str.length() > 0) {
